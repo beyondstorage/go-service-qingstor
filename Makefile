@@ -11,7 +11,8 @@ help:
 
 # golint: go get -u golang.org/x/lint/golint
 # definitions: go get -u github.com/aos-dev/go-storage/cmd/definitions
-tools := golint definitions
+# mockgen: go get github.com/golang/mock/mockgen
+tools := golint definitions mockgen
 
 $(tools):
 	@command -v $@ >/dev/null 2>&1 || echo "$@ is not found, please install it."
@@ -33,7 +34,7 @@ lint: golint
 	@golint ./...
 	@echo "ok"
 
-generate: definitions
+generate: definitions mockgen
 	@echo "generate code"
 	@go generate ./...
 	@go fmt ./...
