@@ -1,6 +1,7 @@
 package qingstor
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"log"
@@ -154,11 +155,11 @@ func TestService_Create(t *testing.T) {
 
 	// Monkey the bucket's Put method
 	bucket := &service.Bucket{}
-	fn := func(*service.Bucket) (*service.PutBucketOutput, error) {
+	fn := func(*service.Bucket, context.Context) (*service.PutBucketOutput, error) {
 		t.Log("Bucket put has been called")
 		return &service.PutBucketOutput{}, nil
 	}
-	monkey.PatchInstanceMethod(reflect.TypeOf(bucket), "Put", fn)
+	monkey.PatchInstanceMethod(reflect.TypeOf(bucket), "PutWithContext", fn)
 
 	mockService.EXPECT().Bucket(gomock.Any(), gomock.Any()).Do(func(inputPath, inputLocation string) {
 		assert.Equal(t, path, inputPath)
@@ -185,11 +186,11 @@ func TestService_Delete(t *testing.T) {
 
 		// Patch bucket.Delete
 		bucket := &service.Bucket{}
-		fn := func(*service.Bucket) (*service.DeleteBucketOutput, error) {
+		fn := func(*service.Bucket, context.Context) (*service.DeleteBucketOutput, error) {
 			t.Log("Bucket delete has been called")
 			return nil, nil
 		}
-		monkey.PatchInstanceMethod(reflect.TypeOf(bucket), "Delete", fn)
+		monkey.PatchInstanceMethod(reflect.TypeOf(bucket), "DeleteWithContext", fn)
 
 		mockService.EXPECT().Bucket(gomock.Any(), gomock.Any()).DoAndReturn(func(bucketName, inputLocation string) (*service.Bucket, error) {
 			assert.Equal(t, name, bucketName)
@@ -224,7 +225,7 @@ func TestService_List(t *testing.T) {
 		name := uuid.New().String()
 		location := uuid.New().String()
 
-		mockService.EXPECT().ListBuckets(gomock.Any()).DoAndReturn(func(input *service.ListBucketsInput) (*service.ListBucketsOutput, error) {
+		mockService.EXPECT().ListBucketsWithContext(gomock.Eq(context.Background()), gomock.Any()).DoAndReturn(func(ctx context.Context, input *service.ListBucketsInput) (*service.ListBucketsOutput, error) {
 			assert.Equal(t, location, *input.Location)
 			return &service.ListBucketsOutput{
 				Buckets: []*service.BucketType{
@@ -243,7 +244,7 @@ func TestService_List(t *testing.T) {
 		name := uuid.New().String()
 		location := uuid.New().String()
 
-		mockService.EXPECT().ListBuckets(gomock.Any()).DoAndReturn(func(input *service.ListBucketsInput) (*service.ListBucketsOutput, error) {
+		mockService.EXPECT().ListBucketsWithContext(gomock.Eq(context.Background()), gomock.Any()).DoAndReturn(func(ctx context.Context, input *service.ListBucketsInput) (*service.ListBucketsOutput, error) {
 			assert.Nil(t, input.Location)
 			return &service.ListBucketsOutput{
 				Buckets: []*service.BucketType{
@@ -259,7 +260,7 @@ func TestService_List(t *testing.T) {
 
 	{
 		// Test request facing error.
-		mockService.EXPECT().ListBuckets(gomock.Any()).DoAndReturn(func(input *service.ListBucketsInput) (*service.ListBucketsOutput, error) {
+		mockService.EXPECT().ListBucketsWithContext(gomock.Eq(context.Background()), gomock.Any()).DoAndReturn(func(ctx context.Context, input *service.ListBucketsInput) (*service.ListBucketsOutput, error) {
 			return nil, &qerror.QingStorError{}
 		})
 

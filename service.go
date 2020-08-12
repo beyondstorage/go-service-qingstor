@@ -18,7 +18,7 @@ func (s *Service) create(ctx context.Context, name string, opt *pairServiceCreat
 		return
 	}
 
-	_, err = st.bucket.Put()
+	_, err = st.bucket.PutWithContext(ctx)
 	if err != nil {
 		return
 	}
@@ -31,7 +31,7 @@ func (s *Service) delete(ctx context.Context, name string, opt *pairServiceDelet
 	if err != nil {
 		return
 	}
-	_, err = store.bucket.Delete()
+	_, err = store.bucket.DeleteWithContext(ctx)
 	if err != nil {
 		return
 	}
@@ -57,7 +57,7 @@ func (s *Service) list(ctx context.Context, opt *pairServiceList) (err error) {
 	for {
 		input.Offset = service.Int(offset)
 
-		output, err = s.service.ListBuckets(input)
+		output, err = s.service.ListBucketsWithContext(ctx, input)
 		if err != nil {
 			return
 		}

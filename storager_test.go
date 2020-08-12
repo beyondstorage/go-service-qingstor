@@ -2,6 +2,7 @@ package qingstor
 
 import (
 	"bytes"
+	"context"
 	"errors"
 	"io/ioutil"
 	"testing"
@@ -76,14 +77,15 @@ func TestStorage_Statistical(t *testing.T) {
 		size := int64(1234)
 		count := int64(4321)
 
-		mockBucket.EXPECT().GetStatistics().DoAndReturn(func() (*service.GetBucketStatisticsOutput, error) {
-			return &service.GetBucketStatisticsOutput{
-				Name:     &name,
-				Location: &location,
-				Size:     &size,
-				Count:    &count,
-			}, nil
-		})
+		mockBucket.EXPECT().GetStatisticsWithContext(gomock.Eq(context.Background())).
+			DoAndReturn(func(ctx context.Context) (*service.GetBucketStatisticsOutput, error) {
+				return &service.GetBucketStatisticsOutput{
+					Name:     &name,
+					Location: &location,
+					Size:     &size,
+					Count:    &count,
+				}, nil
+			})
 		m, err := client.Statistical()
 		assert.NoError(t, err)
 		assert.NotNil(t, m)
@@ -94,9 +96,10 @@ func TestStorage_Statistical(t *testing.T) {
 			bucket: mockBucket,
 		}
 
-		mockBucket.EXPECT().GetStatistics().DoAndReturn(func() (*service.GetBucketStatisticsOutput, error) {
-			return nil, &qerror.QingStorError{}
-		})
+		mockBucket.EXPECT().GetStatisticsWithContext(gomock.Eq(context.Background())).
+			DoAndReturn(func(ctx context.Context) (*service.GetBucketStatisticsOutput, error) {
+				return nil, &qerror.QingStorError{}
+			})
 		_, err := client.Statistical()
 		assert.Error(t, err)
 	}
@@ -116,10 +119,11 @@ func TestStorage_AbortSegment(t *testing.T) {
 	path := uuid.New().String()
 	id := uuid.New().String()
 	seg := segment.NewIndexBasedSegment(path, id)
-	mockBucket.EXPECT().AbortMultipartUpload(gomock.Any(), gomock.Any()).Do(func(inputPath string, input *service.AbortMultipartUploadInput) {
-		assert.Equal(t, path, inputPath)
-		assert.Equal(t, id, *input.UploadID)
-	})
+	mockBucket.EXPECT().AbortMultipartUploadWithContext(gomock.Eq(context.Background()), gomock.Any(), gomock.Any()).
+		Do(func(ctx context.Context, inputPath string, input *service.AbortMultipartUploadInput) {
+			assert.Equal(t, path, inputPath)
+			assert.Equal(t, id, *input.UploadID)
+		})
 	err := client.AbortSegment(seg)
 	assert.NoError(t, err)
 }
@@ -138,10 +142,11 @@ func TestStorage_CompleteSegment(t *testing.T) {
 			bucket: mockBucket,
 		}
 
-		mockBucket.EXPECT().CompleteMultipartUpload(gomock.Any(), gomock.Any()).Do(func(inputPath string, input *service.CompleteMultipartUploadInput) {
-			assert.Equal(t, path, inputPath)
-			assert.Equal(t, id, *input.UploadID)
-		})
+		mockBucket.EXPECT().CompleteMultipartUploadWithContext(gomock.Eq(context.Background()), gomock.Any(), gomock.Any()).
+			Do(func(ctx context.Context, inputPath string, input *service.CompleteMultipartUploadInput) {
+				assert.Equal(t, path, inputPath)
+				assert.Equal(t, id, *input.UploadID)
+			})
 
 		err := client.CompleteSegment(seg)
 		assert.NoError(t, err)
@@ -158,14 +163,14 @@ func TestStorage_Copy(t *testing.T) {
 		name     string
 		src      string
 		dst      string
-		mockFn   func(string, *service.PutObjectInput)
+		mockFn   func(context.Context, string, *service.PutObjectInput)
 		hasError bool
 		wantErr  error
 	}{
 		{
 			"valid copy",
 			"test_src", "test_dst",
-			func(inputObjectKey string, input *service.PutObjectInput) {
+			func(ctx context.Context, inputObjectKey string, input *service.PutObjectInput) {
 				assert.Equal(t, "test_dst", inputObjectKey)
 				assert.Equal(t, "test_src", *input.XQSCopySource)
 			},
@@ -174,7 +179,7 @@ func TestStorage_Copy(t *testing.T) {
 	}
 
 	for _, v := range tests {
-		mockBucket.EXPECT().PutObject(gomock.Any(), gomock.Any()).Do(v.mockFn)
+		mockBucket.EXPECT().PutObjectWithContext(gomock.Eq(context.Background()), gomock.Any(), gomock.Any()).Do(v.mockFn)
 
 		client := Storage{
 			bucket: mockBucket,
@@ -199,14 +204,14 @@ func TestStorage_Delete(t *testing.T) {
 	tests := []struct {
 		name     string
 		src      string
-		mockFn   func(string)
+		mockFn   func(context.Context, string)
 		hasError bool
 		wantErr  error
 	}{
 		{
 			"valid delete",
 			"test_src",
-			func(inputObjectKey string) {
+			func(ctx context.Context, inputObjectKey string) {
 				assert.Equal(t, "test_src", inputObjectKey)
 			},
 			false, nil,
@@ -214,7 +219,7 @@ func TestStorage_Delete(t *testing.T) {
 	}
 
 	for _, v := range tests {
-		mockBucket.EXPECT().DeleteObject(gomock.Any()).Do(v.mockFn)
+		mockBucket.EXPECT().DeleteObjectWithContext(gomock.Eq(context.Background()), gomock.Any()).Do(v.mockFn)
 
 		client := Storage{
 			bucket: mockBucket,
@@ -241,7 +246,7 @@ func TestStorage_InitSegment(t *testing.T) {
 		path     string
 		segments map[string]*segment.IndexBasedSegment
 		hasCall  bool
-		mockFn   func(string, *service.InitiateMultipartUploadInput) (*service.InitiateMultipartUploadOutput, error)
+		mockFn   func(context.Context, string, *service.InitiateMultipartUploadInput) (*service.InitiateMultipartUploadOutput, error)
 		hasError bool
 		wantErr  error
 	}{
@@ -249,7 +254,7 @@ func TestStorage_InitSegment(t *testing.T) {
 			"valid init segment",
 			"test", map[string]*segment.IndexBasedSegment{},
 			true,
-			func(inputPath string, input *service.InitiateMultipartUploadInput) (*service.InitiateMultipartUploadOutput, error) {
+			func(ctx context.Context, inputPath string, input *service.InitiateMultipartUploadInput) (*service.InitiateMultipartUploadOutput, error) {
 				assert.Equal(t, "test", inputPath)
 
 				uploadID := "test"
@@ -266,7 +271,7 @@ func TestStorage_InitSegment(t *testing.T) {
 				"test": segment.NewIndexBasedSegment("xxx", "test_segment_id"),
 			},
 			true,
-			func(inputPath string, input *service.InitiateMultipartUploadInput) (*service.InitiateMultipartUploadOutput, error) {
+			func(ctx context.Context, inputPath string, input *service.InitiateMultipartUploadInput) (*service.InitiateMultipartUploadOutput, error) {
 				assert.Equal(t, "test", inputPath)
 
 				uploadID := "test"
@@ -280,7 +285,7 @@ func TestStorage_InitSegment(t *testing.T) {
 
 	for _, v := range tests {
 		if v.hasCall {
-			mockBucket.EXPECT().InitiateMultipartUpload(gomock.Any(), gomock.Any()).DoAndReturn(v.mockFn)
+			mockBucket.EXPECT().InitiateMultipartUploadWithContext(gomock.Eq(context.Background()), gomock.Any(), gomock.Any()).DoAndReturn(v.mockFn)
 		}
 
 		client := Storage{
@@ -428,11 +433,12 @@ func TestStorage_ListDir(t *testing.T) {
 		t.Run(v.name, func(t *testing.T) {
 			path := v.path
 
-			mockBucket.EXPECT().ListObjects(gomock.Any()).DoAndReturn(func(input *service.ListObjectsInput) (*service.ListObjectsOutput, error) {
-				assert.Equal(t, path, *input.Prefix)
-				assert.Equal(t, 200, *input.Limit)
-				return v.output, v.err
-			})
+			mockBucket.EXPECT().ListObjectsWithContext(gomock.Eq(context.Background()), gomock.Any()).
+				DoAndReturn(func(ctx context.Context, input *service.ListObjectsInput) (*service.ListObjectsOutput, error) {
+					assert.Equal(t, path, *input.Prefix)
+					assert.Equal(t, 200, *input.Limit)
+					return v.output, v.err
+				})
 
 			client := Storage{
 				bucket: mockBucket,
@@ -460,18 +466,19 @@ func TestStorage_ListPrefix(t *testing.T) {
 	path := uuid.New().String()
 	key := uuid.New().String()
 
-	mockBucket.EXPECT().ListObjects(gomock.Any()).DoAndReturn(func(input *service.ListObjectsInput) (*service.ListObjectsOutput, error) {
-		assert.Equal(t, path, *input.Prefix)
-		assert.Equal(t, 200, *input.Limit)
-		return &service.ListObjectsOutput{
-			HasMore: service.Bool(false),
-			Keys: []*service.KeyType{
-				{
-					Key: service.String(key),
+	mockBucket.EXPECT().ListObjectsWithContext(gomock.Eq(context.Background()), gomock.Any()).
+		DoAndReturn(func(ctx context.Context, input *service.ListObjectsInput) (*service.ListObjectsOutput, error) {
+			assert.Equal(t, path, *input.Prefix)
+			assert.Equal(t, 200, *input.Limit)
+			return &service.ListObjectsOutput{
+				HasMore: service.Bool(false),
+				Keys: []*service.KeyType{
+					{
+						Key: service.String(key),
+					},
 				},
-			},
-		}, nil
-	})
+			}, nil
+		})
 
 	client := Storage{
 		bucket: mockBucket,
@@ -493,14 +500,14 @@ func TestStorage_Move(t *testing.T) {
 		name     string
 		src      string
 		dst      string
-		mockFn   func(string, *service.PutObjectInput)
+		mockFn   func(context.Context, string, *service.PutObjectInput)
 		hasError bool
 		wantErr  error
 	}{
 		{
 			"valid copy",
 			"test_src", "test_dst",
-			func(inputObjectKey string, input *service.PutObjectInput) {
+			func(ctx context.Context, inputObjectKey string, input *service.PutObjectInput) {
 				assert.Equal(t, "test_dst", inputObjectKey)
 				assert.Equal(t, "test_src", *input.XQSMoveSource)
 			},
@@ -509,7 +516,7 @@ func TestStorage_Move(t *testing.T) {
 	}
 
 	for _, v := range tests {
-		mockBucket.EXPECT().PutObject(gomock.Any(), gomock.Any()).Do(v.mockFn)
+		mockBucket.EXPECT().PutObjectWithContext(gomock.Eq(context.Background()), gomock.Any(), gomock.Any()).Do(v.mockFn)
 
 		client := Storage{
 			bucket: mockBucket,
@@ -534,14 +541,14 @@ func TestStorage_Read(t *testing.T) {
 	tests := []struct {
 		name     string
 		path     string
-		mockFn   func(string, *service.GetObjectInput) (*service.GetObjectOutput, error)
+		mockFn   func(context.Context, string, *service.GetObjectInput) (*service.GetObjectOutput, error)
 		hasError bool
 		wantErr  error
 	}{
 		{
 			"valid copy",
 			"test_src",
-			func(inputPath string, input *service.GetObjectInput) (*service.GetObjectOutput, error) {
+			func(ctx context.Context, inputPath string, input *service.GetObjectInput) (*service.GetObjectOutput, error) {
 				assert.Equal(t, "test_src", inputPath)
 				return &service.GetObjectOutput{
 					Body: ioutil.NopCloser(bytes.NewBuffer([]byte("content"))),
@@ -552,7 +559,7 @@ func TestStorage_Read(t *testing.T) {
 	}
 
 	for _, v := range tests {
-		mockBucket.EXPECT().GetObject(gomock.Any(), gomock.Any()).DoAndReturn(v.mockFn)
+		mockBucket.EXPECT().GetObjectWithContext(gomock.Eq(context.Background()), gomock.Any(), gomock.Any()).DoAndReturn(v.mockFn)
 
 		client := Storage{
 			bucket: mockBucket,
@@ -581,14 +588,14 @@ func TestStorage_Stat(t *testing.T) {
 	tests := []struct {
 		name     string
 		src      string
-		mockFn   func(objectKey string, input *service.HeadObjectInput) (*service.HeadObjectOutput, error)
+		mockFn   func(context.Context, string, *service.HeadObjectInput) (*service.HeadObjectOutput, error)
 		hasError bool
 		wantErr  error
 	}{
 		{
 			"valid file",
 			"test_src",
-			func(objectKey string, input *service.HeadObjectInput) (*service.HeadObjectOutput, error) {
+			func(ctx context.Context, objectKey string, input *service.HeadObjectInput) (*service.HeadObjectOutput, error) {
 				assert.Equal(t, "test_src", objectKey)
 				length := int64(100)
 				return &service.HeadObjectOutput{
@@ -603,7 +610,7 @@ func TestStorage_Stat(t *testing.T) {
 	}
 
 	for _, v := range tests {
-		mockBucket.EXPECT().HeadObject(gomock.Any(), gomock.Any()).DoAndReturn(v.mockFn)
+		mockBucket.EXPECT().HeadObjectWithContext(gomock.Eq(context.Background()), gomock.Any(), gomock.Any()).DoAndReturn(v.mockFn)
 
 		client := Storage{
 			bucket: mockBucket,
@@ -641,7 +648,7 @@ func TestStorage_Write(t *testing.T) {
 		name     string
 		path     string
 		size     int64
-		mockFn   func(string, *service.PutObjectInput) (*service.PutObjectOutput, error)
+		mockFn   func(context.Context, string, *service.PutObjectInput) (*service.PutObjectOutput, error)
 		hasError bool
 		wantErr  error
 	}{
@@ -649,7 +656,7 @@ func TestStorage_Write(t *testing.T) {
 			"valid copy",
 			"test_src",
 			100,
-			func(inputPath string, input *service.PutObjectInput) (*service.PutObjectOutput, error) {
+			func(ctx context.Context, inputPath string, input *service.PutObjectInput) (*service.PutObjectOutput, error) {
 				assert.Equal(t, "test_src", inputPath)
 				return nil, nil
 			},
@@ -658,7 +665,7 @@ func TestStorage_Write(t *testing.T) {
 	}
 
 	for _, v := range tests {
-		mockBucket.EXPECT().PutObject(gomock.Any(), gomock.Any()).DoAndReturn(v.mockFn)
+		mockBucket.EXPECT().PutObjectWithContext(gomock.Eq(context.Background()), gomock.Any(), gomock.Any()).DoAndReturn(v.mockFn)
 
 		client := Storage{
 			bucket: mockBucket,
@@ -688,10 +695,11 @@ func TestStorage_WriteSegment(t *testing.T) {
 			bucket: mockBucket,
 		}
 
-		mockBucket.EXPECT().UploadMultipart(gomock.Any(), gomock.Any()).Do(func(inputPath string, input *service.UploadMultipartInput) {
-			assert.Equal(t, path, inputPath)
-			assert.Equal(t, id, *input.UploadID)
-		})
+		mockBucket.EXPECT().UploadMultipartWithContext(gomock.Eq(context.Background()), gomock.Any(), gomock.Any()).
+			Do(func(ctx context.Context, inputPath string, input *service.UploadMultipartInput) {
+				assert.Equal(t, path, inputPath)
+				assert.Equal(t, id, *input.UploadID)
+			})
 
 		err := client.WriteIndexSegment(seg, nil, 0, 100)
 		assert.NoError(t, err)
@@ -762,11 +770,12 @@ func TestStorage_ListPrefixSegments(t *testing.T) {
 		t.Run(v.name, func(t *testing.T) {
 			path := uuid.New().String()
 
-			mockBucket.EXPECT().ListMultipartUploads(gomock.Any()).DoAndReturn(func(input *service.ListMultipartUploadsInput) (*service.ListMultipartUploadsOutput, error) {
-				assert.Equal(t, path, *input.Prefix)
-				assert.Equal(t, 200, *input.Limit)
-				return v.output, v.err
-			})
+			mockBucket.EXPECT().ListMultipartUploadsWithContext(gomock.Eq(context.Background()), gomock.Any()).
+				DoAndReturn(func(ctx context.Context, input *service.ListMultipartUploadsInput) (*service.ListMultipartUploadsOutput, error) {
+					assert.Equal(t, path, *input.Prefix)
+					assert.Equal(t, 200, *input.Limit)
+					return v.output, v.err
+				})
 
 			client := Storage{
 				bucket: mockBucket,
