@@ -17,7 +17,7 @@ import (
 func (s *Storage) delete(ctx context.Context, path string, opt *pairStorageDelete) (err error) {
 	rp := s.getAbsPath(path)
 
-	_, err = s.bucket.DeleteObject(rp)
+	_, err = s.bucket.DeleteObjectWithContext(ctx, rp)
 	if err != nil {
 		return
 	}
@@ -28,7 +28,7 @@ func (s *Storage) initIndexSegment(ctx context.Context, path string, opt *pairSt
 
 	rp := s.getAbsPath(path)
 
-	output, err := s.bucket.InitiateMultipartUpload(rp, input)
+	output, err := s.bucket.InitiateMultipartUploadWithContext(ctx, rp, input)
 	if err != nil {
 		return
 	}
@@ -47,7 +47,7 @@ func (s *Storage) listDir(ctx context.Context, dir string, opt *pairStorageListD
 
 	var output *service.ListObjectsOutput
 	for {
-		output, err = s.bucket.ListObjects(&service.ListObjectsInput{
+		output, err = s.bucket.ListObjectsWithContext(ctx, &service.ListObjectsInput{
 			Limit:     &limit,
 			Marker:    &marker,
 			Prefix:    &rp,
@@ -106,7 +106,7 @@ func (s *Storage) listPrefix(ctx context.Context, prefix string, opt *pairStorag
 
 	var output *service.ListObjectsOutput
 	for {
-		output, err = s.bucket.ListObjects(&service.ListObjectsInput{
+		output, err = s.bucket.ListObjectsWithContext(ctx, &service.ListObjectsInput{
 			Limit:  &limit,
 			Marker: &marker,
 			Prefix: &rp,
@@ -146,7 +146,7 @@ func (s *Storage) listPrefixSegments(ctx context.Context, prefix string, opt *pa
 
 	var output *service.ListMultipartUploadsOutput
 	for {
-		output, err = s.bucket.ListMultipartUploads(&service.ListMultipartUploadsInput{
+		output, err = s.bucket.ListMultipartUploadsWithContext(ctx, &service.ListMultipartUploadsInput{
 			KeyMarker:      &keyMarker,
 			Limit:          &limit,
 			Prefix:         &rp,
@@ -191,7 +191,7 @@ func (s *Storage) reach(ctx context.Context, path string, opt *pairStorageReach)
 	if err != nil {
 		return
 	}
-	if err = r.Build(); err != nil {
+	if err = r.BuildWithContext(ctx); err != nil {
 		return
 	}
 
@@ -211,7 +211,7 @@ func (s *Storage) read(ctx context.Context, path string, opt *pairStorageRead) (
 
 	rp := s.getAbsPath(path)
 
-	output, err := s.bucket.GetObject(rp, input)
+	output, err := s.bucket.GetObjectWithContext(ctx, rp, input)
 	if err != nil {
 		return
 	}
@@ -227,7 +227,7 @@ func (s *Storage) stat(ctx context.Context, path string, opt *pairStorageStat) (
 
 	rp := s.getAbsPath(path)
 
-	output, err := s.bucket.HeadObject(rp, input)
+	output, err := s.bucket.HeadObjectWithContext(ctx, rp, input)
 	if err != nil {
 		return
 	}
@@ -272,7 +272,7 @@ func (s *Storage) write(ctx context.Context, path string, r io.Reader, opt *pair
 
 	rp := s.getAbsPath(path)
 
-	_, err = s.bucket.PutObject(rp, input)
+	_, err = s.bucket.PutObjectWithContext(ctx, rp, input)
 	if err != nil {
 		return
 	}
@@ -290,7 +290,7 @@ func (s *Storage) writeIndexSegment(ctx context.Context, seg segment.Segment, r 
 		r = iowrap.CallbackReader(r, opt.ReadCallbackFunc)
 	}
 
-	_, err = s.bucket.UploadMultipart(rp, &service.UploadMultipartInput{
+	_, err = s.bucket.UploadMultipartWithContext(ctx, rp, &service.UploadMultipartInput{
 		PartNumber:    service.Int(p.Index),
 		UploadID:      service.String(seg.ID()),
 		ContentLength: &size,
@@ -306,7 +306,7 @@ func (s *Storage) copy(ctx context.Context, src string, dst string, opt *pairSto
 	rs := s.getAbsPath(src)
 	rd := s.getAbsPath(dst)
 
-	_, err = s.bucket.PutObject(rd, &service.PutObjectInput{
+	_, err = s.bucket.PutObjectWithContext(ctx, rd, &service.PutObjectInput{
 		XQSCopySource: &rs,
 	})
 	if err != nil {
@@ -319,7 +319,7 @@ func (s *Storage) move(ctx context.Context, src string, dst string, opt *pairSto
 	rs := s.getAbsPath(src)
 	rd := s.getAbsPath(dst)
 
-	_, err = s.bucket.PutObject(rd, &service.PutObjectInput{
+	_, err = s.bucket.PutObjectWithContext(ctx, rd, &service.PutObjectInput{
 		XQSMoveSource: &rs,
 	})
 	if err != nil {
@@ -331,7 +331,7 @@ func (s *Storage) move(ctx context.Context, src string, dst string, opt *pairSto
 func (s *Storage) abortSegment(ctx context.Context, seg segment.Segment, opt *pairStorageAbortSegment) (err error) {
 	rp := s.getAbsPath(seg.Path())
 
-	_, err = s.bucket.AbortMultipartUpload(rp, &service.AbortMultipartUploadInput{
+	_, err = s.bucket.AbortMultipartUploadWithContext(ctx, rp, &service.AbortMultipartUploadInput{
 		UploadID: service.String(seg.ID()),
 	})
 	if err != nil {
@@ -351,7 +351,7 @@ func (s *Storage) completeSegment(ctx context.Context, seg segment.Segment, opt 
 
 	rp := s.getAbsPath(seg.Path())
 
-	_, err = s.bucket.CompleteMultipartUpload(rp, &service.CompleteMultipartUploadInput{
+	_, err = s.bucket.CompleteMultipartUploadWithContext(ctx, rp, &service.CompleteMultipartUploadInput{
 		UploadID:    service.String(seg.ID()),
 		ObjectParts: objectParts,
 	})
@@ -363,7 +363,7 @@ func (s *Storage) completeSegment(ctx context.Context, seg segment.Segment, opt 
 func (s *Storage) statistical(ctx context.Context, opt *pairStorageStatistical) (statistic info.StorageStatistic, err error) {
 	statistic = info.NewStorageStatistic()
 
-	output, err := s.bucket.GetStatistics()
+	output, err := s.bucket.GetStatisticsWithContext(ctx)
 	if err != nil {
 		return
 	}

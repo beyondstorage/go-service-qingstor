@@ -5,6 +5,7 @@
 package qingstor
 
 import (
+	context "context"
 	gomock "github.com/golang/mock/gomock"
 	service "github.com/qingstor/qingstor-sdk-go/v4/service"
 	reflect "reflect"
@@ -63,6 +64,21 @@ func (mr *MockServiceMockRecorder) ListBuckets(arg0 interface{}) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListBuckets", reflect.TypeOf((*MockService)(nil).ListBuckets), arg0)
 }
 
+// ListBucketsWithContext mocks base method
+func (m *MockService) ListBucketsWithContext(arg0 context.Context, arg1 *service.ListBucketsInput) (*service.ListBucketsOutput, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ListBucketsWithContext", arg0, arg1)
+	ret0, _ := ret[0].(*service.ListBucketsOutput)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ListBucketsWithContext indicates an expected call of ListBucketsWithContext
+func (mr *MockServiceMockRecorder) ListBucketsWithContext(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListBucketsWithContext", reflect.TypeOf((*MockService)(nil).ListBucketsWithContext), arg0, arg1)
+}
+
 // MockBucket is a mock of Bucket interface
 type MockBucket struct {
 	ctrl     *gomock.Controller
@@ -101,6 +117,51 @@ func (mr *MockBucketMockRecorder) AbortMultipartUpload(arg0, arg1 interface{}) *
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AbortMultipartUpload", reflect.TypeOf((*MockBucket)(nil).AbortMultipartUpload), arg0, arg1)
 }
 
+// AbortMultipartUploadWithContext mocks base method
+func (m *MockBucket) AbortMultipartUploadWithContext(arg0 context.Context, arg1 string, arg2 *service.AbortMultipartUploadInput) (*service.AbortMultipartUploadOutput, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AbortMultipartUploadWithContext", arg0, arg1, arg2)
+	ret0, _ := ret[0].(*service.AbortMultipartUploadOutput)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// AbortMultipartUploadWithContext indicates an expected call of AbortMultipartUploadWithContext
+func (mr *MockBucketMockRecorder) AbortMultipartUploadWithContext(arg0, arg1, arg2 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AbortMultipartUploadWithContext", reflect.TypeOf((*MockBucket)(nil).AbortMultipartUploadWithContext), arg0, arg1, arg2)
+}
+
+// AppendObject mocks base method
+func (m *MockBucket) AppendObject(arg0 string, arg1 *service.AppendObjectInput) (*service.AppendObjectOutput, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AppendObject", arg0, arg1)
+	ret0, _ := ret[0].(*service.AppendObjectOutput)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// AppendObject indicates an expected call of AppendObject
+func (mr *MockBucketMockRecorder) AppendObject(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AppendObject", reflect.TypeOf((*MockBucket)(nil).AppendObject), arg0, arg1)
+}
+
+// AppendObjectWithContext mocks base method
+func (m *MockBucket) AppendObjectWithContext(arg0 context.Context, arg1 string, arg2 *service.AppendObjectInput) (*service.AppendObjectOutput, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AppendObjectWithContext", arg0, arg1, arg2)
+	ret0, _ := ret[0].(*service.AppendObjectOutput)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// AppendObjectWithContext indicates an expected call of AppendObjectWithContext
+func (mr *MockBucketMockRecorder) AppendObjectWithContext(arg0, arg1, arg2 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AppendObjectWithContext", reflect.TypeOf((*MockBucket)(nil).AppendObjectWithContext), arg0, arg1, arg2)
+}
+
 // CompleteMultipartUpload mocks base method
 func (m *MockBucket) CompleteMultipartUpload(arg0 string, arg1 *service.CompleteMultipartUploadInput) (*service.CompleteMultipartUploadOutput, error) {
 	m.ctrl.T.Helper()
@@ -114,6 +175,21 @@ func (m *MockBucket) CompleteMultipartUpload(arg0 string, arg1 *service.Complete
 func (mr *MockBucketMockRecorder) CompleteMultipartUpload(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CompleteMultipartUpload", reflect.TypeOf((*MockBucket)(nil).CompleteMultipartUpload), arg0, arg1)
+}
+
+// CompleteMultipartUploadWithContext mocks base method
+func (m *MockBucket) CompleteMultipartUploadWithContext(arg0 context.Context, arg1 string, arg2 *service.CompleteMultipartUploadInput) (*service.CompleteMultipartUploadOutput, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CompleteMultipartUploadWithContext", arg0, arg1, arg2)
+	ret0, _ := ret[0].(*service.CompleteMultipartUploadOutput)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CompleteMultipartUploadWithContext indicates an expected call of CompleteMultipartUploadWithContext
+func (mr *MockBucketMockRecorder) CompleteMultipartUploadWithContext(arg0, arg1, arg2 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CompleteMultipartUploadWithContext", reflect.TypeOf((*MockBucket)(nil).CompleteMultipartUploadWithContext), arg0, arg1, arg2)
 }
 
 // Delete mocks base method
@@ -131,6 +207,36 @@ func (mr *MockBucketMockRecorder) Delete() *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Delete", reflect.TypeOf((*MockBucket)(nil).Delete))
 }
 
+// DeleteCNAME mocks base method
+func (m *MockBucket) DeleteCNAME(arg0 *service.DeleteBucketCNAMEInput) (*service.DeleteBucketCNAMEOutput, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DeleteCNAME", arg0)
+	ret0, _ := ret[0].(*service.DeleteBucketCNAMEOutput)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// DeleteCNAME indicates an expected call of DeleteCNAME
+func (mr *MockBucketMockRecorder) DeleteCNAME(arg0 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteCNAME", reflect.TypeOf((*MockBucket)(nil).DeleteCNAME), arg0)
+}
+
+// DeleteCNAMEWithContext mocks base method
+func (m *MockBucket) DeleteCNAMEWithContext(arg0 context.Context, arg1 *service.DeleteBucketCNAMEInput) (*service.DeleteBucketCNAMEOutput, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DeleteCNAMEWithContext", arg0, arg1)
+	ret0, _ := ret[0].(*service.DeleteBucketCNAMEOutput)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// DeleteCNAMEWithContext indicates an expected call of DeleteCNAMEWithContext
+func (mr *MockBucketMockRecorder) DeleteCNAMEWithContext(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteCNAMEWithContext", reflect.TypeOf((*MockBucket)(nil).DeleteCNAMEWithContext), arg0, arg1)
+}
+
 // DeleteCORS mocks base method
 func (m *MockBucket) DeleteCORS() (*service.DeleteBucketCORSOutput, error) {
 	m.ctrl.T.Helper()
@@ -144,6 +250,21 @@ func (m *MockBucket) DeleteCORS() (*service.DeleteBucketCORSOutput, error) {
 func (mr *MockBucketMockRecorder) DeleteCORS() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteCORS", reflect.TypeOf((*MockBucket)(nil).DeleteCORS))
+}
+
+// DeleteCORSWithContext mocks base method
+func (m *MockBucket) DeleteCORSWithContext(arg0 context.Context) (*service.DeleteBucketCORSOutput, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DeleteCORSWithContext", arg0)
+	ret0, _ := ret[0].(*service.DeleteBucketCORSOutput)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// DeleteCORSWithContext indicates an expected call of DeleteCORSWithContext
+func (mr *MockBucketMockRecorder) DeleteCORSWithContext(arg0 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteCORSWithContext", reflect.TypeOf((*MockBucket)(nil).DeleteCORSWithContext), arg0)
 }
 
 // DeleteExternalMirror mocks base method
@@ -161,6 +282,21 @@ func (mr *MockBucketMockRecorder) DeleteExternalMirror() *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteExternalMirror", reflect.TypeOf((*MockBucket)(nil).DeleteExternalMirror))
 }
 
+// DeleteExternalMirrorWithContext mocks base method
+func (m *MockBucket) DeleteExternalMirrorWithContext(arg0 context.Context) (*service.DeleteBucketExternalMirrorOutput, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DeleteExternalMirrorWithContext", arg0)
+	ret0, _ := ret[0].(*service.DeleteBucketExternalMirrorOutput)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// DeleteExternalMirrorWithContext indicates an expected call of DeleteExternalMirrorWithContext
+func (mr *MockBucketMockRecorder) DeleteExternalMirrorWithContext(arg0 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteExternalMirrorWithContext", reflect.TypeOf((*MockBucket)(nil).DeleteExternalMirrorWithContext), arg0)
+}
+
 // DeleteLifecycle mocks base method
 func (m *MockBucket) DeleteLifecycle() (*service.DeleteBucketLifecycleOutput, error) {
 	m.ctrl.T.Helper()
@@ -174,6 +310,51 @@ func (m *MockBucket) DeleteLifecycle() (*service.DeleteBucketLifecycleOutput, er
 func (mr *MockBucketMockRecorder) DeleteLifecycle() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteLifecycle", reflect.TypeOf((*MockBucket)(nil).DeleteLifecycle))
+}
+
+// DeleteLifecycleWithContext mocks base method
+func (m *MockBucket) DeleteLifecycleWithContext(arg0 context.Context) (*service.DeleteBucketLifecycleOutput, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DeleteLifecycleWithContext", arg0)
+	ret0, _ := ret[0].(*service.DeleteBucketLifecycleOutput)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// DeleteLifecycleWithContext indicates an expected call of DeleteLifecycleWithContext
+func (mr *MockBucketMockRecorder) DeleteLifecycleWithContext(arg0 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteLifecycleWithContext", reflect.TypeOf((*MockBucket)(nil).DeleteLifecycleWithContext), arg0)
+}
+
+// DeleteLogging mocks base method
+func (m *MockBucket) DeleteLogging() (*service.DeleteBucketLoggingOutput, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DeleteLogging")
+	ret0, _ := ret[0].(*service.DeleteBucketLoggingOutput)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// DeleteLogging indicates an expected call of DeleteLogging
+func (mr *MockBucketMockRecorder) DeleteLogging() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteLogging", reflect.TypeOf((*MockBucket)(nil).DeleteLogging))
+}
+
+// DeleteLoggingWithContext mocks base method
+func (m *MockBucket) DeleteLoggingWithContext(arg0 context.Context) (*service.DeleteBucketLoggingOutput, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DeleteLoggingWithContext", arg0)
+	ret0, _ := ret[0].(*service.DeleteBucketLoggingOutput)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// DeleteLoggingWithContext indicates an expected call of DeleteLoggingWithContext
+func (mr *MockBucketMockRecorder) DeleteLoggingWithContext(arg0 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteLoggingWithContext", reflect.TypeOf((*MockBucket)(nil).DeleteLoggingWithContext), arg0)
 }
 
 // DeleteMultipleObjects mocks base method
@@ -191,6 +372,21 @@ func (mr *MockBucketMockRecorder) DeleteMultipleObjects(arg0 interface{}) *gomoc
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteMultipleObjects", reflect.TypeOf((*MockBucket)(nil).DeleteMultipleObjects), arg0)
 }
 
+// DeleteMultipleObjectsWithContext mocks base method
+func (m *MockBucket) DeleteMultipleObjectsWithContext(arg0 context.Context, arg1 *service.DeleteMultipleObjectsInput) (*service.DeleteMultipleObjectsOutput, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DeleteMultipleObjectsWithContext", arg0, arg1)
+	ret0, _ := ret[0].(*service.DeleteMultipleObjectsOutput)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// DeleteMultipleObjectsWithContext indicates an expected call of DeleteMultipleObjectsWithContext
+func (mr *MockBucketMockRecorder) DeleteMultipleObjectsWithContext(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteMultipleObjectsWithContext", reflect.TypeOf((*MockBucket)(nil).DeleteMultipleObjectsWithContext), arg0, arg1)
+}
+
 // DeleteNotification mocks base method
 func (m *MockBucket) DeleteNotification() (*service.DeleteBucketNotificationOutput, error) {
 	m.ctrl.T.Helper()
@@ -204,6 +400,21 @@ func (m *MockBucket) DeleteNotification() (*service.DeleteBucketNotificationOutp
 func (mr *MockBucketMockRecorder) DeleteNotification() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteNotification", reflect.TypeOf((*MockBucket)(nil).DeleteNotification))
+}
+
+// DeleteNotificationWithContext mocks base method
+func (m *MockBucket) DeleteNotificationWithContext(arg0 context.Context) (*service.DeleteBucketNotificationOutput, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DeleteNotificationWithContext", arg0)
+	ret0, _ := ret[0].(*service.DeleteBucketNotificationOutput)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// DeleteNotificationWithContext indicates an expected call of DeleteNotificationWithContext
+func (mr *MockBucketMockRecorder) DeleteNotificationWithContext(arg0 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteNotificationWithContext", reflect.TypeOf((*MockBucket)(nil).DeleteNotificationWithContext), arg0)
 }
 
 // DeleteObject mocks base method
@@ -221,6 +432,21 @@ func (mr *MockBucketMockRecorder) DeleteObject(arg0 interface{}) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteObject", reflect.TypeOf((*MockBucket)(nil).DeleteObject), arg0)
 }
 
+// DeleteObjectWithContext mocks base method
+func (m *MockBucket) DeleteObjectWithContext(arg0 context.Context, arg1 string) (*service.DeleteObjectOutput, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DeleteObjectWithContext", arg0, arg1)
+	ret0, _ := ret[0].(*service.DeleteObjectOutput)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// DeleteObjectWithContext indicates an expected call of DeleteObjectWithContext
+func (mr *MockBucketMockRecorder) DeleteObjectWithContext(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteObjectWithContext", reflect.TypeOf((*MockBucket)(nil).DeleteObjectWithContext), arg0, arg1)
+}
+
 // DeletePolicy mocks base method
 func (m *MockBucket) DeletePolicy() (*service.DeleteBucketPolicyOutput, error) {
 	m.ctrl.T.Helper()
@@ -234,6 +460,36 @@ func (m *MockBucket) DeletePolicy() (*service.DeleteBucketPolicyOutput, error) {
 func (mr *MockBucketMockRecorder) DeletePolicy() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeletePolicy", reflect.TypeOf((*MockBucket)(nil).DeletePolicy))
+}
+
+// DeletePolicyWithContext mocks base method
+func (m *MockBucket) DeletePolicyWithContext(arg0 context.Context) (*service.DeleteBucketPolicyOutput, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DeletePolicyWithContext", arg0)
+	ret0, _ := ret[0].(*service.DeleteBucketPolicyOutput)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// DeletePolicyWithContext indicates an expected call of DeletePolicyWithContext
+func (mr *MockBucketMockRecorder) DeletePolicyWithContext(arg0 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeletePolicyWithContext", reflect.TypeOf((*MockBucket)(nil).DeletePolicyWithContext), arg0)
+}
+
+// DeleteWithContext mocks base method
+func (m *MockBucket) DeleteWithContext(arg0 context.Context) (*service.DeleteBucketOutput, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DeleteWithContext", arg0)
+	ret0, _ := ret[0].(*service.DeleteBucketOutput)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// DeleteWithContext indicates an expected call of DeleteWithContext
+func (mr *MockBucketMockRecorder) DeleteWithContext(arg0 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteWithContext", reflect.TypeOf((*MockBucket)(nil).DeleteWithContext), arg0)
 }
 
 // GetACL mocks base method
@@ -251,6 +507,51 @@ func (mr *MockBucketMockRecorder) GetACL() *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetACL", reflect.TypeOf((*MockBucket)(nil).GetACL))
 }
 
+// GetACLWithContext mocks base method
+func (m *MockBucket) GetACLWithContext(arg0 context.Context) (*service.GetBucketACLOutput, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetACLWithContext", arg0)
+	ret0, _ := ret[0].(*service.GetBucketACLOutput)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetACLWithContext indicates an expected call of GetACLWithContext
+func (mr *MockBucketMockRecorder) GetACLWithContext(arg0 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetACLWithContext", reflect.TypeOf((*MockBucket)(nil).GetACLWithContext), arg0)
+}
+
+// GetCNAME mocks base method
+func (m *MockBucket) GetCNAME(arg0 *service.GetBucketCNAMEInput) (*service.GetBucketCNAMEOutput, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetCNAME", arg0)
+	ret0, _ := ret[0].(*service.GetBucketCNAMEOutput)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetCNAME indicates an expected call of GetCNAME
+func (mr *MockBucketMockRecorder) GetCNAME(arg0 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetCNAME", reflect.TypeOf((*MockBucket)(nil).GetCNAME), arg0)
+}
+
+// GetCNAMEWithContext mocks base method
+func (m *MockBucket) GetCNAMEWithContext(arg0 context.Context, arg1 *service.GetBucketCNAMEInput) (*service.GetBucketCNAMEOutput, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetCNAMEWithContext", arg0, arg1)
+	ret0, _ := ret[0].(*service.GetBucketCNAMEOutput)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetCNAMEWithContext indicates an expected call of GetCNAMEWithContext
+func (mr *MockBucketMockRecorder) GetCNAMEWithContext(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetCNAMEWithContext", reflect.TypeOf((*MockBucket)(nil).GetCNAMEWithContext), arg0, arg1)
+}
+
 // GetCORS mocks base method
 func (m *MockBucket) GetCORS() (*service.GetBucketCORSOutput, error) {
 	m.ctrl.T.Helper()
@@ -264,6 +565,21 @@ func (m *MockBucket) GetCORS() (*service.GetBucketCORSOutput, error) {
 func (mr *MockBucketMockRecorder) GetCORS() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetCORS", reflect.TypeOf((*MockBucket)(nil).GetCORS))
+}
+
+// GetCORSWithContext mocks base method
+func (m *MockBucket) GetCORSWithContext(arg0 context.Context) (*service.GetBucketCORSOutput, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetCORSWithContext", arg0)
+	ret0, _ := ret[0].(*service.GetBucketCORSOutput)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetCORSWithContext indicates an expected call of GetCORSWithContext
+func (mr *MockBucketMockRecorder) GetCORSWithContext(arg0 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetCORSWithContext", reflect.TypeOf((*MockBucket)(nil).GetCORSWithContext), arg0)
 }
 
 // GetExternalMirror mocks base method
@@ -281,6 +597,21 @@ func (mr *MockBucketMockRecorder) GetExternalMirror() *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetExternalMirror", reflect.TypeOf((*MockBucket)(nil).GetExternalMirror))
 }
 
+// GetExternalMirrorWithContext mocks base method
+func (m *MockBucket) GetExternalMirrorWithContext(arg0 context.Context) (*service.GetBucketExternalMirrorOutput, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetExternalMirrorWithContext", arg0)
+	ret0, _ := ret[0].(*service.GetBucketExternalMirrorOutput)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetExternalMirrorWithContext indicates an expected call of GetExternalMirrorWithContext
+func (mr *MockBucketMockRecorder) GetExternalMirrorWithContext(arg0 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetExternalMirrorWithContext", reflect.TypeOf((*MockBucket)(nil).GetExternalMirrorWithContext), arg0)
+}
+
 // GetLifecycle mocks base method
 func (m *MockBucket) GetLifecycle() (*service.GetBucketLifecycleOutput, error) {
 	m.ctrl.T.Helper()
@@ -294,6 +625,51 @@ func (m *MockBucket) GetLifecycle() (*service.GetBucketLifecycleOutput, error) {
 func (mr *MockBucketMockRecorder) GetLifecycle() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetLifecycle", reflect.TypeOf((*MockBucket)(nil).GetLifecycle))
+}
+
+// GetLifecycleWithContext mocks base method
+func (m *MockBucket) GetLifecycleWithContext(arg0 context.Context) (*service.GetBucketLifecycleOutput, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetLifecycleWithContext", arg0)
+	ret0, _ := ret[0].(*service.GetBucketLifecycleOutput)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetLifecycleWithContext indicates an expected call of GetLifecycleWithContext
+func (mr *MockBucketMockRecorder) GetLifecycleWithContext(arg0 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetLifecycleWithContext", reflect.TypeOf((*MockBucket)(nil).GetLifecycleWithContext), arg0)
+}
+
+// GetLogging mocks base method
+func (m *MockBucket) GetLogging() (*service.GetBucketLoggingOutput, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetLogging")
+	ret0, _ := ret[0].(*service.GetBucketLoggingOutput)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetLogging indicates an expected call of GetLogging
+func (mr *MockBucketMockRecorder) GetLogging() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetLogging", reflect.TypeOf((*MockBucket)(nil).GetLogging))
+}
+
+// GetLoggingWithContext mocks base method
+func (m *MockBucket) GetLoggingWithContext(arg0 context.Context) (*service.GetBucketLoggingOutput, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetLoggingWithContext", arg0)
+	ret0, _ := ret[0].(*service.GetBucketLoggingOutput)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetLoggingWithContext indicates an expected call of GetLoggingWithContext
+func (mr *MockBucketMockRecorder) GetLoggingWithContext(arg0 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetLoggingWithContext", reflect.TypeOf((*MockBucket)(nil).GetLoggingWithContext), arg0)
 }
 
 // GetNotification mocks base method
@@ -311,6 +687,21 @@ func (mr *MockBucketMockRecorder) GetNotification() *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetNotification", reflect.TypeOf((*MockBucket)(nil).GetNotification))
 }
 
+// GetNotificationWithContext mocks base method
+func (m *MockBucket) GetNotificationWithContext(arg0 context.Context) (*service.GetBucketNotificationOutput, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetNotificationWithContext", arg0)
+	ret0, _ := ret[0].(*service.GetBucketNotificationOutput)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetNotificationWithContext indicates an expected call of GetNotificationWithContext
+func (mr *MockBucketMockRecorder) GetNotificationWithContext(arg0 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetNotificationWithContext", reflect.TypeOf((*MockBucket)(nil).GetNotificationWithContext), arg0)
+}
+
 // GetObject mocks base method
 func (m *MockBucket) GetObject(arg0 string, arg1 *service.GetObjectInput) (*service.GetObjectOutput, error) {
 	m.ctrl.T.Helper()
@@ -324,6 +715,21 @@ func (m *MockBucket) GetObject(arg0 string, arg1 *service.GetObjectInput) (*serv
 func (mr *MockBucketMockRecorder) GetObject(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetObject", reflect.TypeOf((*MockBucket)(nil).GetObject), arg0, arg1)
+}
+
+// GetObjectWithContext mocks base method
+func (m *MockBucket) GetObjectWithContext(arg0 context.Context, arg1 string, arg2 *service.GetObjectInput) (*service.GetObjectOutput, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetObjectWithContext", arg0, arg1, arg2)
+	ret0, _ := ret[0].(*service.GetObjectOutput)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetObjectWithContext indicates an expected call of GetObjectWithContext
+func (mr *MockBucketMockRecorder) GetObjectWithContext(arg0, arg1, arg2 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetObjectWithContext", reflect.TypeOf((*MockBucket)(nil).GetObjectWithContext), arg0, arg1, arg2)
 }
 
 // GetPolicy mocks base method
@@ -341,6 +747,21 @@ func (mr *MockBucketMockRecorder) GetPolicy() *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetPolicy", reflect.TypeOf((*MockBucket)(nil).GetPolicy))
 }
 
+// GetPolicyWithContext mocks base method
+func (m *MockBucket) GetPolicyWithContext(arg0 context.Context) (*service.GetBucketPolicyOutput, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetPolicyWithContext", arg0)
+	ret0, _ := ret[0].(*service.GetBucketPolicyOutput)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetPolicyWithContext indicates an expected call of GetPolicyWithContext
+func (mr *MockBucketMockRecorder) GetPolicyWithContext(arg0 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetPolicyWithContext", reflect.TypeOf((*MockBucket)(nil).GetPolicyWithContext), arg0)
+}
+
 // GetStatistics mocks base method
 func (m *MockBucket) GetStatistics() (*service.GetBucketStatisticsOutput, error) {
 	m.ctrl.T.Helper()
@@ -354,6 +775,21 @@ func (m *MockBucket) GetStatistics() (*service.GetBucketStatisticsOutput, error)
 func (mr *MockBucketMockRecorder) GetStatistics() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetStatistics", reflect.TypeOf((*MockBucket)(nil).GetStatistics))
+}
+
+// GetStatisticsWithContext mocks base method
+func (m *MockBucket) GetStatisticsWithContext(arg0 context.Context) (*service.GetBucketStatisticsOutput, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetStatisticsWithContext", arg0)
+	ret0, _ := ret[0].(*service.GetBucketStatisticsOutput)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetStatisticsWithContext indicates an expected call of GetStatisticsWithContext
+func (mr *MockBucketMockRecorder) GetStatisticsWithContext(arg0 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetStatisticsWithContext", reflect.TypeOf((*MockBucket)(nil).GetStatisticsWithContext), arg0)
 }
 
 // Head mocks base method
@@ -386,6 +822,36 @@ func (mr *MockBucketMockRecorder) HeadObject(arg0, arg1 interface{}) *gomock.Cal
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "HeadObject", reflect.TypeOf((*MockBucket)(nil).HeadObject), arg0, arg1)
 }
 
+// HeadObjectWithContext mocks base method
+func (m *MockBucket) HeadObjectWithContext(arg0 context.Context, arg1 string, arg2 *service.HeadObjectInput) (*service.HeadObjectOutput, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "HeadObjectWithContext", arg0, arg1, arg2)
+	ret0, _ := ret[0].(*service.HeadObjectOutput)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// HeadObjectWithContext indicates an expected call of HeadObjectWithContext
+func (mr *MockBucketMockRecorder) HeadObjectWithContext(arg0, arg1, arg2 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "HeadObjectWithContext", reflect.TypeOf((*MockBucket)(nil).HeadObjectWithContext), arg0, arg1, arg2)
+}
+
+// HeadWithContext mocks base method
+func (m *MockBucket) HeadWithContext(arg0 context.Context) (*service.HeadBucketOutput, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "HeadWithContext", arg0)
+	ret0, _ := ret[0].(*service.HeadBucketOutput)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// HeadWithContext indicates an expected call of HeadWithContext
+func (mr *MockBucketMockRecorder) HeadWithContext(arg0 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "HeadWithContext", reflect.TypeOf((*MockBucket)(nil).HeadWithContext), arg0)
+}
+
 // ImageProcess mocks base method
 func (m *MockBucket) ImageProcess(arg0 string, arg1 *service.ImageProcessInput) (*service.ImageProcessOutput, error) {
 	m.ctrl.T.Helper()
@@ -401,6 +867,21 @@ func (mr *MockBucketMockRecorder) ImageProcess(arg0, arg1 interface{}) *gomock.C
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ImageProcess", reflect.TypeOf((*MockBucket)(nil).ImageProcess), arg0, arg1)
 }
 
+// ImageProcessWithContext mocks base method
+func (m *MockBucket) ImageProcessWithContext(arg0 context.Context, arg1 string, arg2 *service.ImageProcessInput) (*service.ImageProcessOutput, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ImageProcessWithContext", arg0, arg1, arg2)
+	ret0, _ := ret[0].(*service.ImageProcessOutput)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ImageProcessWithContext indicates an expected call of ImageProcessWithContext
+func (mr *MockBucketMockRecorder) ImageProcessWithContext(arg0, arg1, arg2 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ImageProcessWithContext", reflect.TypeOf((*MockBucket)(nil).ImageProcessWithContext), arg0, arg1, arg2)
+}
+
 // InitiateMultipartUpload mocks base method
 func (m *MockBucket) InitiateMultipartUpload(arg0 string, arg1 *service.InitiateMultipartUploadInput) (*service.InitiateMultipartUploadOutput, error) {
 	m.ctrl.T.Helper()
@@ -414,6 +895,21 @@ func (m *MockBucket) InitiateMultipartUpload(arg0 string, arg1 *service.Initiate
 func (mr *MockBucketMockRecorder) InitiateMultipartUpload(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "InitiateMultipartUpload", reflect.TypeOf((*MockBucket)(nil).InitiateMultipartUpload), arg0, arg1)
+}
+
+// InitiateMultipartUploadWithContext mocks base method
+func (m *MockBucket) InitiateMultipartUploadWithContext(arg0 context.Context, arg1 string, arg2 *service.InitiateMultipartUploadInput) (*service.InitiateMultipartUploadOutput, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "InitiateMultipartUploadWithContext", arg0, arg1, arg2)
+	ret0, _ := ret[0].(*service.InitiateMultipartUploadOutput)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// InitiateMultipartUploadWithContext indicates an expected call of InitiateMultipartUploadWithContext
+func (mr *MockBucketMockRecorder) InitiateMultipartUploadWithContext(arg0, arg1, arg2 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "InitiateMultipartUploadWithContext", reflect.TypeOf((*MockBucket)(nil).InitiateMultipartUploadWithContext), arg0, arg1, arg2)
 }
 
 // ListMultipart mocks base method
@@ -446,6 +942,36 @@ func (mr *MockBucketMockRecorder) ListMultipartUploads(arg0 interface{}) *gomock
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListMultipartUploads", reflect.TypeOf((*MockBucket)(nil).ListMultipartUploads), arg0)
 }
 
+// ListMultipartUploadsWithContext mocks base method
+func (m *MockBucket) ListMultipartUploadsWithContext(arg0 context.Context, arg1 *service.ListMultipartUploadsInput) (*service.ListMultipartUploadsOutput, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ListMultipartUploadsWithContext", arg0, arg1)
+	ret0, _ := ret[0].(*service.ListMultipartUploadsOutput)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ListMultipartUploadsWithContext indicates an expected call of ListMultipartUploadsWithContext
+func (mr *MockBucketMockRecorder) ListMultipartUploadsWithContext(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListMultipartUploadsWithContext", reflect.TypeOf((*MockBucket)(nil).ListMultipartUploadsWithContext), arg0, arg1)
+}
+
+// ListMultipartWithContext mocks base method
+func (m *MockBucket) ListMultipartWithContext(arg0 context.Context, arg1 string, arg2 *service.ListMultipartInput) (*service.ListMultipartOutput, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ListMultipartWithContext", arg0, arg1, arg2)
+	ret0, _ := ret[0].(*service.ListMultipartOutput)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ListMultipartWithContext indicates an expected call of ListMultipartWithContext
+func (mr *MockBucketMockRecorder) ListMultipartWithContext(arg0, arg1, arg2 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListMultipartWithContext", reflect.TypeOf((*MockBucket)(nil).ListMultipartWithContext), arg0, arg1, arg2)
+}
+
 // ListObjects mocks base method
 func (m *MockBucket) ListObjects(arg0 *service.ListObjectsInput) (*service.ListObjectsOutput, error) {
 	m.ctrl.T.Helper()
@@ -461,6 +987,21 @@ func (mr *MockBucketMockRecorder) ListObjects(arg0 interface{}) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListObjects", reflect.TypeOf((*MockBucket)(nil).ListObjects), arg0)
 }
 
+// ListObjectsWithContext mocks base method
+func (m *MockBucket) ListObjectsWithContext(arg0 context.Context, arg1 *service.ListObjectsInput) (*service.ListObjectsOutput, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ListObjectsWithContext", arg0, arg1)
+	ret0, _ := ret[0].(*service.ListObjectsOutput)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ListObjectsWithContext indicates an expected call of ListObjectsWithContext
+func (mr *MockBucketMockRecorder) ListObjectsWithContext(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListObjectsWithContext", reflect.TypeOf((*MockBucket)(nil).ListObjectsWithContext), arg0, arg1)
+}
+
 // OptionsObject mocks base method
 func (m *MockBucket) OptionsObject(arg0 string, arg1 *service.OptionsObjectInput) (*service.OptionsObjectOutput, error) {
 	m.ctrl.T.Helper()
@@ -474,6 +1015,21 @@ func (m *MockBucket) OptionsObject(arg0 string, arg1 *service.OptionsObjectInput
 func (mr *MockBucketMockRecorder) OptionsObject(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "OptionsObject", reflect.TypeOf((*MockBucket)(nil).OptionsObject), arg0, arg1)
+}
+
+// OptionsObjectWithContext mocks base method
+func (m *MockBucket) OptionsObjectWithContext(arg0 context.Context, arg1 string, arg2 *service.OptionsObjectInput) (*service.OptionsObjectOutput, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "OptionsObjectWithContext", arg0, arg1, arg2)
+	ret0, _ := ret[0].(*service.OptionsObjectOutput)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// OptionsObjectWithContext indicates an expected call of OptionsObjectWithContext
+func (mr *MockBucketMockRecorder) OptionsObjectWithContext(arg0, arg1, arg2 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "OptionsObjectWithContext", reflect.TypeOf((*MockBucket)(nil).OptionsObjectWithContext), arg0, arg1, arg2)
 }
 
 // Put mocks base method
@@ -506,6 +1062,51 @@ func (mr *MockBucketMockRecorder) PutACL(arg0 interface{}) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PutACL", reflect.TypeOf((*MockBucket)(nil).PutACL), arg0)
 }
 
+// PutACLWithContext mocks base method
+func (m *MockBucket) PutACLWithContext(arg0 context.Context, arg1 *service.PutBucketACLInput) (*service.PutBucketACLOutput, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "PutACLWithContext", arg0, arg1)
+	ret0, _ := ret[0].(*service.PutBucketACLOutput)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// PutACLWithContext indicates an expected call of PutACLWithContext
+func (mr *MockBucketMockRecorder) PutACLWithContext(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PutACLWithContext", reflect.TypeOf((*MockBucket)(nil).PutACLWithContext), arg0, arg1)
+}
+
+// PutCNAME mocks base method
+func (m *MockBucket) PutCNAME(arg0 *service.PutBucketCNAMEInput) (*service.PutBucketCNAMEOutput, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "PutCNAME", arg0)
+	ret0, _ := ret[0].(*service.PutBucketCNAMEOutput)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// PutCNAME indicates an expected call of PutCNAME
+func (mr *MockBucketMockRecorder) PutCNAME(arg0 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PutCNAME", reflect.TypeOf((*MockBucket)(nil).PutCNAME), arg0)
+}
+
+// PutCNAMEWithContext mocks base method
+func (m *MockBucket) PutCNAMEWithContext(arg0 context.Context, arg1 *service.PutBucketCNAMEInput) (*service.PutBucketCNAMEOutput, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "PutCNAMEWithContext", arg0, arg1)
+	ret0, _ := ret[0].(*service.PutBucketCNAMEOutput)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// PutCNAMEWithContext indicates an expected call of PutCNAMEWithContext
+func (mr *MockBucketMockRecorder) PutCNAMEWithContext(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PutCNAMEWithContext", reflect.TypeOf((*MockBucket)(nil).PutCNAMEWithContext), arg0, arg1)
+}
+
 // PutCORS mocks base method
 func (m *MockBucket) PutCORS(arg0 *service.PutBucketCORSInput) (*service.PutBucketCORSOutput, error) {
 	m.ctrl.T.Helper()
@@ -519,6 +1120,21 @@ func (m *MockBucket) PutCORS(arg0 *service.PutBucketCORSInput) (*service.PutBuck
 func (mr *MockBucketMockRecorder) PutCORS(arg0 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PutCORS", reflect.TypeOf((*MockBucket)(nil).PutCORS), arg0)
+}
+
+// PutCORSWithContext mocks base method
+func (m *MockBucket) PutCORSWithContext(arg0 context.Context, arg1 *service.PutBucketCORSInput) (*service.PutBucketCORSOutput, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "PutCORSWithContext", arg0, arg1)
+	ret0, _ := ret[0].(*service.PutBucketCORSOutput)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// PutCORSWithContext indicates an expected call of PutCORSWithContext
+func (mr *MockBucketMockRecorder) PutCORSWithContext(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PutCORSWithContext", reflect.TypeOf((*MockBucket)(nil).PutCORSWithContext), arg0, arg1)
 }
 
 // PutExternalMirror mocks base method
@@ -536,6 +1152,21 @@ func (mr *MockBucketMockRecorder) PutExternalMirror(arg0 interface{}) *gomock.Ca
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PutExternalMirror", reflect.TypeOf((*MockBucket)(nil).PutExternalMirror), arg0)
 }
 
+// PutExternalMirrorWithContext mocks base method
+func (m *MockBucket) PutExternalMirrorWithContext(arg0 context.Context, arg1 *service.PutBucketExternalMirrorInput) (*service.PutBucketExternalMirrorOutput, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "PutExternalMirrorWithContext", arg0, arg1)
+	ret0, _ := ret[0].(*service.PutBucketExternalMirrorOutput)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// PutExternalMirrorWithContext indicates an expected call of PutExternalMirrorWithContext
+func (mr *MockBucketMockRecorder) PutExternalMirrorWithContext(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PutExternalMirrorWithContext", reflect.TypeOf((*MockBucket)(nil).PutExternalMirrorWithContext), arg0, arg1)
+}
+
 // PutLifecycle mocks base method
 func (m *MockBucket) PutLifecycle(arg0 *service.PutBucketLifecycleInput) (*service.PutBucketLifecycleOutput, error) {
 	m.ctrl.T.Helper()
@@ -549,6 +1180,51 @@ func (m *MockBucket) PutLifecycle(arg0 *service.PutBucketLifecycleInput) (*servi
 func (mr *MockBucketMockRecorder) PutLifecycle(arg0 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PutLifecycle", reflect.TypeOf((*MockBucket)(nil).PutLifecycle), arg0)
+}
+
+// PutLifecycleWithContext mocks base method
+func (m *MockBucket) PutLifecycleWithContext(arg0 context.Context, arg1 *service.PutBucketLifecycleInput) (*service.PutBucketLifecycleOutput, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "PutLifecycleWithContext", arg0, arg1)
+	ret0, _ := ret[0].(*service.PutBucketLifecycleOutput)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// PutLifecycleWithContext indicates an expected call of PutLifecycleWithContext
+func (mr *MockBucketMockRecorder) PutLifecycleWithContext(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PutLifecycleWithContext", reflect.TypeOf((*MockBucket)(nil).PutLifecycleWithContext), arg0, arg1)
+}
+
+// PutLogging mocks base method
+func (m *MockBucket) PutLogging(arg0 *service.PutBucketLoggingInput) (*service.PutBucketLoggingOutput, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "PutLogging", arg0)
+	ret0, _ := ret[0].(*service.PutBucketLoggingOutput)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// PutLogging indicates an expected call of PutLogging
+func (mr *MockBucketMockRecorder) PutLogging(arg0 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PutLogging", reflect.TypeOf((*MockBucket)(nil).PutLogging), arg0)
+}
+
+// PutLoggingWithContext mocks base method
+func (m *MockBucket) PutLoggingWithContext(arg0 context.Context, arg1 *service.PutBucketLoggingInput) (*service.PutBucketLoggingOutput, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "PutLoggingWithContext", arg0, arg1)
+	ret0, _ := ret[0].(*service.PutBucketLoggingOutput)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// PutLoggingWithContext indicates an expected call of PutLoggingWithContext
+func (mr *MockBucketMockRecorder) PutLoggingWithContext(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PutLoggingWithContext", reflect.TypeOf((*MockBucket)(nil).PutLoggingWithContext), arg0, arg1)
 }
 
 // PutNotification mocks base method
@@ -566,6 +1242,21 @@ func (mr *MockBucketMockRecorder) PutNotification(arg0 interface{}) *gomock.Call
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PutNotification", reflect.TypeOf((*MockBucket)(nil).PutNotification), arg0)
 }
 
+// PutNotificationWithContext mocks base method
+func (m *MockBucket) PutNotificationWithContext(arg0 context.Context, arg1 *service.PutBucketNotificationInput) (*service.PutBucketNotificationOutput, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "PutNotificationWithContext", arg0, arg1)
+	ret0, _ := ret[0].(*service.PutBucketNotificationOutput)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// PutNotificationWithContext indicates an expected call of PutNotificationWithContext
+func (mr *MockBucketMockRecorder) PutNotificationWithContext(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PutNotificationWithContext", reflect.TypeOf((*MockBucket)(nil).PutNotificationWithContext), arg0, arg1)
+}
+
 // PutObject mocks base method
 func (m *MockBucket) PutObject(arg0 string, arg1 *service.PutObjectInput) (*service.PutObjectOutput, error) {
 	m.ctrl.T.Helper()
@@ -579,6 +1270,21 @@ func (m *MockBucket) PutObject(arg0 string, arg1 *service.PutObjectInput) (*serv
 func (mr *MockBucketMockRecorder) PutObject(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PutObject", reflect.TypeOf((*MockBucket)(nil).PutObject), arg0, arg1)
+}
+
+// PutObjectWithContext mocks base method
+func (m *MockBucket) PutObjectWithContext(arg0 context.Context, arg1 string, arg2 *service.PutObjectInput) (*service.PutObjectOutput, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "PutObjectWithContext", arg0, arg1, arg2)
+	ret0, _ := ret[0].(*service.PutObjectOutput)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// PutObjectWithContext indicates an expected call of PutObjectWithContext
+func (mr *MockBucketMockRecorder) PutObjectWithContext(arg0, arg1, arg2 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PutObjectWithContext", reflect.TypeOf((*MockBucket)(nil).PutObjectWithContext), arg0, arg1, arg2)
 }
 
 // PutPolicy mocks base method
@@ -596,6 +1302,36 @@ func (mr *MockBucketMockRecorder) PutPolicy(arg0 interface{}) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PutPolicy", reflect.TypeOf((*MockBucket)(nil).PutPolicy), arg0)
 }
 
+// PutPolicyWithContext mocks base method
+func (m *MockBucket) PutPolicyWithContext(arg0 context.Context, arg1 *service.PutBucketPolicyInput) (*service.PutBucketPolicyOutput, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "PutPolicyWithContext", arg0, arg1)
+	ret0, _ := ret[0].(*service.PutBucketPolicyOutput)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// PutPolicyWithContext indicates an expected call of PutPolicyWithContext
+func (mr *MockBucketMockRecorder) PutPolicyWithContext(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PutPolicyWithContext", reflect.TypeOf((*MockBucket)(nil).PutPolicyWithContext), arg0, arg1)
+}
+
+// PutWithContext mocks base method
+func (m *MockBucket) PutWithContext(arg0 context.Context) (*service.PutBucketOutput, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "PutWithContext", arg0)
+	ret0, _ := ret[0].(*service.PutBucketOutput)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// PutWithContext indicates an expected call of PutWithContext
+func (mr *MockBucketMockRecorder) PutWithContext(arg0 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PutWithContext", reflect.TypeOf((*MockBucket)(nil).PutWithContext), arg0)
+}
+
 // UploadMultipart mocks base method
 func (m *MockBucket) UploadMultipart(arg0 string, arg1 *service.UploadMultipartInput) (*service.UploadMultipartOutput, error) {
 	m.ctrl.T.Helper()
@@ -609,4 +1345,19 @@ func (m *MockBucket) UploadMultipart(arg0 string, arg1 *service.UploadMultipartI
 func (mr *MockBucketMockRecorder) UploadMultipart(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UploadMultipart", reflect.TypeOf((*MockBucket)(nil).UploadMultipart), arg0, arg1)
+}
+
+// UploadMultipartWithContext mocks base method
+func (m *MockBucket) UploadMultipartWithContext(arg0 context.Context, arg1 string, arg2 *service.UploadMultipartInput) (*service.UploadMultipartOutput, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UploadMultipartWithContext", arg0, arg1, arg2)
+	ret0, _ := ret[0].(*service.UploadMultipartOutput)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// UploadMultipartWithContext indicates an expected call of UploadMultipartWithContext
+func (mr *MockBucketMockRecorder) UploadMultipartWithContext(arg0, arg1, arg2 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UploadMultipartWithContext", reflect.TypeOf((*MockBucket)(nil).UploadMultipartWithContext), arg0, arg1, arg2)
 }
