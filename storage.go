@@ -261,7 +261,7 @@ func (s *Storage) write(ctx context.Context, path string, r io.Reader, opt *pair
 
 	input := &service.PutObjectInput{
 		ContentLength: &opt.Size,
-		Body:          r,
+		Body:          io.LimitReader(r, opt.Size),
 	}
 	if opt.HasChecksum {
 		input.ContentMD5 = &opt.Checksum
@@ -294,7 +294,7 @@ func (s *Storage) writeIndexSegment(ctx context.Context, seg segment.Segment, r 
 		PartNumber:    service.Int(p.Index),
 		UploadID:      service.String(seg.ID()),
 		ContentLength: &size,
-		Body:          r,
+		Body:          io.LimitReader(r, size),
 	})
 	if err != nil {
 		return
