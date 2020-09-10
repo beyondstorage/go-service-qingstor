@@ -142,8 +142,8 @@ github.com/qingstor/log v0.0.0-20200804082313-615256cccabc h1:633tgwvkk8O26HZD/u
 github.com/qingstor/log v0.0.0-20200804082313-615256cccabc/go.mod h1:XfNhERXtkg/S9MWaMOk/m7mrmj4vcWDvhw17hmH4JGQ=
 github.com/qingstor/qingstor-sdk-go/v4 v4.0.0 h1:9j+4MhIxhZr3bHkYhVfAVjvsvtwI0I6gB5Xsx6XMPNs=
 github.com/qingstor/qingstor-sdk-go/v4 v4.0.0/go.mod h1:WM7DpsJxaOLCAX1K7R4KOBvzEpM4gfAjyN45IIV6rZ0=
-github.com/qingstor/qingstor-sdk-go/v4 v4.1.0 h1:0cMf+xHbT+1IeXtVEWnBMZcWoNyU8GQvcmpClho6vww=
-github.com/qingstor/qingstor-sdk-go/v4 v4.1.0/go.mod h1:Uu3Bs4hnGW4dEWD+S3j1onwmS18jEcLVIZHknlo1q6o=
+github.com/qingstor/qingstor-sdk-go/v4 v4.1.1-0.20200907090207-bb758948ae4a h1:tKxWSZHPZdT4w018691/sDvC2t4agBvB9yjAoh8sOjE=
+github.com/qingstor/qingstor-sdk-go/v4 v4.1.1-0.20200907090207-bb758948ae4a/go.mod h1:Uu3Bs4hnGW4dEWD+S3j1onwmS18jEcLVIZHknlo1q6o=
 github.com/qiniu/api.v7/v7 v7.5.0/go.mod h1:VE5oC5rkE1xul0u1S2N0b2Uxq9/6hZzhyqjgK25XDcM=
 github.com/rogpeppe/go-internal v1.3.0/go.mod h1:M8bDsm7K2OlrFYOpmOWEs/qY81heoFRclV5y23lUDJ4=
 github.com/satori/go.uuid v1.2.0/go.mod h1:dA0hQrYB0VpLJoorglMZABFdXlWrHn1NEOzdhQKdks0=
