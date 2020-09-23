@@ -15,11 +15,9 @@ import (
 	"github.com/qingstor/qingstor-sdk-go/v4/service"
 	"github.com/stretchr/testify/assert"
 
-	"github.com/aos-dev/go-storage/v2/pkg/segment"
+	"github.com/aos-dev/go-storage/v2/pairs"
 	"github.com/aos-dev/go-storage/v2/services"
-	"github.com/aos-dev/go-storage/v2/types"
-	"github.com/aos-dev/go-storage/v2/types/info"
-	"github.com/aos-dev/go-storage/v2/types/pairs"
+	. "github.com/aos-dev/go-storage/v2/types"
 )
 
 func TestStorage_String(t *testing.T) {
@@ -118,12 +116,11 @@ func TestStorage_AbortSegment(t *testing.T) {
 	// Test valid segment.
 	path := uuid.New().String()
 	id := uuid.New().String()
-	seg := segment.NewIndexBasedSegment(path, id)
-	mockBucket.EXPECT().AbortMultipartUploadWithContext(gomock.Eq(context.Background()), gomock.Any(), gomock.Any()).
-		Do(func(ctx context.Context, inputPath string, input *service.AbortMultipartUploadInput) {
-			assert.Equal(t, path, inputPath)
-			assert.Equal(t, id, *input.UploadID)
-		})
+	seg := NewIndexBasedSegment(path, id)
+	mockBucket.EXPECT().AbortMultipartUpload(gomock.Any(), gomock.Any()).Do(func(inputPath string, input *service.AbortMultipartUploadInput) {
+		assert.Equal(t, path, inputPath)
+		assert.Equal(t, id, *input.UploadID)
+	})
 	err := client.AbortSegment(seg)
 	assert.NoError(t, err)
 }
@@ -136,7 +133,7 @@ func TestStorage_CompleteSegment(t *testing.T) {
 		mockBucket := NewMockBucket(ctrl)
 
 		path, id := uuid.New().String(), uuid.New().String()
-		seg := segment.NewIndexBasedSegment(path, id)
+		seg := NewIndexBasedSegment(path, id)
 
 		client := Storage{
 			bucket: mockBucket,
@@ -244,15 +241,15 @@ func TestStorage_InitSegment(t *testing.T) {
 	tests := []struct {
 		name     string
 		path     string
-		segments map[string]*segment.IndexBasedSegment
+		segments map[string]*IndexBasedSegment
 		hasCall  bool
 		mockFn   func(context.Context, string, *service.InitiateMultipartUploadInput) (*service.InitiateMultipartUploadOutput, error)
 		hasError bool
 		wantErr  error
 	}{
 		{
-			"valid init segment",
-			"test", map[string]*segment.IndexBasedSegment{},
+			"valid init .",
+			"test", map[string]*IndexBasedSegment{},
 			true,
 			func(ctx context.Context, inputPath string, input *service.InitiateMultipartUploadInput) (*service.InitiateMultipartUploadOutput, error) {
 				assert.Equal(t, "test", inputPath)
@@ -265,10 +262,10 @@ func TestStorage_InitSegment(t *testing.T) {
 			false, nil,
 		},
 		{
-			"segment already exist",
+			". already exist",
 			"test",
-			map[string]*segment.IndexBasedSegment{
-				"test": segment.NewIndexBasedSegment("xxx", "test_segment_id"),
+			map[string]*IndexBasedSegment{
+				"test": NewIndexBasedSegment("xxx", "test_segment_id"),
 			},
 			true,
 			func(ctx context.Context, inputPath string, input *service.InitiateMultipartUploadInput) (*service.InitiateMultipartUploadOutput, error) {
@@ -317,7 +314,7 @@ func TestStorage_ListDir(t *testing.T) {
 		name   string
 		path   string
 		output *service.ListObjectsOutput
-		items  []*types.Object
+		items  []*Object
 		err    error
 	}{
 		{
@@ -331,12 +328,14 @@ func TestStorage_ListDir(t *testing.T) {
 					},
 				},
 			},
-			[]*types.Object{
+			[]*Object{
 				{
-					ID:         keys[0],
-					Name:       keys[0],
-					Type:       types.ObjectTypeFile,
-					ObjectMeta: info.NewObjectMeta(),
+					ID:   keys[0],
+					Name: keys[0],
+					Type: ObjectTypeFile,
+					ObjectMeta: NewObjectMeta().
+						SetSize(0).
+						SetUpdatedAt(time.Time{}),
 				},
 			},
 			nil,
@@ -351,12 +350,12 @@ func TestStorage_ListDir(t *testing.T) {
 					service.String(keys[2]),
 				},
 			},
-			[]*types.Object{
+			[]*Object{
 				{
 					ID:         keys[2],
 					Name:       keys[2],
-					Type:       types.ObjectTypeDir,
-					ObjectMeta: info.NewObjectMeta(),
+					Type:       ObjectTypeDir,
+					ObjectMeta: NewObjectMeta(),
 				},
 			},
 			nil,
@@ -368,14 +367,14 @@ func TestStorage_ListDir(t *testing.T) {
 				NextMarker: service.String("test_marker"),
 				HasMore:    service.Bool(true),
 			},
-			[]*types.Object{},
+			[]*Object{},
 			nil,
 		},
 		{
 			"list with error return",
 			uuid.New().String(),
 			nil,
-			[]*types.Object{},
+			[]*Object{},
 			&qerror.QingStorError{
 				StatusCode: 401,
 			},
@@ -395,16 +394,16 @@ func TestStorage_ListDir(t *testing.T) {
 					},
 				},
 			},
-			[]*types.Object{
+			[]*Object{
 				{
-					ID:        keys[5],
-					Name:      keys[5],
-					Type:      types.ObjectTypeFile,
-					Size:      1233,
-					UpdatedAt: time.Unix(1233, 0),
-					ObjectMeta: info.NewObjectMeta().
+					ID:   keys[5],
+					Name: keys[5],
+					Type: ObjectTypeFile,
+					ObjectMeta: NewObjectMeta().
 						SetContentType("application/json").
-						SetETag("xxxxx"),
+						SetETag("xxxxx").
+						SetSize(1233).
+						SetUpdatedAt(time.Unix(1233, 0)),
 				},
 			},
 			nil,
@@ -424,7 +423,7 @@ func TestStorage_ListDir(t *testing.T) {
 					},
 				},
 			},
-			[]*types.Object{},
+			[]*Object{},
 			nil,
 		},
 	}
@@ -438,20 +437,28 @@ func TestStorage_ListDir(t *testing.T) {
 					assert.Equal(t, path, *input.Prefix)
 					assert.Equal(t, 200, *input.Limit)
 					return v.output, v.err
-				})
+				}).AnyTimes()
 
 			client := Storage{
 				bucket: mockBucket,
 			}
 
-			items := make([]*types.Object, 0)
+			items := make([]*Object, 0)
 
-			err := client.ListDir(path, pairs.WithDirFunc(func(object *types.Object) {
-				items = append(items, object)
-			}), pairs.WithFileFunc(func(object *types.Object) {
-				items = append(items, object)
-			}))
-			assert.Equal(t, v.err == nil, err == nil)
+			it, err := client.ListDir(path)
+			if err != nil {
+				t.Error(err)
+			}
+			for {
+				o, err := it.Next()
+				if err == IterateDone {
+					break
+				}
+				assert.Equal(t, err == nil, v.err == nil)
+
+				items = append(items, o)
+			}
+
 			assert.EqualValues(t, v.items, items)
 		})
 	}
@@ -484,9 +491,12 @@ func TestStorage_ListPrefix(t *testing.T) {
 		bucket: mockBucket,
 	}
 
-	err := client.ListPrefix(path, pairs.WithObjectFunc(func(object *types.Object) {
-		assert.Equal(t, object.ID, key)
-	}))
+	it, err := client.ListPrefix(path)
+	if err != nil {
+		t.Error(err)
+	}
+	object, err := it.Next()
+	assert.Equal(t, object.ID, key)
 	assert.Nil(t, err)
 }
 
@@ -565,16 +575,13 @@ func TestStorage_Read(t *testing.T) {
 			bucket: mockBucket,
 		}
 
-		r, err := client.Read(v.path)
+		var buf bytes.Buffer
+		err := client.Read(v.path, &buf)
 		if v.hasError {
 			assert.Error(t, err)
-			assert.Nil(t, r)
 			assert.True(t, errors.Is(err, v.wantErr))
 		} else {
-			assert.NotNil(t, r)
-			content, rerr := ioutil.ReadAll(r)
-			assert.NoError(t, rerr)
-			assert.Equal(t, "content", string(content))
+			assert.Equal(t, "content", buf.String())
 		}
 	}
 }
@@ -623,8 +630,8 @@ func TestStorage_Stat(t *testing.T) {
 		} else {
 			assert.NoError(t, err)
 			assert.NotNil(t, o)
-			assert.Equal(t, types.ObjectTypeFile, o.Type)
-			assert.Equal(t, int64(100), o.Size)
+			assert.Equal(t, ObjectTypeFile, o.Type)
+			assert.Equal(t, int64(100), o.MustGetSize())
 			contentType, ok := o.GetContentType()
 			assert.True(t, ok)
 			assert.Equal(t, "test_content_type", contentType)
@@ -682,14 +689,14 @@ func TestStorage_Write(t *testing.T) {
 }
 
 func TestStorage_WriteSegment(t *testing.T) {
-	t.Run("valid segment", func(t *testing.T) {
+	t.Run("valid .", func(t *testing.T) {
 		ctrl := gomock.NewController(t)
 		defer ctrl.Finish()
 
 		mockBucket := NewMockBucket(ctrl)
 
 		path, id := uuid.New().String(), uuid.New().String()
-		seg := segment.NewIndexBasedSegment(path, id)
+		seg := NewIndexBasedSegment(path, id)
 
 		client := Storage{
 			bucket: mockBucket,
@@ -720,7 +727,7 @@ func TestStorage_ListPrefixSegments(t *testing.T) {
 	tests := []struct {
 		name   string
 		output *service.ListMultipartUploadsOutput
-		items  []segment.Segment
+		items  []Segment
 		err    error
 	}{
 		{
@@ -734,8 +741,8 @@ func TestStorage_ListPrefixSegments(t *testing.T) {
 					},
 				},
 			},
-			[]segment.Segment{
-				segment.NewIndexBasedSegment(keys[0], keys[1]),
+			[]Segment{
+				NewIndexBasedSegment(keys[0], keys[1]),
 			},
 			nil,
 		},
@@ -751,15 +758,15 @@ func TestStorage_ListPrefixSegments(t *testing.T) {
 					},
 				},
 			},
-			[]segment.Segment{
-				segment.NewIndexBasedSegment(keys[1], keys[2]),
+			[]Segment{
+				NewIndexBasedSegment(keys[1], keys[2]),
 			},
 			nil,
 		},
 		{
 			"list with error return",
 			nil,
-			[]segment.Segment{},
+			[]Segment{},
 			&qerror.QingStorError{
 				StatusCode: 401,
 			},
@@ -781,13 +788,22 @@ func TestStorage_ListPrefixSegments(t *testing.T) {
 				bucket: mockBucket,
 			}
 
-			items := make([]segment.Segment, 0)
+			items := make([]Segment, 0)
 
-			err := client.ListPrefixSegments(path,
-				pairs.WithSegmentFunc(func(segment segment.Segment) {
-					items = append(items, segment)
-				}),
-			)
+			it, err := client.ListPrefixSegments(path)
+			if err != nil {
+				t.Error(err)
+			}
+			for {
+				seg, err := it.Next()
+				if err == IterateDone {
+					break
+				}
+				if err != nil {
+					t.Error(err)
+				}
+				items = append(items, seg)
+			}
 			assert.Equal(t, v.err == nil, err == nil)
 			assert.Equal(t, v.items, items)
 		})

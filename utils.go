@@ -14,14 +14,12 @@ import (
 	qserror "github.com/qingstor/qingstor-sdk-go/v4/request/errors"
 	"github.com/qingstor/qingstor-sdk-go/v4/service"
 
-	"github.com/aos-dev/go-storage/v2"
+	ps "github.com/aos-dev/go-storage/v2/pairs"
 	"github.com/aos-dev/go-storage/v2/pkg/credential"
 	"github.com/aos-dev/go-storage/v2/pkg/headers"
 	"github.com/aos-dev/go-storage/v2/pkg/httpclient"
 	"github.com/aos-dev/go-storage/v2/services"
-	"github.com/aos-dev/go-storage/v2/types"
-	"github.com/aos-dev/go-storage/v2/types/info"
-	ps "github.com/aos-dev/go-storage/v2/types/pairs"
+	typ "github.com/aos-dev/go-storage/v2/types"
 )
 
 // Service is the qingstor service config.
@@ -60,22 +58,22 @@ func (s *Storage) String() string {
 }
 
 // New will create both Servicer and Storager.
-func New(pairs ...*types.Pair) (storage.Servicer, storage.Storager, error) {
+func New(pairs ...*typ.Pair) (typ.Servicer, typ.Storager, error) {
 	return newServicerAndStorager(pairs...)
 }
 
 // NewServicer will create Servicer only.
-func NewServicer(pairs ...*types.Pair) (storage.Servicer, error) {
+func NewServicer(pairs ...*typ.Pair) (typ.Servicer, error) {
 	return newServicer(pairs...)
 }
 
 // NewStorager will create Storager only.
-func NewStorager(pairs ...*types.Pair) (storage.Storager, error) {
+func NewStorager(pairs ...*typ.Pair) (typ.Storager, error) {
 	_, store, err := newServicerAndStorager(pairs...)
 	return store, err
 }
 
-func newServicer(pairs ...*types.Pair) (srv *Service, err error) {
+func newServicer(pairs ...*typ.Pair) (srv *Service, err error) {
 	defer func() {
 		if err != nil {
 			err = &services.InitError{Op: services.OpNewServicer, Type: Type, Err: err, Pairs: pairs}
@@ -117,7 +115,7 @@ func newServicer(pairs ...*types.Pair) (srv *Service, err error) {
 }
 
 // New will create a new qingstor service.
-func newServicerAndStorager(pairs ...*types.Pair) (srv *Service, store *Storage, err error) {
+func newServicerAndStorager(pairs ...*typ.Pair) (srv *Service, store *Storage, err error) {
 	defer func() {
 		if err != nil {
 			err = &services.InitError{Op: services.OpNewStorager, Type: Type, Err: err, Pairs: pairs}
@@ -185,7 +183,7 @@ const (
 	StorageClassStandardIA = "STANDARD_IA"
 )
 
-func (s *Service) newStorage(pairs ...*types.Pair) (store *Storage, err error) {
+func (s *Service) newStorage(pairs ...*typ.Pair) (store *Storage, err error) {
 	opt, err := parsePairStorageNew(pairs)
 	if err != nil {
 		return
@@ -305,15 +303,16 @@ func (s *Storage) formatError(op string, err error, path ...string) error {
 	}
 }
 
-func (s *Storage) formatFileObject(v *service.KeyType) (o *types.Object, err error) {
-	o = &types.Object{
+func (s *Storage) formatFileObject(v *service.KeyType) (o *typ.Object, err error) {
+	o = &typ.Object{
 		ID:         *v.Key,
 		Name:       s.getRelPath(*v.Key),
-		Type:       types.ObjectTypeFile,
-		Size:       service.Int64Value(v.Size),
-		UpdatedAt:  convertUnixTimestampToTime(service.IntValue(v.Modified)),
-		ObjectMeta: info.NewObjectMeta(),
+		Type:       typ.ObjectTypeFile,
+		ObjectMeta: typ.NewObjectMeta(),
 	}
+
+	o.SetSize(service.Int64Value(v.Size))
+	o.SetUpdatedAt(convertUnixTimestampToTime(service.IntValue(v.Modified)))
 
 	if v.MimeType != nil {
 		o.SetContentType(service.StringValue(v.MimeType))

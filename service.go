@@ -5,11 +5,11 @@ import (
 
 	"github.com/qingstor/qingstor-sdk-go/v4/service"
 
-	"github.com/aos-dev/go-storage/v2"
-	ps "github.com/aos-dev/go-storage/v2/types/pairs"
+	ps "github.com/aos-dev/go-storage/v2/pairs"
+	typ "github.com/aos-dev/go-storage/v2/types"
 )
 
-func (s *Service) create(ctx context.Context, name string, opt *pairServiceCreate) (store storage.Storager, err error) {
+func (s *Service) create(ctx context.Context, name string, opt *pairServiceCreate) (store typ.Storager, err error) {
 	// ServicePairCreate requires location, so we don't need to add location into pairs
 	pairs := append(opt.pairs, ps.WithName(name))
 
@@ -37,7 +37,7 @@ func (s *Service) delete(ctx context.Context, name string, opt *pairServiceDelet
 	}
 	return nil
 }
-func (s *Service) get(ctx context.Context, name string, opt *pairServiceGet) (store storage.Storager, err error) {
+func (s *Service) get(ctx context.Context, name string, opt *pairServiceGet) (store typ.Storager, err error) {
 	pairs := append(opt.pairs, ps.WithName(name))
 
 	store, err = s.newStorage(pairs...)
@@ -46,20 +46,22 @@ func (s *Service) get(ctx context.Context, name string, opt *pairServiceGet) (st
 	}
 	return
 }
-func (s *Service) list(ctx context.Context, opt *pairServiceList) (err error) {
-	input := &service.ListBucketsInput{}
+
+func (s *Service) list(ctx context.Context, opt *pairServiceList) (it *typ.StoragerIterator, err error) {
+	input := &service.ListBucketsInput{
+		Offset: service.Int(0),
+	}
 	if opt.HasLocation {
 		input.Location = &opt.Location
 	}
 
-	offset := 0
 	var output *service.ListBucketsOutput
-	for {
-		input.Offset = service.Int(offset)
 
 		output, err = s.service.ListBucketsWithContext(ctx, input)
+	fn := typ.NextStoragerFunc(func(page *typ.StoragerPage) error {
+		output, err = s.service.ListBuckets(input)
 		if err != nil {
-			return
+			return err
 		}
 
 		for _, v := range output.Buckets {
@@ -67,13 +69,16 @@ func (s *Service) list(ctx context.Context, opt *pairServiceList) (err error) {
 			if err != nil {
 				return err
 			}
-			opt.StoragerFunc(store)
+			page.Data = append(page.Data, store)
 		}
 
-		offset += len(output.Buckets)
-		if offset >= service.IntValue(output.Count) {
-			break
+		*input.Offset += len(output.Buckets)
+		if *input.Offset >= service.IntValue(output.Count) {
+			return typ.IterateDone
 		}
-	}
-	return nil
+
+		return nil
+	})
+
+	return typ.NewStoragerIterator(fn), nil
 }

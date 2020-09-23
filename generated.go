@@ -5,21 +5,17 @@ import (
 	"context"
 	"io"
 
-	"github.com/aos-dev/go-storage/v2"
+	ps "github.com/aos-dev/go-storage/v2/pairs"
 	"github.com/aos-dev/go-storage/v2/pkg/credential"
 	"github.com/aos-dev/go-storage/v2/pkg/endpoint"
 	"github.com/aos-dev/go-storage/v2/pkg/httpclient"
-	"github.com/aos-dev/go-storage/v2/pkg/segment"
 	"github.com/aos-dev/go-storage/v2/services"
-	"github.com/aos-dev/go-storage/v2/types"
-	"github.com/aos-dev/go-storage/v2/types/info"
-	ps "github.com/aos-dev/go-storage/v2/types/pairs"
+	. "github.com/aos-dev/go-storage/v2/types"
 )
 
 var _ credential.Provider
 var _ endpoint.Provider
-var _ segment.Segment
-var _ storage.Storager
+var _ Storager
 var _ services.ServiceError
 var _ httpclient.Options
 
@@ -41,8 +37,8 @@ const (
 
 // WithDisableURICleaning will apply disable_uri_cleaning value to Options
 // This pair is used to // DisableURICleaning
-func WithDisableURICleaning(v bool) *types.Pair {
-	return &types.Pair{
+func WithDisableURICleaning(v bool) *Pair {
+	return &Pair{
 		Key:   PairDisableURICleaning,
 		Value: v,
 	}
@@ -50,15 +46,15 @@ func WithDisableURICleaning(v bool) *types.Pair {
 
 // WithStorageClass will apply storage_class value to Options
 // This pair is used to // StorageClass
-func WithStorageClass(v string) *types.Pair {
-	return &types.Pair{
+func WithStorageClass(v string) *Pair {
+	return &Pair{
 		Key:   PairStorageClass,
 		Value: v,
 	}
 }
 
 // GetStorageClass will get storage-class value from metadata.
-func GetStorageClass(m info.ObjectMeta) (string, bool) {
+func GetStorageClass(m ObjectMeta) (string, bool) {
 	v, ok := m.Get(InfoObjectMetaStorageClass)
 	if !ok {
 		return "", false
@@ -67,7 +63,7 @@ func GetStorageClass(m info.ObjectMeta) (string, bool) {
 }
 
 // setstorage-class will set storage-class value into metadata.
-func setStorageClass(m info.ObjectMeta, v string) info.ObjectMeta {
+func setStorageClass(m ObjectMeta, v string) ObjectMeta {
 	return m.Set(InfoObjectMetaStorageClass, v)
 }
 
@@ -83,7 +79,7 @@ var pairServiceNewMap = map[string]struct{}{
 
 // pairServiceNew is the parsed struct
 type pairServiceNew struct {
-	pairs []*types.Pair
+	pairs []*Pair
 
 	// Required pairs
 	Credential *credential.Provider
@@ -95,8 +91,8 @@ type pairServiceNew struct {
 	HTTPClientOptions    *httpclient.Options
 }
 
-// parsePairServiceNew will parse *types.Pair slice into *pairServiceNew
-func parsePairServiceNew(opts []*types.Pair) (*pairServiceNew, error) {
+// parsePairServiceNew will parse *Pair slice into *pairServiceNew
+func parsePairServiceNew(opts []*Pair) (*pairServiceNew, error) {
 	result := &pairServiceNew{
 		pairs: opts,
 	}
@@ -142,7 +138,7 @@ var pairServiceCreateMap = map[string]struct{}{
 
 // pairServiceCreate is the parsed struct
 type pairServiceCreate struct {
-	pairs []*types.Pair
+	pairs []*Pair
 
 	// Required pairs
 	Location string
@@ -150,8 +146,8 @@ type pairServiceCreate struct {
 	// Generated pairs
 }
 
-// parsePairServiceCreate will parse *types.Pair slice into *pairServiceCreate
-func parsePairServiceCreate(opts []*types.Pair) (*pairServiceCreate, error) {
+// parsePairServiceCreate will parse *Pair slice into *pairServiceCreate
+func parsePairServiceCreate(opts []*Pair) (*pairServiceCreate, error) {
 	result := &pairServiceCreate{
 		pairs: opts,
 	}
@@ -190,7 +186,7 @@ var pairServiceDeleteMap = map[string]struct{}{
 
 // pairServiceDelete is the parsed struct
 type pairServiceDelete struct {
-	pairs []*types.Pair
+	pairs []*Pair
 
 	// Required pairs
 	// Optional pairs
@@ -199,8 +195,8 @@ type pairServiceDelete struct {
 	// Generated pairs
 }
 
-// parsePairServiceDelete will parse *types.Pair slice into *pairServiceDelete
-func parsePairServiceDelete(opts []*types.Pair) (*pairServiceDelete, error) {
+// parsePairServiceDelete will parse *Pair slice into *pairServiceDelete
+func parsePairServiceDelete(opts []*Pair) (*pairServiceDelete, error) {
 	result := &pairServiceDelete{
 		pairs: opts,
 	}
@@ -237,7 +233,7 @@ var pairServiceGetMap = map[string]struct{}{
 
 // pairServiceGet is the parsed struct
 type pairServiceGet struct {
-	pairs []*types.Pair
+	pairs []*Pair
 
 	// Required pairs
 	// Optional pairs
@@ -246,8 +242,8 @@ type pairServiceGet struct {
 	// Generated pairs
 }
 
-// parsePairServiceGet will parse *types.Pair slice into *pairServiceGet
-func parsePairServiceGet(opts []*types.Pair) (*pairServiceGet, error) {
+// parsePairServiceGet will parse *Pair slice into *pairServiceGet
+func parsePairServiceGet(opts []*Pair) (*pairServiceGet, error) {
 	result := &pairServiceGet{
 		pairs: opts,
 	}
@@ -277,7 +273,6 @@ func parsePairServiceGet(opts []*types.Pair) (*pairServiceGet, error) {
 // pairServiceListMap holds all available pairs
 var pairServiceListMap = map[string]struct{}{
 	// Required pairs
-	ps.StoragerFunc: struct{}{},
 	// Optional pairs
 	ps.Location: struct{}{},
 	// Generated pairs
@@ -285,18 +280,17 @@ var pairServiceListMap = map[string]struct{}{
 
 // pairServiceList is the parsed struct
 type pairServiceList struct {
-	pairs []*types.Pair
+	pairs []*Pair
 
 	// Required pairs
-	StoragerFunc storage.StoragerFunc
 	// Optional pairs
 	HasLocation bool
 	Location    string
 	// Generated pairs
 }
 
-// parsePairServiceList will parse *types.Pair slice into *pairServiceList
-func parsePairServiceList(opts []*types.Pair) (*pairServiceList, error) {
+// parsePairServiceList will parse *Pair slice into *pairServiceList
+func parsePairServiceList(opts []*Pair) (*pairServiceList, error) {
 	result := &pairServiceList{
 		pairs: opts,
 	}
@@ -312,13 +306,6 @@ func parsePairServiceList(opts []*types.Pair) (*pairServiceList, error) {
 	var ok bool
 
 	// Handle required pairs
-	v, ok = values[ps.StoragerFunc]
-	if !ok {
-		return nil, services.NewPairRequiredError(ps.StoragerFunc)
-	}
-	if ok {
-		result.StoragerFunc = v.(storage.StoragerFunc)
-	}
 	// Handle optional pairs
 	v, ok = values[ps.Location]
 	if ok {
@@ -333,13 +320,13 @@ func parsePairServiceList(opts []*types.Pair) (*pairServiceList, error) {
 // Create will create a new storager instance.
 //
 // This function will create a context by default.
-func (s *Service) Create(name string, pairs ...*types.Pair) (store storage.Storager, err error) {
+func (s *Service) Create(name string, pairs ...*Pair) (store Storager, err error) {
 	ctx := context.Background()
 	return s.CreateWithContext(ctx, name, pairs...)
 }
 
 // CreateWithContext will create a new storager instance.
-func (s *Service) CreateWithContext(ctx context.Context, name string, pairs ...*types.Pair) (store storage.Storager, err error) {
+func (s *Service) CreateWithContext(ctx context.Context, name string, pairs ...*Pair) (store Storager, err error) {
 	defer func() {
 		err = s.formatError(services.OpCreate, err, name)
 	}()
@@ -355,13 +342,13 @@ func (s *Service) CreateWithContext(ctx context.Context, name string, pairs ...*
 // Delete will delete a storager instance.
 //
 // This function will create a context by default.
-func (s *Service) Delete(name string, pairs ...*types.Pair) (err error) {
+func (s *Service) Delete(name string, pairs ...*Pair) (err error) {
 	ctx := context.Background()
 	return s.DeleteWithContext(ctx, name, pairs...)
 }
 
 // DeleteWithContext will delete a storager instance.
-func (s *Service) DeleteWithContext(ctx context.Context, name string, pairs ...*types.Pair) (err error) {
+func (s *Service) DeleteWithContext(ctx context.Context, name string, pairs ...*Pair) (err error) {
 	defer func() {
 		err = s.formatError(services.OpDelete, err, name)
 	}()
@@ -377,13 +364,13 @@ func (s *Service) DeleteWithContext(ctx context.Context, name string, pairs ...*
 // Get will get a valid storager instance for service.
 //
 // This function will create a context by default.
-func (s *Service) Get(name string, pairs ...*types.Pair) (store storage.Storager, err error) {
+func (s *Service) Get(name string, pairs ...*Pair) (store Storager, err error) {
 	ctx := context.Background()
 	return s.GetWithContext(ctx, name, pairs...)
 }
 
 // GetWithContext will get a valid storager instance for service.
-func (s *Service) GetWithContext(ctx context.Context, name string, pairs ...*types.Pair) (store storage.Storager, err error) {
+func (s *Service) GetWithContext(ctx context.Context, name string, pairs ...*Pair) (store Storager, err error) {
 	defer func() {
 		err = s.formatError(services.OpGet, err, name)
 	}()
@@ -399,13 +386,13 @@ func (s *Service) GetWithContext(ctx context.Context, name string, pairs ...*typ
 // List will list all storager instances under this service.
 //
 // This function will create a context by default.
-func (s *Service) List(pairs ...*types.Pair) (err error) {
+func (s *Service) List(pairs ...*Pair) (sti *StoragerIterator, err error) {
 	ctx := context.Background()
 	return s.ListWithContext(ctx, pairs...)
 }
 
 // ListWithContext will list all storager instances under this service.
-func (s *Service) ListWithContext(ctx context.Context, pairs ...*types.Pair) (err error) {
+func (s *Service) ListWithContext(ctx context.Context, pairs ...*Pair) (sti *StoragerIterator, err error) {
 	defer func() {
 
 		err = s.formatError(services.OpList, err, "")
@@ -433,7 +420,7 @@ var pairStorageNewMap = map[string]struct{}{
 
 // pairStorageNew is the parsed struct
 type pairStorageNew struct {
-	pairs []*types.Pair
+	pairs []*Pair
 
 	// Required pairs
 	Name string
@@ -449,8 +436,8 @@ type pairStorageNew struct {
 	HTTPClientOptions    *httpclient.Options
 }
 
-// parsePairStorageNew will parse *types.Pair slice into *pairStorageNew
-func parsePairStorageNew(opts []*types.Pair) (*pairStorageNew, error) {
+// parsePairStorageNew will parse *Pair slice into *pairStorageNew
+func parsePairStorageNew(opts []*Pair) (*pairStorageNew, error) {
 	result := &pairStorageNew{
 		pairs: opts,
 	}
@@ -505,15 +492,15 @@ var pairStorageAbortSegmentMap = map[string]struct{}{
 
 // pairStorageAbortSegment is the parsed struct
 type pairStorageAbortSegment struct {
-	pairs []*types.Pair
+	pairs []*Pair
 
 	// Required pairs
 	// Optional pairs
 	// Generated pairs
 }
 
-// parsePairStorageAbortSegment will parse *types.Pair slice into *pairStorageAbortSegment
-func parsePairStorageAbortSegment(opts []*types.Pair) (*pairStorageAbortSegment, error) {
+// parsePairStorageAbortSegment will parse *Pair slice into *pairStorageAbortSegment
+func parsePairStorageAbortSegment(opts []*Pair) (*pairStorageAbortSegment, error) {
 	result := &pairStorageAbortSegment{
 		pairs: opts,
 	}
@@ -542,15 +529,15 @@ var pairStorageCompleteSegmentMap = map[string]struct{}{
 
 // pairStorageCompleteSegment is the parsed struct
 type pairStorageCompleteSegment struct {
-	pairs []*types.Pair
+	pairs []*Pair
 
 	// Required pairs
 	// Optional pairs
 	// Generated pairs
 }
 
-// parsePairStorageCompleteSegment will parse *types.Pair slice into *pairStorageCompleteSegment
-func parsePairStorageCompleteSegment(opts []*types.Pair) (*pairStorageCompleteSegment, error) {
+// parsePairStorageCompleteSegment will parse *Pair slice into *pairStorageCompleteSegment
+func parsePairStorageCompleteSegment(opts []*Pair) (*pairStorageCompleteSegment, error) {
 	result := &pairStorageCompleteSegment{
 		pairs: opts,
 	}
@@ -579,15 +566,15 @@ var pairStorageCopyMap = map[string]struct{}{
 
 // pairStorageCopy is the parsed struct
 type pairStorageCopy struct {
-	pairs []*types.Pair
+	pairs []*Pair
 
 	// Required pairs
 	// Optional pairs
 	// Generated pairs
 }
 
-// parsePairStorageCopy will parse *types.Pair slice into *pairStorageCopy
-func parsePairStorageCopy(opts []*types.Pair) (*pairStorageCopy, error) {
+// parsePairStorageCopy will parse *Pair slice into *pairStorageCopy
+func parsePairStorageCopy(opts []*Pair) (*pairStorageCopy, error) {
 	result := &pairStorageCopy{
 		pairs: opts,
 	}
@@ -616,15 +603,15 @@ var pairStorageDeleteMap = map[string]struct{}{
 
 // pairStorageDelete is the parsed struct
 type pairStorageDelete struct {
-	pairs []*types.Pair
+	pairs []*Pair
 
 	// Required pairs
 	// Optional pairs
 	// Generated pairs
 }
 
-// parsePairStorageDelete will parse *types.Pair slice into *pairStorageDelete
-func parsePairStorageDelete(opts []*types.Pair) (*pairStorageDelete, error) {
+// parsePairStorageDelete will parse *Pair slice into *pairStorageDelete
+func parsePairStorageDelete(opts []*Pair) (*pairStorageDelete, error) {
 	result := &pairStorageDelete{
 		pairs: opts,
 	}
@@ -653,15 +640,15 @@ var pairStorageInitIndexSegmentMap = map[string]struct{}{
 
 // pairStorageInitIndexSegment is the parsed struct
 type pairStorageInitIndexSegment struct {
-	pairs []*types.Pair
+	pairs []*Pair
 
 	// Required pairs
 	// Optional pairs
 	// Generated pairs
 }
 
-// parsePairStorageInitIndexSegment will parse *types.Pair slice into *pairStorageInitIndexSegment
-func parsePairStorageInitIndexSegment(opts []*types.Pair) (*pairStorageInitIndexSegment, error) {
+// parsePairStorageInitIndexSegment will parse *Pair slice into *pairStorageInitIndexSegment
+func parsePairStorageInitIndexSegment(opts []*Pair) (*pairStorageInitIndexSegment, error) {
 	result := &pairStorageInitIndexSegment{
 		pairs: opts,
 	}
@@ -685,26 +672,20 @@ func parsePairStorageInitIndexSegment(opts []*types.Pair) (*pairStorageInitIndex
 var pairStorageListDirMap = map[string]struct{}{
 	// Required pairs
 	// Optional pairs
-	ps.DirFunc:  struct{}{},
-	ps.FileFunc: struct{}{},
 	// Generated pairs
 }
 
 // pairStorageListDir is the parsed struct
 type pairStorageListDir struct {
-	pairs []*types.Pair
+	pairs []*Pair
 
 	// Required pairs
 	// Optional pairs
-	HasDirFunc  bool
-	DirFunc     types.ObjectFunc
-	HasFileFunc bool
-	FileFunc    types.ObjectFunc
 	// Generated pairs
 }
 
-// parsePairStorageListDir will parse *types.Pair slice into *pairStorageListDir
-func parsePairStorageListDir(opts []*types.Pair) (*pairStorageListDir, error) {
+// parsePairStorageListDir will parse *Pair slice into *pairStorageListDir
+func parsePairStorageListDir(opts []*Pair) (*pairStorageListDir, error) {
 	result := &pairStorageListDir{
 		pairs: opts,
 	}
@@ -716,21 +697,9 @@ func parsePairStorageListDir(opts []*types.Pair) (*pairStorageListDir, error) {
 		}
 		values[v.Key] = v.Value
 	}
-	var v interface{}
-	var ok bool
 
 	// Handle required pairs
 	// Handle optional pairs
-	v, ok = values[ps.DirFunc]
-	if ok {
-		result.HasDirFunc = true
-		result.DirFunc = v.(types.ObjectFunc)
-	}
-	v, ok = values[ps.FileFunc]
-	if ok {
-		result.HasFileFunc = true
-		result.FileFunc = v.(types.ObjectFunc)
-	}
 	// Handle generated pairs
 
 	return result, nil
@@ -739,23 +708,21 @@ func parsePairStorageListDir(opts []*types.Pair) (*pairStorageListDir, error) {
 // pairStorageListPrefixMap holds all available pairs
 var pairStorageListPrefixMap = map[string]struct{}{
 	// Required pairs
-	ps.ObjectFunc: struct{}{},
 	// Optional pairs
 	// Generated pairs
 }
 
 // pairStorageListPrefix is the parsed struct
 type pairStorageListPrefix struct {
-	pairs []*types.Pair
+	pairs []*Pair
 
 	// Required pairs
-	ObjectFunc types.ObjectFunc
 	// Optional pairs
 	// Generated pairs
 }
 
-// parsePairStorageListPrefix will parse *types.Pair slice into *pairStorageListPrefix
-func parsePairStorageListPrefix(opts []*types.Pair) (*pairStorageListPrefix, error) {
+// parsePairStorageListPrefix will parse *Pair slice into *pairStorageListPrefix
+func parsePairStorageListPrefix(opts []*Pair) (*pairStorageListPrefix, error) {
 	result := &pairStorageListPrefix{
 		pairs: opts,
 	}
@@ -767,17 +734,8 @@ func parsePairStorageListPrefix(opts []*types.Pair) (*pairStorageListPrefix, err
 		}
 		values[v.Key] = v.Value
 	}
-	var v interface{}
-	var ok bool
 
 	// Handle required pairs
-	v, ok = values[ps.ObjectFunc]
-	if !ok {
-		return nil, services.NewPairRequiredError(ps.ObjectFunc)
-	}
-	if ok {
-		result.ObjectFunc = v.(types.ObjectFunc)
-	}
 	// Handle optional pairs
 	// Handle generated pairs
 
@@ -788,23 +746,20 @@ func parsePairStorageListPrefix(opts []*types.Pair) (*pairStorageListPrefix, err
 var pairStorageListPrefixSegmentsMap = map[string]struct{}{
 	// Required pairs
 	// Optional pairs
-	ps.SegmentFunc: struct{}{},
 	// Generated pairs
 }
 
 // pairStorageListPrefixSegments is the parsed struct
 type pairStorageListPrefixSegments struct {
-	pairs []*types.Pair
+	pairs []*Pair
 
 	// Required pairs
 	// Optional pairs
-	HasSegmentFunc bool
-	SegmentFunc    segment.Func
 	// Generated pairs
 }
 
-// parsePairStorageListPrefixSegments will parse *types.Pair slice into *pairStorageListPrefixSegments
-func parsePairStorageListPrefixSegments(opts []*types.Pair) (*pairStorageListPrefixSegments, error) {
+// parsePairStorageListPrefixSegments will parse *Pair slice into *pairStorageListPrefixSegments
+func parsePairStorageListPrefixSegments(opts []*Pair) (*pairStorageListPrefixSegments, error) {
 	result := &pairStorageListPrefixSegments{
 		pairs: opts,
 	}
@@ -816,16 +771,9 @@ func parsePairStorageListPrefixSegments(opts []*types.Pair) (*pairStorageListPre
 		}
 		values[v.Key] = v.Value
 	}
-	var v interface{}
-	var ok bool
 
 	// Handle required pairs
 	// Handle optional pairs
-	v, ok = values[ps.SegmentFunc]
-	if ok {
-		result.HasSegmentFunc = true
-		result.SegmentFunc = v.(segment.Func)
-	}
 	// Handle generated pairs
 
 	return result, nil
@@ -840,15 +788,15 @@ var pairStorageMetadataMap = map[string]struct{}{
 
 // pairStorageMetadata is the parsed struct
 type pairStorageMetadata struct {
-	pairs []*types.Pair
+	pairs []*Pair
 
 	// Required pairs
 	// Optional pairs
 	// Generated pairs
 }
 
-// parsePairStorageMetadata will parse *types.Pair slice into *pairStorageMetadata
-func parsePairStorageMetadata(opts []*types.Pair) (*pairStorageMetadata, error) {
+// parsePairStorageMetadata will parse *Pair slice into *pairStorageMetadata
+func parsePairStorageMetadata(opts []*Pair) (*pairStorageMetadata, error) {
 	result := &pairStorageMetadata{
 		pairs: opts,
 	}
@@ -877,15 +825,15 @@ var pairStorageMoveMap = map[string]struct{}{
 
 // pairStorageMove is the parsed struct
 type pairStorageMove struct {
-	pairs []*types.Pair
+	pairs []*Pair
 
 	// Required pairs
 	// Optional pairs
 	// Generated pairs
 }
 
-// parsePairStorageMove will parse *types.Pair slice into *pairStorageMove
-func parsePairStorageMove(opts []*types.Pair) (*pairStorageMove, error) {
+// parsePairStorageMove will parse *Pair slice into *pairStorageMove
+func parsePairStorageMove(opts []*Pair) (*pairStorageMove, error) {
 	result := &pairStorageMove{
 		pairs: opts,
 	}
@@ -915,7 +863,7 @@ var pairStorageReachMap = map[string]struct{}{
 
 // pairStorageReach is the parsed struct
 type pairStorageReach struct {
-	pairs []*types.Pair
+	pairs []*Pair
 
 	// Required pairs
 	Expire int
@@ -923,8 +871,8 @@ type pairStorageReach struct {
 	// Generated pairs
 }
 
-// parsePairStorageReach will parse *types.Pair slice into *pairStorageReach
-func parsePairStorageReach(opts []*types.Pair) (*pairStorageReach, error) {
+// parsePairStorageReach will parse *Pair slice into *pairStorageReach
+func parsePairStorageReach(opts []*Pair) (*pairStorageReach, error) {
 	result := &pairStorageReach{
 		pairs: opts,
 	}
@@ -957,29 +905,29 @@ func parsePairStorageReach(opts []*types.Pair) (*pairStorageReach, error) {
 var pairStorageReadMap = map[string]struct{}{
 	// Required pairs
 	// Optional pairs
-	ps.Offset: struct{}{},
-	ps.Size:   struct{}{},
-	// Generated pairs
+	ps.Offset:           struct{}{},
 	ps.ReadCallbackFunc: struct{}{},
+	ps.Size:             struct{}{},
+	// Generated pairs
 }
 
 // pairStorageRead is the parsed struct
 type pairStorageRead struct {
-	pairs []*types.Pair
+	pairs []*Pair
 
 	// Required pairs
 	// Optional pairs
-	HasOffset bool
-	Offset    int64
-	HasSize   bool
-	Size      int64
-	// Generated pairs
+	HasOffset           bool
+	Offset              int64
 	HasReadCallbackFunc bool
 	ReadCallbackFunc    func([]byte)
+	HasSize             bool
+	Size                int64
+	// Generated pairs
 }
 
-// parsePairStorageRead will parse *types.Pair slice into *pairStorageRead
-func parsePairStorageRead(opts []*types.Pair) (*pairStorageRead, error) {
+// parsePairStorageRead will parse *Pair slice into *pairStorageRead
+func parsePairStorageRead(opts []*Pair) (*pairStorageRead, error) {
 	result := &pairStorageRead{
 		pairs: opts,
 	}
@@ -1001,17 +949,17 @@ func parsePairStorageRead(opts []*types.Pair) (*pairStorageRead, error) {
 		result.HasOffset = true
 		result.Offset = v.(int64)
 	}
+	v, ok = values[ps.ReadCallbackFunc]
+	if ok {
+		result.HasReadCallbackFunc = true
+		result.ReadCallbackFunc = v.(func([]byte))
+	}
 	v, ok = values[ps.Size]
 	if ok {
 		result.HasSize = true
 		result.Size = v.(int64)
 	}
 	// Handle generated pairs
-	v, ok = values[ps.ReadCallbackFunc]
-	if ok {
-		result.HasReadCallbackFunc = true
-		result.ReadCallbackFunc = v.(func([]byte))
-	}
 
 	return result, nil
 }
@@ -1025,15 +973,15 @@ var pairStorageStatMap = map[string]struct{}{
 
 // pairStorageStat is the parsed struct
 type pairStorageStat struct {
-	pairs []*types.Pair
+	pairs []*Pair
 
 	// Required pairs
 	// Optional pairs
 	// Generated pairs
 }
 
-// parsePairStorageStat will parse *types.Pair slice into *pairStorageStat
-func parsePairStorageStat(opts []*types.Pair) (*pairStorageStat, error) {
+// parsePairStorageStat will parse *Pair slice into *pairStorageStat
+func parsePairStorageStat(opts []*Pair) (*pairStorageStat, error) {
 	result := &pairStorageStat{
 		pairs: opts,
 	}
@@ -1062,15 +1010,15 @@ var pairStorageStatisticalMap = map[string]struct{}{
 
 // pairStorageStatistical is the parsed struct
 type pairStorageStatistical struct {
-	pairs []*types.Pair
+	pairs []*Pair
 
 	// Required pairs
 	// Optional pairs
 	// Generated pairs
 }
 
-// parsePairStorageStatistical will parse *types.Pair slice into *pairStorageStatistical
-func parsePairStorageStatistical(opts []*types.Pair) (*pairStorageStatistical, error) {
+// parsePairStorageStatistical will parse *Pair slice into *pairStorageStatistical
+func parsePairStorageStatistical(opts []*Pair) (*pairStorageStatistical, error) {
 	result := &pairStorageStatistical{
 		pairs: opts,
 	}
@@ -1103,7 +1051,7 @@ var pairStorageWriteMap = map[string]struct{}{
 
 // pairStorageWrite is the parsed struct
 type pairStorageWrite struct {
-	pairs []*types.Pair
+	pairs []*Pair
 
 	// Required pairs
 	Size int64
@@ -1117,8 +1065,8 @@ type pairStorageWrite struct {
 	ReadCallbackFunc    func([]byte)
 }
 
-// parsePairStorageWrite will parse *types.Pair slice into *pairStorageWrite
-func parsePairStorageWrite(opts []*types.Pair) (*pairStorageWrite, error) {
+// parsePairStorageWrite will parse *Pair slice into *pairStorageWrite
+func parsePairStorageWrite(opts []*Pair) (*pairStorageWrite, error) {
 	result := &pairStorageWrite{
 		pairs: opts,
 	}
@@ -1172,7 +1120,7 @@ var pairStorageWriteIndexSegmentMap = map[string]struct{}{
 
 // pairStorageWriteIndexSegment is the parsed struct
 type pairStorageWriteIndexSegment struct {
-	pairs []*types.Pair
+	pairs []*Pair
 
 	// Required pairs
 	// Optional pairs
@@ -1181,8 +1129,8 @@ type pairStorageWriteIndexSegment struct {
 	ReadCallbackFunc    func([]byte)
 }
 
-// parsePairStorageWriteIndexSegment will parse *types.Pair slice into *pairStorageWriteIndexSegment
-func parsePairStorageWriteIndexSegment(opts []*types.Pair) (*pairStorageWriteIndexSegment, error) {
+// parsePairStorageWriteIndexSegment will parse *Pair slice into *pairStorageWriteIndexSegment
+func parsePairStorageWriteIndexSegment(opts []*Pair) (*pairStorageWriteIndexSegment, error) {
 	result := &pairStorageWriteIndexSegment{
 		pairs: opts,
 	}
@@ -1212,13 +1160,13 @@ func parsePairStorageWriteIndexSegment(opts []*types.Pair) (*pairStorageWriteInd
 // AbortSegment will abort a segment.
 //
 // This function will create a context by default.
-func (s *Storage) AbortSegment(seg segment.Segment, pairs ...*types.Pair) (err error) {
+func (s *Storage) AbortSegment(seg Segment, pairs ...*Pair) (err error) {
 	ctx := context.Background()
 	return s.AbortSegmentWithContext(ctx, seg, pairs...)
 }
 
 // AbortSegmentWithContext will abort a segment.
-func (s *Storage) AbortSegmentWithContext(ctx context.Context, seg segment.Segment, pairs ...*types.Pair) (err error) {
+func (s *Storage) AbortSegmentWithContext(ctx context.Context, seg Segment, pairs ...*Pair) (err error) {
 	defer func() {
 		err = s.formatError(services.OpAbortSegment, err, seg.Path(), seg.ID())
 	}()
@@ -1234,13 +1182,13 @@ func (s *Storage) AbortSegmentWithContext(ctx context.Context, seg segment.Segme
 // CompleteSegment will complete a segment and merge them into a File.
 //
 // This function will create a context by default.
-func (s *Storage) CompleteSegment(seg segment.Segment, pairs ...*types.Pair) (err error) {
+func (s *Storage) CompleteSegment(seg Segment, pairs ...*Pair) (err error) {
 	ctx := context.Background()
 	return s.CompleteSegmentWithContext(ctx, seg, pairs...)
 }
 
 // CompleteSegmentWithContext will complete a segment and merge them into a File.
-func (s *Storage) CompleteSegmentWithContext(ctx context.Context, seg segment.Segment, pairs ...*types.Pair) (err error) {
+func (s *Storage) CompleteSegmentWithContext(ctx context.Context, seg Segment, pairs ...*Pair) (err error) {
 	defer func() {
 		err = s.formatError(services.OpCompleteSegment, err, seg.Path(), seg.ID())
 	}()
@@ -1256,13 +1204,13 @@ func (s *Storage) CompleteSegmentWithContext(ctx context.Context, seg segment.Se
 // Copy will copy an Object or multiple object in the service.
 //
 // This function will create a context by default.
-func (s *Storage) Copy(src string, dst string, pairs ...*types.Pair) (err error) {
+func (s *Storage) Copy(src string, dst string, pairs ...*Pair) (err error) {
 	ctx := context.Background()
 	return s.CopyWithContext(ctx, src, dst, pairs...)
 }
 
 // CopyWithContext will copy an Object or multiple object in the service.
-func (s *Storage) CopyWithContext(ctx context.Context, src string, dst string, pairs ...*types.Pair) (err error) {
+func (s *Storage) CopyWithContext(ctx context.Context, src string, dst string, pairs ...*Pair) (err error) {
 	defer func() {
 		err = s.formatError(services.OpCopy, err, src, dst)
 	}()
@@ -1278,13 +1226,13 @@ func (s *Storage) CopyWithContext(ctx context.Context, src string, dst string, p
 // Delete will delete an Object from service.
 //
 // This function will create a context by default.
-func (s *Storage) Delete(path string, pairs ...*types.Pair) (err error) {
+func (s *Storage) Delete(path string, pairs ...*Pair) (err error) {
 	ctx := context.Background()
 	return s.DeleteWithContext(ctx, path, pairs...)
 }
 
 // DeleteWithContext will delete an Object from service.
-func (s *Storage) DeleteWithContext(ctx context.Context, path string, pairs ...*types.Pair) (err error) {
+func (s *Storage) DeleteWithContext(ctx context.Context, path string, pairs ...*Pair) (err error) {
 	defer func() {
 		err = s.formatError(services.OpDelete, err, path)
 	}()
@@ -1300,13 +1248,13 @@ func (s *Storage) DeleteWithContext(ctx context.Context, path string, pairs ...*
 // InitIndexSegment will init an index based segment.
 //
 // This function will create a context by default.
-func (s *Storage) InitIndexSegment(path string, pairs ...*types.Pair) (seg segment.Segment, err error) {
+func (s *Storage) InitIndexSegment(path string, pairs ...*Pair) (seg Segment, err error) {
 	ctx := context.Background()
 	return s.InitIndexSegmentWithContext(ctx, path, pairs...)
 }
 
 // InitIndexSegmentWithContext will init an index based segment.
-func (s *Storage) InitIndexSegmentWithContext(ctx context.Context, path string, pairs ...*types.Pair) (seg segment.Segment, err error) {
+func (s *Storage) InitIndexSegmentWithContext(ctx context.Context, path string, pairs ...*Pair) (seg Segment, err error) {
 	defer func() {
 		err = s.formatError(services.OpInitIndexSegment, err, path)
 	}()
@@ -1322,13 +1270,13 @@ func (s *Storage) InitIndexSegmentWithContext(ctx context.Context, path string, 
 // ListDir will return list a specific dir.
 //
 // This function will create a context by default.
-func (s *Storage) ListDir(dir string, pairs ...*types.Pair) (err error) {
+func (s *Storage) ListDir(dir string, pairs ...*Pair) (oi *ObjectIterator, err error) {
 	ctx := context.Background()
 	return s.ListDirWithContext(ctx, dir, pairs...)
 }
 
 // ListDirWithContext will return list a specific dir.
-func (s *Storage) ListDirWithContext(ctx context.Context, dir string, pairs ...*types.Pair) (err error) {
+func (s *Storage) ListDirWithContext(ctx context.Context, dir string, pairs ...*Pair) (oi *ObjectIterator, err error) {
 	defer func() {
 		err = s.formatError(services.OpListDir, err, dir)
 	}()
@@ -1344,13 +1292,13 @@ func (s *Storage) ListDirWithContext(ctx context.Context, dir string, pairs ...*
 // ListPrefix will return list a specific dir.
 //
 // This function will create a context by default.
-func (s *Storage) ListPrefix(prefix string, pairs ...*types.Pair) (err error) {
+func (s *Storage) ListPrefix(prefix string, pairs ...*Pair) (oi *ObjectIterator, err error) {
 	ctx := context.Background()
 	return s.ListPrefixWithContext(ctx, prefix, pairs...)
 }
 
 // ListPrefixWithContext will return list a specific dir.
-func (s *Storage) ListPrefixWithContext(ctx context.Context, prefix string, pairs ...*types.Pair) (err error) {
+func (s *Storage) ListPrefixWithContext(ctx context.Context, prefix string, pairs ...*Pair) (oi *ObjectIterator, err error) {
 	defer func() {
 		err = s.formatError(services.OpListPrefix, err, prefix)
 	}()
@@ -1366,13 +1314,13 @@ func (s *Storage) ListPrefixWithContext(ctx context.Context, prefix string, pair
 // ListPrefixSegments will list segments.
 //
 // This function will create a context by default.
-func (s *Storage) ListPrefixSegments(prefix string, pairs ...*types.Pair) (err error) {
+func (s *Storage) ListPrefixSegments(prefix string, pairs ...*Pair) (si *SegmentIterator, err error) {
 	ctx := context.Background()
 	return s.ListPrefixSegmentsWithContext(ctx, prefix, pairs...)
 }
 
 // ListPrefixSegmentsWithContext will list segments.
-func (s *Storage) ListPrefixSegmentsWithContext(ctx context.Context, prefix string, pairs ...*types.Pair) (err error) {
+func (s *Storage) ListPrefixSegmentsWithContext(ctx context.Context, prefix string, pairs ...*Pair) (si *SegmentIterator, err error) {
 	defer func() {
 		err = s.formatError(services.OpListPrefixSegments, err, prefix)
 	}()
@@ -1388,13 +1336,13 @@ func (s *Storage) ListPrefixSegmentsWithContext(ctx context.Context, prefix stri
 // Metadata will return current storager's metadata.
 //
 // This function will create a context by default.
-func (s *Storage) Metadata(pairs ...*types.Pair) (meta info.StorageMeta, err error) {
+func (s *Storage) Metadata(pairs ...*Pair) (meta StorageMeta, err error) {
 	ctx := context.Background()
 	return s.MetadataWithContext(ctx, pairs...)
 }
 
 // MetadataWithContext will return current storager's metadata.
-func (s *Storage) MetadataWithContext(ctx context.Context, pairs ...*types.Pair) (meta info.StorageMeta, err error) {
+func (s *Storage) MetadataWithContext(ctx context.Context, pairs ...*Pair) (meta StorageMeta, err error) {
 	defer func() {
 		err = s.formatError(services.OpMetadata, err)
 	}()
@@ -1410,13 +1358,13 @@ func (s *Storage) MetadataWithContext(ctx context.Context, pairs ...*types.Pair)
 // Move will move an object in the service.
 //
 // This function will create a context by default.
-func (s *Storage) Move(src string, dst string, pairs ...*types.Pair) (err error) {
+func (s *Storage) Move(src string, dst string, pairs ...*Pair) (err error) {
 	ctx := context.Background()
 	return s.MoveWithContext(ctx, src, dst, pairs...)
 }
 
 // MoveWithContext will move an object in the service.
-func (s *Storage) MoveWithContext(ctx context.Context, src string, dst string, pairs ...*types.Pair) (err error) {
+func (s *Storage) MoveWithContext(ctx context.Context, src string, dst string, pairs ...*Pair) (err error) {
 	defer func() {
 		err = s.formatError(services.OpMove, err, src, dst)
 	}()
@@ -1432,13 +1380,13 @@ func (s *Storage) MoveWithContext(ctx context.Context, src string, dst string, p
 // Reach will provide a way, which can reach the object.
 //
 // This function will create a context by default.
-func (s *Storage) Reach(path string, pairs ...*types.Pair) (url string, err error) {
+func (s *Storage) Reach(path string, pairs ...*Pair) (url string, err error) {
 	ctx := context.Background()
 	return s.ReachWithContext(ctx, path, pairs...)
 }
 
 // ReachWithContext will provide a way, which can reach the object.
-func (s *Storage) ReachWithContext(ctx context.Context, path string, pairs ...*types.Pair) (url string, err error) {
+func (s *Storage) ReachWithContext(ctx context.Context, path string, pairs ...*Pair) (url string, err error) {
 	defer func() {
 		err = s.formatError(services.OpReach, err, path)
 	}()
@@ -1454,13 +1402,13 @@ func (s *Storage) ReachWithContext(ctx context.Context, path string, pairs ...*t
 // Read will read the file's data.
 //
 // This function will create a context by default.
-func (s *Storage) Read(path string, pairs ...*types.Pair) (rc io.ReadCloser, err error) {
+func (s *Storage) Read(path string, w io.Writer, pairs ...*Pair) (err error) {
 	ctx := context.Background()
-	return s.ReadWithContext(ctx, path, pairs...)
+	return s.ReadWithContext(ctx, path, w, pairs...)
 }
 
 // ReadWithContext will read the file's data.
-func (s *Storage) ReadWithContext(ctx context.Context, path string, pairs ...*types.Pair) (rc io.ReadCloser, err error) {
+func (s *Storage) ReadWithContext(ctx context.Context, path string, w io.Writer, pairs ...*Pair) (err error) {
 	defer func() {
 		err = s.formatError(services.OpRead, err, path)
 	}()
@@ -1470,19 +1418,19 @@ func (s *Storage) ReadWithContext(ctx context.Context, path string, pairs ...*ty
 		return
 	}
 
-	return s.read(ctx, path, opt)
+	return s.read(ctx, path, w, opt)
 }
 
 // Stat will stat a path to get info of an object.
 //
 // This function will create a context by default.
-func (s *Storage) Stat(path string, pairs ...*types.Pair) (o *types.Object, err error) {
+func (s *Storage) Stat(path string, pairs ...*Pair) (o *Object, err error) {
 	ctx := context.Background()
 	return s.StatWithContext(ctx, path, pairs...)
 }
 
 // StatWithContext will stat a path to get info of an object.
-func (s *Storage) StatWithContext(ctx context.Context, path string, pairs ...*types.Pair) (o *types.Object, err error) {
+func (s *Storage) StatWithContext(ctx context.Context, path string, pairs ...*Pair) (o *Object, err error) {
 	defer func() {
 		err = s.formatError(services.OpStat, err, path)
 	}()
@@ -1498,13 +1446,13 @@ func (s *Storage) StatWithContext(ctx context.Context, path string, pairs ...*ty
 // Statistical will count service's statistics, such as Size, Count.
 //
 // This function will create a context by default.
-func (s *Storage) Statistical(pairs ...*types.Pair) (statistic info.StorageStatistic, err error) {
+func (s *Storage) Statistical(pairs ...*Pair) (statistic StorageStatistic, err error) {
 	ctx := context.Background()
 	return s.StatisticalWithContext(ctx, pairs...)
 }
 
 // StatisticalWithContext will count service's statistics, such as Size, Count.
-func (s *Storage) StatisticalWithContext(ctx context.Context, pairs ...*types.Pair) (statistic info.StorageStatistic, err error) {
+func (s *Storage) StatisticalWithContext(ctx context.Context, pairs ...*Pair) (statistic StorageStatistic, err error) {
 	defer func() {
 		err = s.formatError(services.OpStatistical, err)
 	}()
@@ -1520,13 +1468,13 @@ func (s *Storage) StatisticalWithContext(ctx context.Context, pairs ...*types.Pa
 // Write will write data into a file.
 //
 // This function will create a context by default.
-func (s *Storage) Write(path string, r io.Reader, pairs ...*types.Pair) (err error) {
+func (s *Storage) Write(path string, r io.Reader, pairs ...*Pair) (err error) {
 	ctx := context.Background()
 	return s.WriteWithContext(ctx, path, r, pairs...)
 }
 
 // WriteWithContext will write data into a file.
-func (s *Storage) WriteWithContext(ctx context.Context, path string, r io.Reader, pairs ...*types.Pair) (err error) {
+func (s *Storage) WriteWithContext(ctx context.Context, path string, r io.Reader, pairs ...*Pair) (err error) {
 	defer func() {
 		err = s.formatError(services.OpWrite, err, path)
 	}()
@@ -1542,13 +1490,13 @@ func (s *Storage) WriteWithContext(ctx context.Context, path string, r io.Reader
 // WriteIndexSegment will write a part into an index based segment.
 //
 // This function will create a context by default.
-func (s *Storage) WriteIndexSegment(seg segment.Segment, r io.Reader, index int, size int64, pairs ...*types.Pair) (err error) {
+func (s *Storage) WriteIndexSegment(seg Segment, r io.Reader, index int, size int64, pairs ...*Pair) (err error) {
 	ctx := context.Background()
 	return s.WriteIndexSegmentWithContext(ctx, seg, r, index, size, pairs...)
 }
 
 // WriteIndexSegmentWithContext will write a part into an index based segment.
-func (s *Storage) WriteIndexSegmentWithContext(ctx context.Context, seg segment.Segment, r io.Reader, index int, size int64, pairs ...*types.Pair) (err error) {
+func (s *Storage) WriteIndexSegmentWithContext(ctx context.Context, seg Segment, r io.Reader, index int, size int64, pairs ...*Pair) (err error) {
 	defer func() {
 		err = s.formatError(services.OpWriteIndexSegment, err, seg.Path(), seg.ID())
 	}()
