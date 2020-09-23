@@ -303,8 +303,6 @@ func TestStorage_ListDir(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	mockBucket := NewMockBucket(ctrl)
-
 	keys := make([]string, 7)
 	for idx := range keys {
 		keys[idx] = uuid.New().String()
@@ -432,6 +430,7 @@ func TestStorage_ListDir(t *testing.T) {
 		t.Run(v.name, func(t *testing.T) {
 			path := v.path
 
+			mockBucket := NewMockBucket(ctrl)
 			mockBucket.EXPECT().ListObjectsWithContext(gomock.Eq(context.Background()), gomock.Any()).
 				DoAndReturn(func(ctx context.Context, input *service.ListObjectsInput) (*service.ListObjectsOutput, error) {
 					assert.Equal(t, path, *input.Prefix)
@@ -455,6 +454,9 @@ func TestStorage_ListDir(t *testing.T) {
 					break
 				}
 				assert.Equal(t, err == nil, v.err == nil)
+				if err != nil {
+					break
+				}
 
 				items = append(items, o)
 			}
@@ -717,8 +719,6 @@ func TestStorage_ListPrefixSegments(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	mockBucket := NewMockBucket(ctrl)
-
 	keys := make([]string, 100)
 	for idx := range keys {
 		keys[idx] = uuid.New().String()
@@ -777,6 +777,7 @@ func TestStorage_ListPrefixSegments(t *testing.T) {
 		t.Run(v.name, func(t *testing.T) {
 			path := uuid.New().String()
 
+			mockBucket := NewMockBucket(ctrl)
 			mockBucket.EXPECT().ListMultipartUploadsWithContext(gomock.Eq(context.Background()), gomock.Any()).
 				DoAndReturn(func(ctx context.Context, input *service.ListMultipartUploadsInput) (*service.ListMultipartUploadsOutput, error) {
 					assert.Equal(t, path, *input.Prefix)
@@ -799,12 +800,13 @@ func TestStorage_ListPrefixSegments(t *testing.T) {
 				if err == IterateDone {
 					break
 				}
+				println(err, v.err)
+				assert.Equal(t, err == nil, v.err == nil)
 				if err != nil {
-					t.Error(err)
+					break
 				}
 				items = append(items, seg)
 			}
-			assert.Equal(t, v.err == nil, err == nil)
 			assert.Equal(t, v.items, items)
 		})
 	}
