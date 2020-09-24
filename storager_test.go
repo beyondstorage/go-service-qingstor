@@ -117,7 +117,7 @@ func TestStorage_AbortSegment(t *testing.T) {
 	path := uuid.New().String()
 	id := uuid.New().String()
 	seg := NewIndexBasedSegment(path, id)
-	mockBucket.EXPECT().AbortMultipartUpload(gomock.Any(), gomock.Any()).Do(func(inputPath string, input *service.AbortMultipartUploadInput) {
+	mockBucket.EXPECT().AbortMultipartUploadWithContext(gomock.Any(), gomock.Any(), gomock.Any()).Do(func(ctx context.Context, inputPath string, input *service.AbortMultipartUploadInput) {
 		assert.Equal(t, path, inputPath)
 		assert.Equal(t, id, *input.UploadID)
 	})

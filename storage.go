@@ -52,7 +52,7 @@ func (s *Storage) listDir(ctx context.Context, dir string, opt *pairStorageListD
 	output := &service.ListObjectsOutput{}
 
 	fn := typ.NextObjectFunc(func(page *typ.ObjectPage) error {
-		output, err = s.bucket.ListObjects(input)
+		output, err = s.bucket.ListObjectsWithContext(ctx, input)
 		if err != nil {
 			return err
 		}

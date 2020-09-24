@@ -1,5 +1,7 @@
 bou.ke/monkey v1.0.2 h1:kWcnsrCNUatbxncxR/ThdYqbytgOIArtYWqcQLQzKLI=
 bou.ke/monkey v1.0.2/go.mod h1:OqickVX3tNx6t33n1xvtTtu85YN5s6cKwVug+oHMaIA=
+github.com/Xuanwo/go-bufferpool v0.0.0-20200622083641-bc954721ce54 h1:wA7f87ODtF2oA7FCmeGHrPvyG+vVDxSP9ZRsltXB2Gc=
+github.com/Xuanwo/go-bufferpool v0.0.0-20200622083641-bc954721ce54/go.mod h1:Mle++9GGouhOwGj52i9PJLNAPmW2nb8PWBP7JJzNCzk=
 github.com/aos-dev/go-storage/v2 v2.0.0-20200922113031-c77630eb8c8b h1:4UeREEOVouv03cjStjOc3pVqmTqbx/EhQwGOp0wvf4w=
 github.com/aos-dev/go-storage/v2 v2.0.0-20200922113031-c77630eb8c8b/go.mod h1:fdonF870IKNAqZMHnHr3gs/RImEqx9kjyJ33k4LtBEI=
 github.com/davecgh/go-spew v1.1.0 h1:ZDRjVQ15GmhC3fiQ8ni8+OwkZQO4DARzQgrnXU1Liz8=
@@ -14,8 +16,10 @@ github.com/pengsrc/go-shared v0.2.1-0.20190131101655-1999055a4a14 h1:XeOYlK9W1uC
 github.com/pengsrc/go-shared v0.2.1-0.20190131101655-1999055a4a14/go.mod h1:jVblp62SafmidSkvWrXyxAme3gaTfEtWwRPGz5cpvHg=
 github.com/pmezard/go-difflib v1.0.0 h1:4DBwDE0NGyQoBHbLQYPwSUPoCMWR5BEzIk/f1lZbAQM=
 github.com/pmezard/go-difflib v1.0.0/go.mod h1:iKH77koFhYxTK1pcRnkKkqfTogsbg7gZNVY4sRDYZ/4=
-github.com/qingstor/qingstor-sdk-go/v4 v4.0.0 h1:9j+4MhIxhZr3bHkYhVfAVjvsvtwI0I6gB5Xsx6XMPNs=
-github.com/qingstor/qingstor-sdk-go/v4 v4.0.0/go.mod h1:WM7DpsJxaOLCAX1K7R4KOBvzEpM4gfAjyN45IIV6rZ0=
+github.com/qingstor/log v0.0.0-20200804082313-615256cccabc h1:633tgwvkk8O26HZD/upVtDzWcrMoCiffZAVDtEtFW9E=
+github.com/qingstor/log v0.0.0-20200804082313-615256cccabc/go.mod h1:XfNhERXtkg/S9MWaMOk/m7mrmj4vcWDvhw17hmH4JGQ=
+github.com/qingstor/qingstor-sdk-go/v4 v4.1.1-0.20200907090207-bb758948ae4a h1:tKxWSZHPZdT4w018691/sDvC2t4agBvB9yjAoh8sOjE=
+github.com/qingstor/qingstor-sdk-go/v4 v4.1.1-0.20200907090207-bb758948ae4a/go.mod h1:Uu3Bs4hnGW4dEWD+S3j1onwmS18jEcLVIZHknlo1q6o=
 github.com/stretchr/objx v0.1.0/go.mod h1:HFkY916IF+rwdDfMAkV7OtwuqBVzrE8GR6GFx+wExME=
 github.com/stretchr/testify v1.3.1-0.20190311161405-34c6fa2dc709/go.mod h1:M5WIy9Dh21IEIfnGCwXGc5bZfKNJtfHm1UVUgZn+9EI=
 github.com/stretchr/testify v1.6.1 h1:hDPOHmpOpP40lSULcqw7IrRb/u7w6RpDC9399XyoNd0=

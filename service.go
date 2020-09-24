@@ -57,9 +57,8 @@ func (s *Service) list(ctx context.Context, opt *pairServiceList) (it *typ.Stora
 
 	var output *service.ListBucketsOutput
 
-		output, err = s.service.ListBucketsWithContext(ctx, input)
 	fn := typ.NextStoragerFunc(func(page *typ.StoragerPage) error {
-		output, err = s.service.ListBuckets(input)
+		output, err = s.service.ListBucketsWithContext(ctx, input)
 		if err != nil {
 			return err
 		}
