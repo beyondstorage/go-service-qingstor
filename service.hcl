@@ -17,7 +17,6 @@ namespace "service" {
     optional = ["location"]
   }
   op "list" {
-    required = ["storager_func"]
     optional = ["location"]
   }
 }
@@ -29,20 +28,11 @@ namespace "storage" {
     optional = ["disable_uri_cleaning", "location", "work_dir"]
   }
 
-  op "list_dir" {
-    optional = ["dir_func", "file_func"]
-  }
-  op "list_prefix" {
-    required = ["object_func"]
-  }
-  op "list_prefix_segments" {
-    optional = ["segment_func"]
-  }
   op "reach" {
     required = ["expire"]
   }
   op "read" {
-    optional = ["offset", "size"]
+    optional = ["offset", "read_callback_func", "size"]
   }
   op "write" {
     required = ["size"]

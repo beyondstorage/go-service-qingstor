@@ -13,15 +13,13 @@ import (
 	"github.com/golang/mock/gomock"
 	"github.com/google/uuid"
 	"github.com/qingstor/qingstor-sdk-go/v4/config"
-	qerror "github.com/qingstor/qingstor-sdk-go/v4/request/errors"
 	"github.com/qingstor/qingstor-sdk-go/v4/service"
 	"github.com/stretchr/testify/assert"
 
-	"github.com/aos-dev/go-storage/v2"
+	"github.com/aos-dev/go-storage/v2/pairs"
 	"github.com/aos-dev/go-storage/v2/pkg/credential"
 	"github.com/aos-dev/go-storage/v2/services"
 	"github.com/aos-dev/go-storage/v2/types"
-	"github.com/aos-dev/go-storage/v2/types/pairs"
 )
 
 func TestService_String(t *testing.T) {
@@ -212,8 +210,6 @@ func TestService_List(t *testing.T) {
 	srv := &Service{
 		service: mockService,
 	}
-	listFunc := pairs.WithStoragerFunc(func(storager storage.Storager) {})
-
 	mockService.EXPECT().Bucket(gomock.Any(), gomock.Any()).DoAndReturn(func(inputName, inputLocation string) (*service.Bucket, error) {
 		return &service.Bucket{
 			Config: &config.Config{},
@@ -234,9 +230,14 @@ func TestService_List(t *testing.T) {
 			}, nil
 		})
 
-		err := srv.List(pairs.WithLocation(location), listFunc)
+		it, err := srv.List(pairs.WithLocation(location))
 		assert.NoError(t, err)
-		// assert.Equal(t, 1, len(s))
+		assert.NotNil(t, it)
+		st, err := it.Next()
+		if err != nil {
+			t.Error(err)
+		}
+		assert.NotNil(t, st)
 	}
 
 	{
@@ -253,20 +254,12 @@ func TestService_List(t *testing.T) {
 			}, nil
 		})
 
-		err := srv.List(listFunc)
+		it, err := srv.List()
 		assert.NoError(t, err)
+		assert.NotNil(t, it)
 		// assert.Equal(t, 1, len(s))
-	}
-
-	{
-		// Test request facing error.
-		mockService.EXPECT().ListBucketsWithContext(gomock.Eq(context.Background()), gomock.Any()).DoAndReturn(func(ctx context.Context, input *service.ListBucketsInput) (*service.ListBucketsOutput, error) {
-			return nil, &qerror.QingStorError{}
-		})
-
-		err := srv.List(listFunc)
-		t.Log(err)
-		assert.Error(t, err)
+		_, err = it.Next()
+		assert.NoError(t, err)
 	}
 }
 
