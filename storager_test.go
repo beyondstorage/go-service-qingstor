@@ -578,12 +578,13 @@ func TestStorage_Read(t *testing.T) {
 		}
 
 		var buf bytes.Buffer
-		err := client.Read(v.path, &buf)
+		n, err := client.Read(v.path, &buf)
 		if v.hasError {
 			assert.Error(t, err)
 			assert.True(t, errors.Is(err, v.wantErr))
 		} else {
 			assert.Equal(t, "content", buf.String())
+			assert.Equal(t, int64(buf.Len()), n)
 		}
 	}
 }
@@ -680,12 +681,13 @@ func TestStorage_Write(t *testing.T) {
 			bucket: mockBucket,
 		}
 
-		err := client.Write(v.path, nil, pairs.WithSize(v.size))
+		n, err := client.Write(v.path, nil, pairs.WithSize(v.size))
 		if v.hasError {
 			assert.Error(t, err)
 			assert.True(t, errors.Is(err, v.wantErr))
 		} else {
 			assert.NoError(t, err)
+			assert.Equal(t, v.size, n)
 		}
 	}
 }

@@ -1402,13 +1402,13 @@ func (s *Storage) ReachWithContext(ctx context.Context, path string, pairs ...*P
 // Read will read the file's data.
 //
 // This function will create a context by default.
-func (s *Storage) Read(path string, w io.Writer, pairs ...*Pair) (err error) {
+func (s *Storage) Read(path string, w io.Writer, pairs ...*Pair) (n int64, err error) {
 	ctx := context.Background()
 	return s.ReadWithContext(ctx, path, w, pairs...)
 }
 
 // ReadWithContext will read the file's data.
-func (s *Storage) ReadWithContext(ctx context.Context, path string, w io.Writer, pairs ...*Pair) (err error) {
+func (s *Storage) ReadWithContext(ctx context.Context, path string, w io.Writer, pairs ...*Pair) (n int64, err error) {
 	defer func() {
 		err = s.formatError(services.OpRead, err, path)
 	}()
@@ -1468,13 +1468,13 @@ func (s *Storage) StatisticalWithContext(ctx context.Context, pairs ...*Pair) (s
 // Write will write data into a file.
 //
 // This function will create a context by default.
-func (s *Storage) Write(path string, r io.Reader, pairs ...*Pair) (err error) {
+func (s *Storage) Write(path string, r io.Reader, pairs ...*Pair) (n int64, err error) {
 	ctx := context.Background()
 	return s.WriteWithContext(ctx, path, r, pairs...)
 }
 
 // WriteWithContext will write data into a file.
-func (s *Storage) WriteWithContext(ctx context.Context, path string, r io.Reader, pairs ...*Pair) (err error) {
+func (s *Storage) WriteWithContext(ctx context.Context, path string, r io.Reader, pairs ...*Pair) (n int64, err error) {
 	defer func() {
 		err = s.formatError(services.OpWrite, err, path)
 	}()
