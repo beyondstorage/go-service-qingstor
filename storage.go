@@ -207,7 +207,7 @@ func (s *Storage) reach(ctx context.Context, path string, opt *pairStorageReach)
 	}
 	return r.HTTPRequest.URL.String(), nil
 }
-func (s *Storage) read(ctx context.Context, path string, w io.Writer, opt *pairStorageRead) (err error) {
+func (s *Storage) read(ctx context.Context, path string, w io.Writer, opt *pairStorageRead) (n int64, err error) {
 	input := &service.GetObjectInput{}
 
 	if opt.HasOffset || opt.HasSize {
@@ -219,7 +219,7 @@ func (s *Storage) read(ctx context.Context, path string, w io.Writer, opt *pairS
 
 	output, err := s.bucket.GetObjectWithContext(ctx, rp, input)
 	if err != nil {
-		return
+		return n, err
 	}
 	defer output.Body.Close()
 
@@ -228,11 +228,7 @@ func (s *Storage) read(ctx context.Context, path string, w io.Writer, opt *pairS
 		rc = iowrap.CallbackReadCloser(rc, opt.ReadCallbackFunc)
 	}
 
-	_, err = io.Copy(w, rc)
-	if err != nil {
-		return
-	}
-	return nil
+	return io.Copy(w, rc)
 }
 func (s *Storage) stat(ctx context.Context, path string, opt *pairStorageStat) (o *typ.Object, err error) {
 	input := &service.HeadObjectInput{}
@@ -267,7 +263,7 @@ func (s *Storage) stat(ctx context.Context, path string, opt *pairStorageStat) (
 
 	return o, nil
 }
-func (s *Storage) write(ctx context.Context, path string, r io.Reader, opt *pairStorageWrite) (err error) {
+func (s *Storage) write(ctx context.Context, path string, r io.Reader, opt *pairStorageWrite) (n int64, err error) {
 	if opt.HasReadCallbackFunc {
 		r = iowrap.CallbackReader(r, opt.ReadCallbackFunc)
 	}
@@ -289,7 +285,7 @@ func (s *Storage) write(ctx context.Context, path string, r io.Reader, opt *pair
 	if err != nil {
 		return
 	}
-	return nil
+	return opt.Size, nil
 }
 func (s *Storage) writeIndexSegment(ctx context.Context, seg typ.Segment, r io.Reader, index int, size int64, opt *pairStorageWriteIndexSegment) (err error) {
 	p, err := seg.(*typ.IndexBasedSegment).InsertPart(index, size)
