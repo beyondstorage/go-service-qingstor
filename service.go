@@ -55,29 +55,29 @@ func (s *Service) list(ctx context.Context, opt *pairServiceList) (it *typ.Stora
 		input.Location = &opt.Location
 	}
 
-	var output *service.ListBucketsOutput
+	return typ.NewStoragerIterator(ctx, s.listNext, input), nil
+}
 
-	fn := typ.NextStoragerFunc(func(page *typ.StoragerPage) error {
-		output, err = s.service.ListBucketsWithContext(ctx, input)
+func (s *Service) listNext(ctx context.Context, page *typ.StoragerPage) error {
+	input := page.Status.(*service.ListBucketsInput)
+
+	output, err := s.service.ListBucketsWithContext(ctx, input)
+	if err != nil {
+		return err
+	}
+
+	for _, v := range output.Buckets {
+		store, err := s.newStorage(ps.WithName(*v.Name), ps.WithLocation(*v.Location))
 		if err != nil {
 			return err
 		}
+		page.Data = append(page.Data, store)
+	}
 
-		for _, v := range output.Buckets {
-			store, err := s.newStorage(ps.WithName(*v.Name), ps.WithLocation(*v.Location))
-			if err != nil {
-				return err
-			}
-			page.Data = append(page.Data, store)
-		}
+	*input.Offset += len(output.Buckets)
+	if *input.Offset >= service.IntValue(output.Count) {
+		return typ.IterateDone
+	}
 
-		*input.Offset += len(output.Buckets)
-		if *input.Offset >= service.IntValue(output.Count) {
-			return typ.IterateDone
-		}
-
-		return nil
-	})
-
-	return typ.NewStoragerIterator(fn), nil
+	return nil
 }
