@@ -49,53 +49,53 @@ func (s *Storage) listDir(ctx context.Context, dir string, opt *pairStorageListD
 		Prefix:    &rp,
 		Delimiter: &delimiter,
 	}
-	output := &service.ListObjectsOutput{}
 
-	fn := typ.NextObjectFunc(func(page *typ.ObjectPage) error {
-		output, err = s.bucket.ListObjectsWithContext(ctx, input)
+	return typ.NewObjectIterator(ctx, s.listNextDir, input), nil
+}
+func (s *Storage) listNextDir(ctx context.Context, page *typ.ObjectPage) error {
+	input := page.Status.(*service.ListObjectsInput)
+
+	output, err := s.bucket.ListObjectsWithContext(ctx, input)
+	if err != nil {
+		return err
+	}
+
+	for _, v := range output.CommonPrefixes {
+		o := &typ.Object{
+			ID:         *v,
+			Name:       s.getRelPath(*v),
+			Type:       typ.ObjectTypeDir,
+			ObjectMeta: typ.NewObjectMeta(),
+		}
+
+		page.Data = append(page.Data, o)
+	}
+
+	for _, v := range output.Keys {
+		// add filter to exclude dir-key itself, which would exist if created in console, see issue #365
+		if convert.StringValue(v.Key) == *input.Prefix {
+			continue
+		}
+		o, err := s.formatFileObject(v)
 		if err != nil {
 			return err
 		}
 
-		for _, v := range output.CommonPrefixes {
-			o := &typ.Object{
-				ID:         *v,
-				Name:       s.getRelPath(*v),
-				Type:       typ.ObjectTypeDir,
-				ObjectMeta: typ.NewObjectMeta(),
-			}
+		page.Data = append(page.Data, o)
+	}
 
-			page.Data = append(page.Data, o)
-		}
+	if service.StringValue(output.NextMarker) == "" {
+		return typ.IterateDone
+	}
+	if output.HasMore != nil && !*output.HasMore {
+		return typ.IterateDone
+	}
+	if len(output.Keys) == 0 {
+		return typ.IterateDone
+	}
 
-		for _, v := range output.Keys {
-			// add filter to exclude dir-key itself, which would exist if created in console, see issue #365
-			if convert.StringValue(v.Key) == rp {
-				continue
-			}
-			o, err := s.formatFileObject(v)
-			if err != nil {
-				return err
-			}
-
-			page.Data = append(page.Data, o)
-		}
-
-		input.Marker = output.NextMarker
-		if marker == "" {
-			return typ.IterateDone
-		}
-		if output.HasMore != nil && !*output.HasMore {
-			return typ.IterateDone
-		}
-		if len(output.Keys) == 0 {
-			return typ.IterateDone
-		}
-
-		return nil
-	})
-
-	return typ.NewObjectIterator(fn), nil
+	input.Marker = output.NextMarker
+	return nil
 }
 func (s *Storage) listPrefix(ctx context.Context, prefix string, opt *pairStorageListPrefix) (oi *typ.ObjectIterator, err error) {
 	marker := ""
@@ -108,40 +108,40 @@ func (s *Storage) listPrefix(ctx context.Context, prefix string, opt *pairStorag
 		Marker: &marker,
 		Prefix: &rp,
 	}
-	output := &service.ListObjectsOutput{}
 
-	fn := typ.NextObjectFunc(func(page *typ.ObjectPage) error {
-		println(*input.Prefix)
-		output, err = s.bucket.ListObjectsWithContext(ctx, input)
+	return typ.NewObjectIterator(ctx, s.listNextPrefix, input), nil
+}
+func (s *Storage) listNextPrefix(ctx context.Context, page *typ.ObjectPage) error {
+	input := page.Status.(*service.ListObjectsInput)
+
+	output, err := s.bucket.ListObjectsWithContext(ctx, input)
+	if err != nil {
+		return err
+	}
+
+	for _, v := range output.Keys {
+		o, err := s.formatFileObject(v)
 		if err != nil {
 			return err
 		}
 
-		for _, v := range output.Keys {
-			o, err := s.formatFileObject(v)
-			if err != nil {
-				return err
-			}
+		page.Data = append(page.Data, o)
+	}
 
-			page.Data = append(page.Data, o)
-		}
+	if service.StringValue(output.NextMarker) == "" {
+		return typ.IterateDone
+	}
+	if output.HasMore != nil && !*output.HasMore {
+		return typ.IterateDone
+	}
+	if len(output.Keys) == 0 {
+		return typ.IterateDone
+	}
 
-		marker = convert.StringValue(output.NextMarker)
-		if marker == "" {
-			return typ.IterateDone
-		}
-		if output.HasMore != nil && !*output.HasMore {
-			return typ.IterateDone
-		}
-		if len(output.Keys) == 0 {
-			return typ.IterateDone
-		}
-
-		return nil
-	})
-
-	return typ.NewObjectIterator(fn), nil
+	input.Marker = output.NextMarker
+	return nil
 }
+
 func (s *Storage) listPrefixSegments(ctx context.Context, prefix string, opt *pairStorageListPrefixSegments) (si *typ.SegmentIterator, err error) {
 	limit := 200
 
@@ -151,34 +151,35 @@ func (s *Storage) listPrefixSegments(ctx context.Context, prefix string, opt *pa
 		Limit:  &limit,
 		Prefix: &rp,
 	}
-	output := &service.ListMultipartUploadsOutput{}
 
-	fn := typ.NextSegmentFunc(func(page *typ.SegmentPage) error {
-		output, err = s.bucket.ListMultipartUploadsWithContext(ctx, input)
-		if err != nil {
-			return err
-		}
+	return typ.NewSegmentIterator(ctx, s.listNextPrefixSegments, input), nil
+}
 
-		for _, v := range output.Uploads {
-			// TODO: we should handle rel prefix here.
-			seg := typ.NewIndexBasedSegment(*v.Key, *v.UploadID)
+func (s *Storage) listNextPrefixSegments(ctx context.Context, page *typ.SegmentPage) error {
+	input := page.Status.(*service.ListMultipartUploadsInput)
 
-			page.Data = append(page.Data, seg)
-		}
+	output, err := s.bucket.ListMultipartUploadsWithContext(ctx, input)
+	if err != nil {
+		return err
+	}
 
-		input.KeyMarker = output.NextKeyMarker
-		input.UploadIDMarker = output.NextUploadIDMarker
-		if service.StringValue(input.KeyMarker) == "" && service.StringValue(input.UploadIDMarker) == "" {
-			return typ.IterateDone
-		}
-		if output.HasMore != nil && !*output.HasMore {
-			return typ.IterateDone
-		}
+	for _, v := range output.Uploads {
+		// TODO: we should handle rel prefix here.
+		seg := typ.NewIndexBasedSegment(*v.Key, *v.UploadID)
 
-		return nil
-	})
+		page.Data = append(page.Data, seg)
+	}
 
-	return typ.NewSegmentIterator(fn), nil
+	input.KeyMarker = output.NextKeyMarker
+	input.UploadIDMarker = output.NextUploadIDMarker
+	if service.StringValue(input.KeyMarker) == "" && service.StringValue(input.UploadIDMarker) == "" {
+		return typ.IterateDone
+	}
+	if output.HasMore != nil && !*output.HasMore {
+		return typ.IterateDone
+	}
+
+	return nil
 }
 func (s *Storage) metadata(ctx context.Context, opt *pairStorageMetadata) (meta typ.StorageMeta, err error) {
 	meta = typ.NewStorageMeta()
