@@ -36,7 +36,7 @@ namespace "storage" {
   }
   op "write" {
     required = ["size"]
-    optional = ["checksum", "storage_class"]
+    optional = ["content_md5", "storage_class"]
   }
 }
 
@@ -44,9 +44,6 @@ pairs {
 
   pair "disable_uri_cleaning" {
     type = "bool"
-  }
-  pair "storage_class" {
-    type = "string"
   }
 }
 

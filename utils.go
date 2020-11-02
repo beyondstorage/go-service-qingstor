@@ -58,25 +58,25 @@ func (s *Storage) String() string {
 }
 
 // New will create both Servicer and Storager.
-func New(pairs ...*typ.Pair) (typ.Servicer, typ.Storager, error) {
+func New(pairs ...typ.Pair) (typ.Servicer, typ.Storager, error) {
 	return newServicerAndStorager(pairs...)
 }
 
 // NewServicer will create Servicer only.
-func NewServicer(pairs ...*typ.Pair) (typ.Servicer, error) {
+func NewServicer(pairs ...typ.Pair) (typ.Servicer, error) {
 	return newServicer(pairs...)
 }
 
 // NewStorager will create Storager only.
-func NewStorager(pairs ...*typ.Pair) (typ.Storager, error) {
+func NewStorager(pairs ...typ.Pair) (typ.Storager, error) {
 	_, store, err := newServicerAndStorager(pairs...)
 	return store, err
 }
 
-func newServicer(pairs ...*typ.Pair) (srv *Service, err error) {
+func newServicer(pairs ...typ.Pair) (srv *Service, err error) {
 	defer func() {
 		if err != nil {
-			err = &services.InitError{Op: services.OpNewServicer, Type: Type, Err: err, Pairs: pairs}
+			err = &services.InitError{Op: "new_servicer", Type: Type, Err: err, Pairs: pairs}
 		}
 	}()
 
@@ -115,10 +115,10 @@ func newServicer(pairs ...*typ.Pair) (srv *Service, err error) {
 }
 
 // New will create a new qingstor service.
-func newServicerAndStorager(pairs ...*typ.Pair) (srv *Service, store *Storage, err error) {
+func newServicerAndStorager(pairs ...typ.Pair) (srv *Service, store *Storage, err error) {
 	defer func() {
 		if err != nil {
-			err = &services.InitError{Op: services.OpNewStorager, Type: Type, Err: err, Pairs: pairs}
+			err = &services.InitError{Op: "new_storager", Type: Type, Err: err, Pairs: pairs}
 		}
 	}()
 
@@ -183,7 +183,7 @@ const (
 	StorageClassStandardIA = "STANDARD_IA"
 )
 
-func (s *Service) newStorage(pairs ...*typ.Pair) (store *Storage, err error) {
+func (s *Service) newStorage(pairs ...typ.Pair) (store *Storage, err error) {
 	opt, err := parsePairStorageNew(pairs)
 	if err != nil {
 		return
@@ -303,12 +303,15 @@ func (s *Storage) formatError(op string, err error, path ...string) error {
 	}
 }
 
+func (s *Storage) newObject(done bool) *typ.Object {
+	return typ.NewObject(s, done)
+}
+
 func (s *Storage) formatFileObject(v *service.KeyType) (o *typ.Object, err error) {
 	o = &typ.Object{
-		ID:         *v.Key,
-		Name:       s.getRelPath(*v.Key),
-		Type:       typ.ObjectTypeFile,
-		ObjectMeta: typ.NewObjectMeta(),
+		ID:   *v.Key,
+		Name: s.getRelPath(*v.Key),
+		Type: typ.ObjectTypeFile,
 	}
 
 	o.SetSize(service.Int64Value(v.Size))
@@ -318,7 +321,7 @@ func (s *Storage) formatFileObject(v *service.KeyType) (o *typ.Object, err error
 		o.SetContentType(service.StringValue(v.MimeType))
 	}
 	if value := service.StringValue(v.StorageClass); value != "" {
-		setStorageClass(o.ObjectMeta, value)
+		setStorageClass(o, value)
 	}
 	if v.Etag != nil {
 		o.SetETag(service.StringValue(v.Etag))

@@ -36,6 +36,13 @@ func (s *Storage) initIndexSegment(ctx context.Context, path string, opt *pairSt
 	seg = typ.NewIndexBasedSegment(path, id)
 	return seg, nil
 }
+
+type listObjectInput service.ListObjectsInput
+
+func (i *listObjectInput) ContinuationToken() string {
+	return convert.StringValue(i.Marker)
+}
+
 func (s *Storage) listDir(ctx context.Context, dir string, opt *pairStorageListDir) (oi *typ.ObjectIterator, err error) {
 	marker := ""
 	delimiter := "/"
@@ -43,7 +50,7 @@ func (s *Storage) listDir(ctx context.Context, dir string, opt *pairStorageListD
 
 	rp := s.getAbsPath(dir)
 
-	input := &service.ListObjectsInput{
+	input := &listObjectInput{
 		Limit:     &limit,
 		Marker:    &marker,
 		Prefix:    &rp,
@@ -53,19 +60,19 @@ func (s *Storage) listDir(ctx context.Context, dir string, opt *pairStorageListD
 	return typ.NewObjectIterator(ctx, s.listNextDir, input), nil
 }
 func (s *Storage) listNextDir(ctx context.Context, page *typ.ObjectPage) error {
-	input := page.Status.(*service.ListObjectsInput)
+	input := page.Status.(*listObjectInput)
+	serviceInput := service.ListObjectsInput(*input)
 
-	output, err := s.bucket.ListObjectsWithContext(ctx, input)
+	output, err := s.bucket.ListObjectsWithContext(ctx, &serviceInput)
 	if err != nil {
 		return err
 	}
 
 	for _, v := range output.CommonPrefixes {
 		o := &typ.Object{
-			ID:         *v,
-			Name:       s.getRelPath(*v),
-			Type:       typ.ObjectTypeDir,
-			ObjectMeta: typ.NewObjectMeta(),
+			ID:   *v,
+			Name: s.getRelPath(*v),
+			Type: typ.ObjectTypeDir,
 		}
 
 		page.Data = append(page.Data, o)
@@ -103,7 +110,7 @@ func (s *Storage) listPrefix(ctx context.Context, prefix string, opt *pairStorag
 
 	rp := s.getAbsPath(prefix)
 
-	input := &service.ListObjectsInput{
+	input := &listObjectInput{
 		Limit:  &limit,
 		Marker: &marker,
 		Prefix: &rp,
@@ -112,9 +119,10 @@ func (s *Storage) listPrefix(ctx context.Context, prefix string, opt *pairStorag
 	return typ.NewObjectIterator(ctx, s.listNextPrefix, input), nil
 }
 func (s *Storage) listNextPrefix(ctx context.Context, page *typ.ObjectPage) error {
-	input := page.Status.(*service.ListObjectsInput)
+	input := page.Status.(*listObjectInput)
+	serviceInput := service.ListObjectsInput(*input)
 
-	output, err := s.bucket.ListObjectsWithContext(ctx, input)
+	output, err := s.bucket.ListObjectsWithContext(ctx, &serviceInput)
 	if err != nil {
 		return err
 	}
@@ -142,12 +150,17 @@ func (s *Storage) listNextPrefix(ctx context.Context, page *typ.ObjectPage) erro
 	return nil
 }
 
+type listMultipartUploadsInput service.ListMultipartUploadsInput
+
+func (i *listMultipartUploadsInput) ContinuationToken() string {
+	return convert.StringValue(i.UploadIDMarker)
+}
 func (s *Storage) listPrefixSegments(ctx context.Context, prefix string, opt *pairStorageListPrefixSegments) (si *typ.SegmentIterator, err error) {
 	limit := 200
 
 	rp := s.getAbsPath(prefix)
 
-	input := &service.ListMultipartUploadsInput{
+	input := &listMultipartUploadsInput{
 		Limit:  &limit,
 		Prefix: &rp,
 	}
@@ -156,9 +169,10 @@ func (s *Storage) listPrefixSegments(ctx context.Context, prefix string, opt *pa
 }
 
 func (s *Storage) listNextPrefixSegments(ctx context.Context, page *typ.SegmentPage) error {
-	input := page.Status.(*service.ListMultipartUploadsInput)
+	input := page.Status.(*listMultipartUploadsInput)
+	serviceInput := service.ListMultipartUploadsInput(*input)
 
-	output, err := s.bucket.ListMultipartUploadsWithContext(ctx, input)
+	output, err := s.bucket.ListMultipartUploadsWithContext(ctx, &serviceInput)
 	if err != nil {
 		return err
 	}
@@ -181,7 +195,7 @@ func (s *Storage) listNextPrefixSegments(ctx context.Context, page *typ.SegmentP
 
 	return nil
 }
-func (s *Storage) metadata(ctx context.Context, opt *pairStorageMetadata) (meta typ.StorageMeta, err error) {
+func (s *Storage) metadata(ctx context.Context, opt *pairStorageMetadata) (meta *typ.StorageMeta, err error) {
 	meta = typ.NewStorageMeta()
 	meta.Name = *s.properties.BucketName
 	meta.WorkDir = s.workDir
@@ -241,12 +255,10 @@ func (s *Storage) stat(ctx context.Context, path string, opt *pairStorageStat) (
 		return
 	}
 
-	o = &typ.Object{
-		ID:         rp,
-		Name:       path,
-		Type:       typ.ObjectTypeFile,
-		ObjectMeta: typ.NewObjectMeta(),
-	}
+	o = s.newObject(true)
+	o.ID = rp
+	o.Name = path
+	o.Type = typ.ObjectTypeFile
 
 	o.SetSize(service.Int64Value(output.ContentLength))
 	o.SetUpdatedAt(service.TimeValue(output.LastModified))
@@ -259,7 +271,7 @@ func (s *Storage) stat(ctx context.Context, path string, opt *pairStorageStat) (
 	}
 
 	if v := service.StringValue(output.XQSStorageClass); v != "" {
-		setStorageClass(o.ObjectMeta, v)
+		setStorageClass(o, v)
 	}
 
 	return o, nil
@@ -273,8 +285,8 @@ func (s *Storage) write(ctx context.Context, path string, r io.Reader, opt *pair
 		ContentLength: &opt.Size,
 		Body:          io.LimitReader(r, opt.Size),
 	}
-	if opt.HasChecksum {
-		input.ContentMD5 = &opt.Checksum
+	if opt.HasContentMd5 {
+		input.ContentMD5 = &opt.ContentMd5
 	}
 	if opt.HasStorageClass {
 		input.XQSStorageClass = service.String(opt.StorageClass)
@@ -370,7 +382,7 @@ func (s *Storage) completeSegment(ctx context.Context, seg typ.Segment, opt *pai
 	}
 	return
 }
-func (s *Storage) statistical(ctx context.Context, opt *pairStorageStatistical) (statistic typ.StorageStatistic, err error) {
+func (s *Storage) statistical(ctx context.Context, opt *pairStorageStatistical) (statistic *typ.StorageStatistic, err error) {
 	statistic = typ.NewStorageStatistic()
 
 	output, err := s.bucket.GetStatisticsWithContext(ctx)

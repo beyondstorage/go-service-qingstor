@@ -6,7 +6,6 @@ import (
 	"errors"
 	"io/ioutil"
 	"testing"
-	"time"
 
 	"github.com/golang/mock/gomock"
 	"github.com/google/uuid"
@@ -299,173 +298,6 @@ func TestStorage_InitSegment(t *testing.T) {
 	}
 }
 
-func TestStorage_ListDir(t *testing.T) {
-	ctrl := gomock.NewController(t)
-	defer ctrl.Finish()
-
-	keys := make([]string, 7)
-	for idx := range keys {
-		keys[idx] = uuid.New().String()
-	}
-
-	tests := []struct {
-		name   string
-		path   string
-		output *service.ListObjectsOutput
-		items  []*Object
-		err    error
-	}{
-		{
-			"list without delimiter",
-			uuid.New().String(),
-			&service.ListObjectsOutput{
-				HasMore: service.Bool(false),
-				Keys: []*service.KeyType{
-					{
-						Key: service.String(keys[0]),
-					},
-				},
-			},
-			[]*Object{
-				{
-					ID:   keys[0],
-					Name: keys[0],
-					Type: ObjectTypeFile,
-					ObjectMeta: NewObjectMeta().
-						SetSize(0).
-						SetUpdatedAt(time.Time{}),
-				},
-			},
-			nil,
-		},
-		{
-			"list with return next marker",
-			uuid.New().String(),
-			&service.ListObjectsOutput{
-				NextMarker: service.String("test_marker"),
-				HasMore:    service.Bool(false),
-				CommonPrefixes: []*string{
-					service.String(keys[2]),
-				},
-			},
-			[]*Object{
-				{
-					ID:         keys[2],
-					Name:       keys[2],
-					Type:       ObjectTypeDir,
-					ObjectMeta: NewObjectMeta(),
-				},
-			},
-			nil,
-		},
-		{
-			"list with return empty keys",
-			uuid.New().String(),
-			&service.ListObjectsOutput{
-				NextMarker: service.String("test_marker"),
-				HasMore:    service.Bool(true),
-			},
-			[]*Object{},
-			nil,
-		},
-		{
-			"list with error return",
-			uuid.New().String(),
-			nil,
-			[]*Object{},
-			&qerror.QingStorError{
-				StatusCode: 401,
-			},
-		},
-		{
-			"list with all data returned",
-			uuid.New().String(),
-			&service.ListObjectsOutput{
-				HasMore: service.Bool(false),
-				Keys: []*service.KeyType{
-					{
-						Key:      service.String(keys[5]),
-						MimeType: service.String("application/json"),
-						Etag:     service.String("xxxxx"),
-						Size:     service.Int64(1233),
-						Modified: service.Int(1233),
-					},
-				},
-			},
-			[]*Object{
-				{
-					ID:   keys[5],
-					Name: keys[5],
-					Type: ObjectTypeFile,
-					ObjectMeta: NewObjectMeta().
-						SetContentType("application/json").
-						SetETag("xxxxx").
-						SetSize(1233).
-						SetUpdatedAt(time.Unix(1233, 0)),
-				},
-			},
-			nil,
-		},
-		{
-			"list with dir and objects",
-			keys[6],
-			&service.ListObjectsOutput{
-				HasMore: service.Bool(false),
-				Keys: []*service.KeyType{
-					{
-						Key:      service.String(keys[6]),
-						MimeType: service.String("application/x-directory"),
-						Etag:     service.String("xxxxx"),
-						Size:     service.Int64(0),
-						Modified: service.Int(1233),
-					},
-				},
-			},
-			[]*Object{},
-			nil,
-		},
-	}
-
-	for _, v := range tests {
-		t.Run(v.name, func(t *testing.T) {
-			path := v.path
-
-			mockBucket := NewMockBucket(ctrl)
-			mockBucket.EXPECT().ListObjectsWithContext(gomock.Eq(context.Background()), gomock.Any()).
-				DoAndReturn(func(ctx context.Context, input *service.ListObjectsInput) (*service.ListObjectsOutput, error) {
-					assert.Equal(t, path, *input.Prefix)
-					assert.Equal(t, 200, *input.Limit)
-					return v.output, v.err
-				}).AnyTimes()
-
-			client := Storage{
-				bucket: mockBucket,
-			}
-
-			items := make([]*Object, 0)
-
-			it, err := client.ListDir(path)
-			if err != nil {
-				t.Error(err)
-			}
-			for {
-				o, err := it.Next()
-				if err == IterateDone {
-					break
-				}
-				assert.Equal(t, err == nil, v.err == nil)
-				if err != nil {
-					break
-				}
-
-				items = append(items, o)
-			}
-
-			assert.EqualValues(t, v.items, items)
-		})
-	}
-}
-
 func TestStorage_ListPrefix(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
@@ -641,7 +473,7 @@ func TestStorage_Stat(t *testing.T) {
 			checkSum, ok := o.GetETag()
 			assert.True(t, ok)
 			assert.Equal(t, "test_etag", checkSum)
-			storageClass, ok := GetStorageClass(o.ObjectMeta)
+			storageClass, ok := GetStorageClass(o)
 			assert.True(t, ok)
 			assert.Equal(t, StorageClassStandard, storageClass)
 		}

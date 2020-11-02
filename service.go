@@ -2,7 +2,9 @@ package qingstor
 
 import (
 	"context"
+	"strconv"
 
+	"github.com/pengsrc/go-shared/convert"
 	"github.com/qingstor/qingstor-sdk-go/v4/service"
 
 	ps "github.com/aos-dev/go-storage/v2/pairs"
@@ -47,8 +49,15 @@ func (s *Service) get(ctx context.Context, name string, opt *pairServiceGet) (st
 	return
 }
 
+type listBucketsInput service.ListBucketsInput
+
+func (i *listBucketsInput) ContinuationToken() string {
+	in := convert.IntValue(i.Offset)
+	return strconv.FormatInt(int64(in), 10)
+}
+
 func (s *Service) list(ctx context.Context, opt *pairServiceList) (it *typ.StoragerIterator, err error) {
-	input := &service.ListBucketsInput{
+	input := &listBucketsInput{
 		Offset: service.Int(0),
 	}
 	if opt.HasLocation {
@@ -59,9 +68,10 @@ func (s *Service) list(ctx context.Context, opt *pairServiceList) (it *typ.Stora
 }
 
 func (s *Service) listNext(ctx context.Context, page *typ.StoragerPage) error {
-	input := page.Status.(*service.ListBucketsInput)
+	input := page.Status.(*listBucketsInput)
+	serviceInput := service.ListBucketsInput(*input)
 
-	output, err := s.service.ListBucketsWithContext(ctx, input)
+	output, err := s.service.ListBucketsWithContext(ctx, &serviceInput)
 	if err != nil {
 		return err
 	}
