@@ -9,15 +9,7 @@ help:
 	@echo "  generate            to generate code"
 	@echo "  test                to run test"
 
-# golint: go get -u golang.org/x/lint/golint
-# definitions: go get -u github.com/aos-dev/go-storage/cmd/definitions
-# mockgen: go get github.com/golang/mock/mockgen
-tools := golint definitions mockgen
-
-$(tools):
-	@command -v $@ >/dev/null 2>&1 || echo "$@ is not found, please install it."
-
-check: vet lint
+check: vet
 
 format:
 	@echo "go fmt"
@@ -29,13 +21,10 @@ vet:
 	@go vet ./...
 	@echo "ok"
 
-lint: golint
-	@echo "golint"
-	@golint ./...
-	@echo "ok"
-
-generate: definitions mockgen
+generate:
 	@echo "generate code"
+	@echo "install definitions"
+	@go run github.com/aos-dev/go-dev-tools/cmd/setup
 	@go generate ./...
 	@go fmt ./...
 	@echo "ok"
@@ -52,7 +41,7 @@ test:
 	@echo "ok"
 
 tidy:
-	@go mod tidy && go mod verify
+	@go run github.com/aos-dev/go-dev-tools/cmd/tidy
 
 clean:
 	@echo "clean generated files"
