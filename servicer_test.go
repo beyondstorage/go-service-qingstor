@@ -350,7 +350,7 @@ func TestService_newStorage(t *testing.T) {
 	}
 	validWorkDir, invalidWorkDir := "/valid/dir/", "invalid/dir"
 	type args struct {
-		pairs []*types.Pair
+		pairs []types.Pair
 	}
 	tests := []struct {
 		name       string
@@ -363,7 +363,7 @@ func TestService_newStorage(t *testing.T) {
 		{
 			name: "normal case",
 			wd:   validWorkDir,
-			args: args{[]*types.Pair{
+			args: args{[]types.Pair{
 				{Key: pairs.Location, Value: uuid.New().String()},
 				{Key: pairs.Name, Value: uuid.New().String()},
 				{Key: pairs.WorkDir, Value: validWorkDir},
@@ -375,7 +375,7 @@ func TestService_newStorage(t *testing.T) {
 		{
 			name: "invalid work dir",
 			wd:   invalidWorkDir,
-			args: args{[]*types.Pair{
+			args: args{[]types.Pair{
 				{Key: pairs.Location, Value: uuid.New().String()},
 				{Key: pairs.Name, Value: uuid.New().String()},
 				{Key: pairs.WorkDir, Value: invalidWorkDir},
@@ -387,7 +387,7 @@ func TestService_newStorage(t *testing.T) {
 		{
 			name: "blank work dir",
 			wd:   "/",
-			args: args{[]*types.Pair{
+			args: args{[]types.Pair{
 				{Key: pairs.Location, Value: uuid.New().String()},
 				{Key: pairs.Name, Value: uuid.New().String()},
 			}},
@@ -398,7 +398,7 @@ func TestService_newStorage(t *testing.T) {
 		{
 			name: "invalid bucket name",
 			wd:   validWorkDir,
-			args: args{[]*types.Pair{
+			args: args{[]types.Pair{
 				{Key: pairs.Location, Value: uuid.New().String()},
 				{Key: pairs.Name, Value: "invalid bucket name"},
 				{Key: pairs.WorkDir, Value: validWorkDir},
