@@ -4,7 +4,7 @@ namespace "service" {
 
   new {
     required = ["credential"]
-    optional = ["endpoint"]
+    optional = ["endpoint", "http_client_options", "pair_policy"]
   }
 
   op "create" {
@@ -25,7 +25,7 @@ namespace "storage" {
 
   new {
     required = ["name"]
-    optional = ["disable_uri_cleaning", "location", "work_dir"]
+    optional = ["disable_uri_cleaning", "http_client_options", "location", "pair_policy", "work_dir"]
   }
 
   op "reach" {
@@ -36,7 +36,10 @@ namespace "storage" {
   }
   op "write" {
     required = ["size"]
-    optional = ["content_md5", "storage_class"]
+    optional = ["content_md5", "content_type", "offset", "read_callback_func", "storage_class"]
+  }
+  op "write_index_segment" {
+    optional = ["read_callback_func"]
   }
 }
 

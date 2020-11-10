@@ -44,6 +44,8 @@ type Storage struct {
 	config     *qsconfig.Config
 	properties *service.Properties
 
+	pairPolicy typ.PairPolicy
+
 	// options for this storager.
 	workDir string // workDir dir for all operation.
 }
