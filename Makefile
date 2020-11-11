@@ -12,36 +12,27 @@ help:
 check: vet
 
 format:
-	@echo "go fmt"
-	@go fmt ./...
-	@echo "ok"
+	go fmt ./...
 
 vet:
-	@echo "go vet"
-	@go vet ./...
-	@echo "ok"
+	go vet ./...
 
 generate:
 	@echo "generate code"
-	@go generate ./...
-	@go fmt ./...
-	@echo "ok"
+	go generate ./...
+	go fmt ./...
 
 build: generate tidy check
-	@echo "build storage"
-	@go build ./...
-	@echo "ok"
+	go build ./...
 
 test:
-	@echo "run test"
-	@go test -race -coverprofile=coverage.txt -covermode=atomic -v ./...
-	@go tool cover -html="coverage.txt" -o "coverage.html"
-	@echo "ok"
+	go test -race -coverprofile=coverage.txt -covermode=atomic -v ./...
+	go tool cover -html="coverage.txt" -o "coverage.html"
 
 tidy:
-	@go run github.com/aos-dev/go-dev-tools/cmd/tidy
+	go mod tidy
+	go mod verify
 
 clean:
 	@echo "clean generated files"
-	@find . -type f -name 'generated.go' -delete
-	@echo "Done"
+	find . -type f -name 'generated.go' -delete
