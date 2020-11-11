@@ -4,7 +4,7 @@ namespace "service" {
 
   new {
     required = ["credential"]
-    optional = ["endpoint", "http_client_options", "pair_policy"]
+    optional = ["additional_user_agent", "endpoint", "http_client_options", "pair_policy"]
   }
 
   op "create" {
@@ -45,6 +45,9 @@ namespace "storage" {
 
 pairs {
 
+  pair "additional_user_agent" {
+    type = "string"
+  }
   pair "disable_uri_cleaning" {
     type = "bool"
   }

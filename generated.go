@@ -23,9 +23,20 @@ const Type = "qingstor"
 
 // Service available pairs.
 const (
+	// AdditionalUserAgent
+	pairAdditionalUserAgent = "qingstor_additional_user_agent"
 	// DisableURICleaning
 	pairDisableURICleaning = "qingstor_disable_uri_cleaning"
 )
+
+// WithAdditionalUserAgent will apply additional_user_agent value to Options
+// AdditionalUserAgent
+func WithAdditionalUserAgent(v string) Pair {
+	return Pair{
+		Key:   pairAdditionalUserAgent,
+		Value: v,
+	}
+}
 
 // WithDisableURICleaning will apply disable_uri_cleaning value to Options
 // DisableURICleaning
@@ -58,12 +69,14 @@ type pairServiceNew struct {
 	HasCredential bool
 	Credential    *credential.Provider
 	// Optional pairs
-	HasEndpoint          bool
-	Endpoint             endpoint.Provider
-	HasHTTPClientOptions bool
-	HTTPClientOptions    *httpclient.Options
-	HasPairPolicy        bool
-	PairPolicy           PairPolicy
+	HasAdditionalUserAgent bool
+	AdditionalUserAgent    string
+	HasEndpoint            bool
+	Endpoint               endpoint.Provider
+	HasHTTPClientOptions   bool
+	HTTPClientOptions      *httpclient.Options
+	HasPairPolicy          bool
+	PairPolicy             PairPolicy
 	// Generated pairs
 }
 
@@ -80,6 +93,9 @@ func parsePairServiceNew(opts []Pair) (*pairServiceNew, error) {
 			result.HasCredential = true
 			result.Credential = v.Value.(*credential.Provider)
 		// Optional pairs
+		case "additional_user_agent":
+			result.HasAdditionalUserAgent = true
+			result.AdditionalUserAgent = v.Value.(string)
 		case "endpoint":
 			result.HasEndpoint = true
 			result.Endpoint = v.Value.(endpoint.Provider)

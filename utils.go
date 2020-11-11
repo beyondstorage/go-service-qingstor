@@ -108,6 +108,12 @@ func newServicer(pairs ...typ.Pair) (srv *Service, err error) {
 		cfg.Port = ep.Port
 		cfg.Protocol = ep.Protocol
 	}
+
+	// Set config's additional user-agent
+	if opt.HasAdditionalUserAgent {
+		cfg.AdditionalUserAgent = opt.AdditionalUserAgent
+	}
+
 	// Set config's http client
 	cfg.Connection = srv.client
 
