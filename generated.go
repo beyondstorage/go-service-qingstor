@@ -365,7 +365,7 @@ func parsePairStorageNew(opts []Pair) (*pairStorageNew, error) {
 			result.HasName = true
 			result.Name = v.Value.(string)
 		// Optional pairs
-		case "disable_uri_cleaning":
+		case pairDisableURICleaning:
 			result.HasDisableURICleaning = true
 			result.DisableURICleaning = v.Value.(bool)
 		case "http_client_options":
