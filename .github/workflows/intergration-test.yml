@@ -21,4 +21,8 @@ jobs:
         uses: actions/checkout@v2
 
       - name: Test
+        env:
+          STORAGE_QINGSTOR_CREDENTIAL: ${{ secrets.STORAGE_QINGSTOR_CREDENTIAL }}
+          STORAGE_QINGSTOR_ENDPOINT: ${{ secrets.STORAGE_QINGSTOR_ENDPOINT }}
+          STORAGE_QINGSTOR_NAME: ${{ secrets.STORAGE_QINGSTOR_NAME }}
         run: make integration_test
