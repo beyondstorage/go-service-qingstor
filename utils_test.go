@@ -37,6 +37,7 @@ func Test_New(t *testing.T) {
 		pairs.WithEndpoint(endpoint.NewHTTP(host, port)),
 		pairs.WithLocation("test"),
 		pairs.WithName(name),
+		WithAdditionalUserAgent("service-test"),
 	)
 	assert.NoError(t, err)
 	assert.NotNil(t, srv)

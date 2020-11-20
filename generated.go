@@ -93,7 +93,7 @@ func parsePairServiceNew(opts []Pair) (*pairServiceNew, error) {
 			result.HasCredential = true
 			result.Credential = v.Value.(*credential.Provider)
 		// Optional pairs
-		case "additional_user_agent":
+		case pairAdditionalUserAgent:
 			result.HasAdditionalUserAgent = true
 			result.AdditionalUserAgent = v.Value.(string)
 		case "endpoint":
