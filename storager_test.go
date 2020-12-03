@@ -727,3 +727,44 @@ func TestStorage_formatError(t *testing.T) {
 		assert.Equal(t, tt.targetEq, errors.Is(err, tt.targetErr), tt.name)
 	}
 }
+
+func TestStorage_Fetch(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockBucket := NewMockBucket(ctrl)
+
+	{
+		client := Storage{
+			bucket: mockBucket,
+		}
+
+		name := uuid.New().String()
+		url := uuid.New().String()
+
+		mockBucket.EXPECT().PutObjectWithContext(gomock.Eq(context.Background()), gomock.Any(), gomock.Any()).
+			DoAndReturn(func(ctx context.Context, objectKey string, input *service.PutObjectInput) (*service.PutObjectOutput, error) {
+				assert.Equal(t, name, objectKey)
+				assert.Equal(t, *input.XQSFetchSource, url)
+				return &service.PutObjectOutput{}, nil
+			})
+		err := client.Fetch(name, url)
+		assert.NoError(t, err)
+	}
+
+	{
+		client := Storage{
+			bucket: mockBucket,
+		}
+
+		name := uuid.New().String()
+		url := uuid.New().String()
+
+		mockBucket.EXPECT().PutObjectWithContext(gomock.Eq(context.Background()), gomock.Any(), gomock.Any()).
+			DoAndReturn(func(ctx context.Context, objectKey string, input *service.PutObjectInput) (*service.PutObjectOutput, error) {
+				return nil, &qerror.QingStorError{}
+			})
+		err := client.Fetch(name, url)
+		assert.Error(t, err)
+	}
+}
