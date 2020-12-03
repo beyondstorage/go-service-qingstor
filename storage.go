@@ -398,3 +398,10 @@ func (s *Storage) statistical(ctx context.Context, opt *pairStorageStatistical) 
 	}
 	return statistic, nil
 }
+
+func (s *Storage) fetch(ctx context.Context, path string, url string, opt *pairStorageFetch) (err error) {
+	_, err = s.bucket.PutObjectWithContext(ctx, path, &service.PutObjectInput{
+		XQSFetchSource: service.String(url),
+	})
+	return err
+}
