@@ -21,13 +21,16 @@ namespace "service" {
   }
 }
 namespace "storage" {
-  implement = ["copier", "dir_lister", "fetcher", "index_segmenter", "mover", "prefix_lister", "prefix_segments_lister", "reacher", "segmenter", "statistician"]
+  implement = ["copier", "fetcher", "index_segmenter", "mover", "reacher", "segmenter", "segments_lister", "statistician"]
 
   new {
     required = ["name"]
     optional = ["disable_uri_cleaning", "http_client_options", "location", "pair_policy", "work_dir"]
   }
 
+  op "list" {
+    optional = ["list_type"]
+  }
   op "reach" {
     required = ["expire"]
   }

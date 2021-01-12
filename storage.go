@@ -43,21 +43,27 @@ func (i *listObjectInput) ContinuationToken() string {
 	return convert.StringValue(i.Marker)
 }
 
-func (s *Storage) listDir(ctx context.Context, dir string, opt *pairStorageListDir) (oi *typ.ObjectIterator, err error) {
+func (s *Storage) list(ctx context.Context, dir string, opt *pairStorageList) (oi *typ.ObjectIterator, err error) {
 	marker := ""
-	delimiter := "/"
 	limit := 200
 
 	rp := s.getAbsPath(dir)
 
 	input := &listObjectInput{
-		Limit:     &limit,
-		Marker:    &marker,
-		Prefix:    &rp,
-		Delimiter: &delimiter,
+		Limit:  &limit,
+		Marker: &marker,
+		Prefix: &rp,
 	}
 
-	return typ.NewObjectIterator(ctx, s.listNextDir, input), nil
+	var nextFn typ.NextObjectFunc
+	if opt.HasListType && opt.ListType == typ.ListTypeDir {
+		input.Delimiter = convert.String("/")
+		nextFn = s.listNextDir
+	} else {
+		nextFn = s.listNextPrefix
+	}
+
+	return typ.NewObjectIterator(ctx, nextFn, input), nil
 }
 func (s *Storage) listNextDir(ctx context.Context, page *typ.ObjectPage) error {
 	input := page.Status.(*listObjectInput)
@@ -69,11 +75,10 @@ func (s *Storage) listNextDir(ctx context.Context, page *typ.ObjectPage) error {
 	}
 
 	for _, v := range output.CommonPrefixes {
-		o := &typ.Object{
-			ID:   *v,
-			Name: s.getRelPath(*v),
-			Type: typ.ObjectTypeDir,
-		}
+		o := s.newObject(true)
+		o.ID = *v
+		o.Name = s.getRelPath(*v)
+		o.Type = typ.ObjectTypeDir
 
 		page.Data = append(page.Data, o)
 	}
@@ -104,20 +109,7 @@ func (s *Storage) listNextDir(ctx context.Context, page *typ.ObjectPage) error {
 	input.Marker = output.NextMarker
 	return nil
 }
-func (s *Storage) listPrefix(ctx context.Context, prefix string, opt *pairStorageListPrefix) (oi *typ.ObjectIterator, err error) {
-	marker := ""
-	limit := 200
 
-	rp := s.getAbsPath(prefix)
-
-	input := &listObjectInput{
-		Limit:  &limit,
-		Marker: &marker,
-		Prefix: &rp,
-	}
-
-	return typ.NewObjectIterator(ctx, s.listNextPrefix, input), nil
-}
 func (s *Storage) listNextPrefix(ctx context.Context, page *typ.ObjectPage) error {
 	input := page.Status.(*listObjectInput)
 	serviceInput := service.ListObjectsInput(*input)
@@ -155,7 +147,7 @@ type listMultipartUploadsInput service.ListMultipartUploadsInput
 func (i *listMultipartUploadsInput) ContinuationToken() string {
 	return convert.StringValue(i.UploadIDMarker)
 }
-func (s *Storage) listPrefixSegments(ctx context.Context, prefix string, opt *pairStorageListPrefixSegments) (si *typ.SegmentIterator, err error) {
+func (s *Storage) listSegments(ctx context.Context, prefix string, opt *pairStorageListSegments) (si *typ.SegmentIterator, err error) {
 	limit := 200
 
 	rp := s.getAbsPath(prefix)
