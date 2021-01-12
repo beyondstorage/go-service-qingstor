@@ -582,18 +582,20 @@ func (s *Storage) parsePairStorageInitIndexSegment(opts []Pair) (*pairStorageIni
 	return result, nil
 }
 
-// pairStorageListDir is the parsed struct
-type pairStorageListDir struct {
+// pairStorageList is the parsed struct
+type pairStorageList struct {
 	pairs []Pair
 
 	// Required pairs
 	// Optional pairs
+	HasListType bool
+	ListType    ListType
 	// Generated pairs
 }
 
-// parsePairStorageListDir will parse Pair slice into *pairStorageListDir
-func (s *Storage) parsePairStorageListDir(opts []Pair) (*pairStorageListDir, error) {
-	result := &pairStorageListDir{
+// parsePairStorageList will parse Pair slice into *pairStorageList
+func (s *Storage) parsePairStorageList(opts []Pair) (*pairStorageList, error) {
+	result := &pairStorageList{
 		pairs: opts,
 	}
 
@@ -601,10 +603,13 @@ func (s *Storage) parsePairStorageListDir(opts []Pair) (*pairStorageListDir, err
 		switch v.Key {
 		// Required pairs
 		// Optional pairs
+		case "list_type":
+			result.HasListType = true
+			result.ListType = v.Value.(ListType)
 		// Generated pairs
 		default:
 
-			if s.pairPolicy.All || s.pairPolicy.ListDir {
+			if s.pairPolicy.All || s.pairPolicy.List {
 				return nil, services.NewPairUnsupportedError(v)
 			}
 
@@ -614,8 +619,8 @@ func (s *Storage) parsePairStorageListDir(opts []Pair) (*pairStorageListDir, err
 	return result, nil
 }
 
-// pairStorageListPrefix is the parsed struct
-type pairStorageListPrefix struct {
+// pairStorageListSegments is the parsed struct
+type pairStorageListSegments struct {
 	pairs []Pair
 
 	// Required pairs
@@ -623,9 +628,9 @@ type pairStorageListPrefix struct {
 	// Generated pairs
 }
 
-// parsePairStorageListPrefix will parse Pair slice into *pairStorageListPrefix
-func (s *Storage) parsePairStorageListPrefix(opts []Pair) (*pairStorageListPrefix, error) {
-	result := &pairStorageListPrefix{
+// parsePairStorageListSegments will parse Pair slice into *pairStorageListSegments
+func (s *Storage) parsePairStorageListSegments(opts []Pair) (*pairStorageListSegments, error) {
+	result := &pairStorageListSegments{
 		pairs: opts,
 	}
 
@@ -636,39 +641,7 @@ func (s *Storage) parsePairStorageListPrefix(opts []Pair) (*pairStorageListPrefi
 		// Generated pairs
 		default:
 
-			if s.pairPolicy.All || s.pairPolicy.ListPrefix {
-				return nil, services.NewPairUnsupportedError(v)
-			}
-
-		}
-	}
-
-	return result, nil
-}
-
-// pairStorageListPrefixSegments is the parsed struct
-type pairStorageListPrefixSegments struct {
-	pairs []Pair
-
-	// Required pairs
-	// Optional pairs
-	// Generated pairs
-}
-
-// parsePairStorageListPrefixSegments will parse Pair slice into *pairStorageListPrefixSegments
-func (s *Storage) parsePairStorageListPrefixSegments(opts []Pair) (*pairStorageListPrefixSegments, error) {
-	result := &pairStorageListPrefixSegments{
-		pairs: opts,
-	}
-
-	for _, v := range opts {
-		switch v.Key {
-		// Required pairs
-		// Optional pairs
-		// Generated pairs
-		default:
-
-			if s.pairPolicy.All || s.pairPolicy.ListPrefixSegments {
+			if s.pairPolicy.All || s.pairPolicy.ListSegments {
 				return nil, services.NewPairUnsupportedError(v)
 			}
 
@@ -1127,70 +1100,48 @@ func (s *Storage) InitIndexSegmentWithContext(ctx context.Context, path string, 
 	return s.initIndexSegment(ctx, path, opt)
 }
 
-// ListDir will return list a specific dir.
+// List will return list a specific path.
 //
 // This function will create a context by default.
-func (s *Storage) ListDir(dir string, pairs ...Pair) (oi *ObjectIterator, err error) {
+func (s *Storage) List(path string, pairs ...Pair) (oi *ObjectIterator, err error) {
 	ctx := context.Background()
-	return s.ListDirWithContext(ctx, dir, pairs...)
+	return s.ListWithContext(ctx, path, pairs...)
 }
 
-// ListDirWithContext will return list a specific dir.
-func (s *Storage) ListDirWithContext(ctx context.Context, dir string, pairs ...Pair) (oi *ObjectIterator, err error) {
+// ListWithContext will return list a specific path.
+func (s *Storage) ListWithContext(ctx context.Context, path string, pairs ...Pair) (oi *ObjectIterator, err error) {
 	defer func() {
-		err = s.formatError("list_dir", err, dir)
+		err = s.formatError("list", err, path)
 	}()
-	var opt *pairStorageListDir
-	opt, err = s.parsePairStorageListDir(pairs)
+	var opt *pairStorageList
+	opt, err = s.parsePairStorageList(pairs)
 	if err != nil {
 		return
 	}
 
-	return s.listDir(ctx, dir, opt)
+	return s.list(ctx, path, opt)
 }
 
-// ListPrefix will return list a specific dir.
+// ListSegments will list segments.
 //
 // This function will create a context by default.
-func (s *Storage) ListPrefix(prefix string, pairs ...Pair) (oi *ObjectIterator, err error) {
+func (s *Storage) ListSegments(path string, pairs ...Pair) (si *SegmentIterator, err error) {
 	ctx := context.Background()
-	return s.ListPrefixWithContext(ctx, prefix, pairs...)
+	return s.ListSegmentsWithContext(ctx, path, pairs...)
 }
 
-// ListPrefixWithContext will return list a specific dir.
-func (s *Storage) ListPrefixWithContext(ctx context.Context, prefix string, pairs ...Pair) (oi *ObjectIterator, err error) {
+// ListSegmentsWithContext will list segments.
+func (s *Storage) ListSegmentsWithContext(ctx context.Context, path string, pairs ...Pair) (si *SegmentIterator, err error) {
 	defer func() {
-		err = s.formatError("list_prefix", err, prefix)
+		err = s.formatError("list_segments", err, path)
 	}()
-	var opt *pairStorageListPrefix
-	opt, err = s.parsePairStorageListPrefix(pairs)
+	var opt *pairStorageListSegments
+	opt, err = s.parsePairStorageListSegments(pairs)
 	if err != nil {
 		return
 	}
 
-	return s.listPrefix(ctx, prefix, opt)
-}
-
-// ListPrefixSegments will list segments.
-//
-// This function will create a context by default.
-func (s *Storage) ListPrefixSegments(prefix string, pairs ...Pair) (si *SegmentIterator, err error) {
-	ctx := context.Background()
-	return s.ListPrefixSegmentsWithContext(ctx, prefix, pairs...)
-}
-
-// ListPrefixSegmentsWithContext will list segments.
-func (s *Storage) ListPrefixSegmentsWithContext(ctx context.Context, prefix string, pairs ...Pair) (si *SegmentIterator, err error) {
-	defer func() {
-		err = s.formatError("list_prefix_segments", err, prefix)
-	}()
-	var opt *pairStorageListPrefixSegments
-	opt, err = s.parsePairStorageListPrefixSegments(pairs)
-	if err != nil {
-		return
-	}
-
-	return s.listPrefixSegments(ctx, prefix, opt)
+	return s.listSegments(ctx, path, opt)
 }
 
 // Metadata will return current storager's metadata.

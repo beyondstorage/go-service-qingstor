@@ -325,7 +325,7 @@ func TestStorage_ListPrefix(t *testing.T) {
 		bucket: mockBucket,
 	}
 
-	it, err := client.ListPrefix(path)
+	it, err := client.List(path, pairs.WithListType(ListTypePrefix))
 	if err != nil {
 		t.Error(err)
 	}
@@ -625,7 +625,7 @@ func TestStorage_ListPrefixSegments(t *testing.T) {
 
 			items := make([]Segment, 0)
 
-			it, err := client.ListPrefixSegments(path)
+			it, err := client.ListSegments(path)
 			if err != nil {
 				t.Error(err)
 			}
