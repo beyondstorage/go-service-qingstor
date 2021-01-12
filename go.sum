@@ -6,8 +6,8 @@ github.com/Xuanwo/templateutils v0.0.0-20201019101431-c73b871118f2 h1:ydpBZm38sX
 github.com/Xuanwo/templateutils v0.0.0-20201019101431-c73b871118f2/go.mod h1:x0qS7gfgEm24b8V9U+0zBEBAu/VpxZhO/+EWtpgEgDw=
 github.com/agext/levenshtein v1.2.1 h1:QmvMAjj2aEICytGiWzmxoE0x2KZvE0fvmqMOfy2tjT8=
 github.com/agext/levenshtein v1.2.1/go.mod h1:JEDfjyjHDjOF/1e4FlBE/PkbqA9OfWu2ki2W0IB5558=
-github.com/aos-dev/go-integration-test/v2 v2.0.0-20210112064549-aae4cdb3b025 h1:8JlyTULpFz2UyiO4TQRSC3+ApxizJHD87fiAP/TjqoM=
-github.com/aos-dev/go-integration-test/v2 v2.0.0-20210112064549-aae4cdb3b025/go.mod h1:/QyyTGYulgbdZr0smf9PPWsSplLp7ULbZe2zBTk5ycA=
+github.com/aos-dev/go-integration-test/v2 v2.0.0-20210112065904-c90f16efb7dc h1:PLqDKDYp8QDfRl7bdkoY1hACSwV/0gr2T++ZyK/uq9Y=
+github.com/aos-dev/go-integration-test/v2 v2.0.0-20210112065904-c90f16efb7dc/go.mod h1:/QyyTGYulgbdZr0smf9PPWsSplLp7ULbZe2zBTk5ycA=
 github.com/aos-dev/go-storage/v2 v2.0.1-0.20210112061652-0b7e2ab57b88 h1:fvQJJnDBtxCQjGBxRjGxVMbnunQHKeKOMXLUxlpQptE=
 github.com/aos-dev/go-storage/v2 v2.0.1-0.20210112061652-0b7e2ab57b88/go.mod h1:6mNwhRUOEiBFebskENkrfQPljurlnBY87sRl4VynWZY=
 github.com/aos-dev/specs/go v0.0.0-20210112040534-0e8e3c366e28 h1:iJJQfdxoBsWrUEVnhAiCpzhn713tKGMh0Bv7Yf1TyD0=

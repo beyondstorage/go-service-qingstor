@@ -75,11 +75,10 @@ func (s *Storage) listNextDir(ctx context.Context, page *typ.ObjectPage) error {
 	}
 
 	for _, v := range output.CommonPrefixes {
-		o := &typ.Object{
-			ID:   *v,
-			Name: s.getRelPath(*v),
-			Type: typ.ObjectTypeDir,
-		}
+		o := s.newObject(true)
+		o.ID = *v
+		o.Name = s.getRelPath(*v)
+		o.Type = typ.ObjectTypeDir
 
 		page.Data = append(page.Data, o)
 	}
