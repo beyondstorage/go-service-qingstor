@@ -9,7 +9,7 @@ import (
 
 	"github.com/aos-dev/go-storage/v2/pkg/headers"
 	"github.com/aos-dev/go-storage/v2/pkg/iowrap"
-	typ "github.com/aos-dev/go-storage/v2/types"
+	. "github.com/aos-dev/go-storage/v2/types"
 )
 
 func (s *Storage) delete(ctx context.Context, path string, opt *pairStorageDelete) (err error) {
@@ -22,7 +22,7 @@ func (s *Storage) delete(ctx context.Context, path string, opt *pairStorageDelet
 	return nil
 }
 
-func (s *Storage) initSegment(ctx context.Context, path string, opt *pairStorageInitSegment) (seg typ.Segment, err error) {
+func (s *Storage) initSegment(ctx context.Context, path string, opt *pairStorageInitSegment) (seg Segment, err error) {
 	input := &service.InitiateMultipartUploadInput{}
 
 	rp := s.getAbsPath(path)
@@ -32,14 +32,10 @@ func (s *Storage) initSegment(ctx context.Context, path string, opt *pairStorage
 		return
 	}
 
-	return typ.Segment{
+	return Segment{
 		Path: rp,
 		ID:   *output.UploadID,
 	}, nil
-}
-
-func (s *Storage) listIndexSegment(ctx context.Context, seg typ.Segment, opt *pairStorageListIndexSegment) (pi *typ.PartIterator, err error) {
-	panic("not implemented")
 }
 
 type listObjectInput service.ListObjectsInput
@@ -48,7 +44,7 @@ func (i *listObjectInput) ContinuationToken() string {
 	return convert.StringValue(i.Marker)
 }
 
-func (s *Storage) list(ctx context.Context, dir string, opt *pairStorageList) (oi *typ.ObjectIterator, err error) {
+func (s *Storage) list(ctx context.Context, dir string, opt *pairStorageList) (oi *ObjectIterator, err error) {
 	marker := ""
 	limit := 200
 
@@ -60,17 +56,17 @@ func (s *Storage) list(ctx context.Context, dir string, opt *pairStorageList) (o
 		Prefix: &rp,
 	}
 
-	var nextFn typ.NextObjectFunc
-	if opt.HasListType && opt.ListType == typ.ListTypeDir {
+	var nextFn NextObjectFunc
+	if opt.HasListType && opt.ListType == ListTypeDir {
 		input.Delimiter = convert.String("/")
 		nextFn = s.listNextDir
 	} else {
 		nextFn = s.listNextPrefix
 	}
 
-	return typ.NewObjectIterator(ctx, nextFn, input), nil
+	return NewObjectIterator(ctx, nextFn, input), nil
 }
-func (s *Storage) listNextDir(ctx context.Context, page *typ.ObjectPage) error {
+func (s *Storage) listNextDir(ctx context.Context, page *ObjectPage) error {
 	input := page.Status.(*listObjectInput)
 	serviceInput := service.ListObjectsInput(*input)
 
@@ -83,7 +79,7 @@ func (s *Storage) listNextDir(ctx context.Context, page *typ.ObjectPage) error {
 		o := s.newObject(true)
 		o.ID = *v
 		o.Name = s.getRelPath(*v)
-		o.Type = typ.ObjectTypeDir
+		o.Type = ObjectTypeDir
 
 		page.Data = append(page.Data, o)
 	}
@@ -102,20 +98,20 @@ func (s *Storage) listNextDir(ctx context.Context, page *typ.ObjectPage) error {
 	}
 
 	if service.StringValue(output.NextMarker) == "" {
-		return typ.IterateDone
+		return IterateDone
 	}
 	if output.HasMore != nil && !*output.HasMore {
-		return typ.IterateDone
+		return IterateDone
 	}
 	if len(output.Keys) == 0 {
-		return typ.IterateDone
+		return IterateDone
 	}
 
 	input.Marker = output.NextMarker
 	return nil
 }
 
-func (s *Storage) listNextPrefix(ctx context.Context, page *typ.ObjectPage) error {
+func (s *Storage) listNextPrefix(ctx context.Context, page *ObjectPage) error {
 	input := page.Status.(*listObjectInput)
 	serviceInput := service.ListObjectsInput(*input)
 
@@ -134,13 +130,13 @@ func (s *Storage) listNextPrefix(ctx context.Context, page *typ.ObjectPage) erro
 	}
 
 	if service.StringValue(output.NextMarker) == "" {
-		return typ.IterateDone
+		return IterateDone
 	}
 	if output.HasMore != nil && !*output.HasMore {
-		return typ.IterateDone
+		return IterateDone
 	}
 	if len(output.Keys) == 0 {
-		return typ.IterateDone
+		return IterateDone
 	}
 
 	input.Marker = output.NextMarker
@@ -152,7 +148,7 @@ type listMultipartUploadsInput service.ListMultipartUploadsInput
 func (i *listMultipartUploadsInput) ContinuationToken() string {
 	return convert.StringValue(i.UploadIDMarker)
 }
-func (s *Storage) listSegments(ctx context.Context, prefix string, opt *pairStorageListSegments) (si *typ.SegmentIterator, err error) {
+func (s *Storage) listSegments(ctx context.Context, prefix string, opt *pairStorageListSegments) (si *SegmentIterator, err error) {
 	limit := 200
 
 	rp := s.getAbsPath(prefix)
@@ -162,10 +158,10 @@ func (s *Storage) listSegments(ctx context.Context, prefix string, opt *pairStor
 		Prefix: &rp,
 	}
 
-	return typ.NewSegmentIterator(ctx, s.listNextPrefixSegments, input), nil
+	return NewSegmentIterator(ctx, s.listNextPrefixSegments, input), nil
 }
 
-func (s *Storage) listNextPrefixSegments(ctx context.Context, page *typ.SegmentPage) error {
+func (s *Storage) listNextPrefixSegments(ctx context.Context, page *SegmentPage) error {
 	input := page.Status.(*listMultipartUploadsInput)
 	serviceInput := service.ListMultipartUploadsInput(*input)
 
@@ -176,7 +172,7 @@ func (s *Storage) listNextPrefixSegments(ctx context.Context, page *typ.SegmentP
 
 	for _, v := range output.Uploads {
 		// TODO: we should handle rel prefix here.
-		seg := &typ.Segment{
+		seg := &Segment{
 			Path: *v.Key,
 			ID:   *v.UploadID,
 		}
@@ -187,16 +183,16 @@ func (s *Storage) listNextPrefixSegments(ctx context.Context, page *typ.SegmentP
 	input.KeyMarker = output.NextKeyMarker
 	input.UploadIDMarker = output.NextUploadIDMarker
 	if service.StringValue(input.KeyMarker) == "" && service.StringValue(input.UploadIDMarker) == "" {
-		return typ.IterateDone
+		return IterateDone
 	}
 	if output.HasMore != nil && !*output.HasMore {
-		return typ.IterateDone
+		return IterateDone
 	}
 
 	return nil
 }
-func (s *Storage) metadata(ctx context.Context, opt *pairStorageMetadata) (meta *typ.StorageMeta, err error) {
-	meta = typ.NewStorageMeta()
+func (s *Storage) metadata(ctx context.Context, opt *pairStorageMetadata) (meta *StorageMeta, err error) {
+	meta = NewStorageMeta()
 	meta.Name = *s.properties.BucketName
 	meta.WorkDir = s.workDir
 	meta.SetLocation(*s.properties.Zone)
@@ -245,7 +241,7 @@ func (s *Storage) read(ctx context.Context, path string, w io.Writer, opt *pairS
 
 	return io.Copy(w, rc)
 }
-func (s *Storage) stat(ctx context.Context, path string, opt *pairStorageStat) (o *typ.Object, err error) {
+func (s *Storage) stat(ctx context.Context, path string, opt *pairStorageStat) (o *Object, err error) {
 	input := &service.HeadObjectInput{}
 
 	rp := s.getAbsPath(path)
@@ -258,7 +254,7 @@ func (s *Storage) stat(ctx context.Context, path string, opt *pairStorageStat) (
 	o = s.newObject(true)
 	o.ID = rp
 	o.Name = path
-	o.Type = typ.ObjectTypeFile
+	o.Type = ObjectTypeFile
 
 	o.SetSize(service.Int64Value(output.ContentLength))
 	o.SetUpdatedAt(service.TimeValue(output.LastModified))
@@ -300,7 +296,7 @@ func (s *Storage) write(ctx context.Context, path string, r io.Reader, opt *pair
 	}
 	return opt.Size, nil
 }
-func (s *Storage) writeIndexSegment(ctx context.Context, seg typ.Segment, r io.Reader, index int, size int64, opt *pairStorageWriteIndexSegment) (err error) {
+func (s *Storage) writeIndexSegment(ctx context.Context, seg Segment, r io.Reader, index int, size int64, opt *pairStorageWriteIndexSegment) (err error) {
 	rp := s.getAbsPath(seg.Path)
 
 	if opt.HasReadCallbackFunc {
@@ -345,7 +341,7 @@ func (s *Storage) move(ctx context.Context, src string, dst string, opt *pairSto
 	return nil
 }
 
-func (s *Storage) abortSegment(ctx context.Context, seg typ.Segment, opt *pairStorageAbortSegment) (err error) {
+func (s *Storage) abortSegment(ctx context.Context, seg Segment, opt *pairStorageAbortSegment) (err error) {
 	_, err = s.bucket.AbortMultipartUploadWithContext(ctx, seg.Path, &service.AbortMultipartUploadInput{
 		UploadID: service.String(seg.ID),
 	})
@@ -354,7 +350,7 @@ func (s *Storage) abortSegment(ctx context.Context, seg typ.Segment, opt *pairSt
 	}
 	return
 }
-func (s *Storage) completeIndexSegment(ctx context.Context, seg typ.Segment, parts []*typ.Part, opt *pairStorageCompleteIndexSegment) (err error) {
+func (s *Storage) completeIndexSegment(ctx context.Context, seg Segment, parts []*Part, opt *pairStorageCompleteIndexSegment) (err error) {
 	objectParts := make([]*service.ObjectPartType, 0, len(parts))
 	for _, v := range parts {
 		objectParts = append(objectParts, &service.ObjectPartType{
@@ -372,8 +368,8 @@ func (s *Storage) completeIndexSegment(ctx context.Context, seg typ.Segment, par
 	}
 	return
 }
-func (s *Storage) statistical(ctx context.Context, opt *pairStorageStatistical) (statistic *typ.StorageStatistic, err error) {
-	statistic = typ.NewStorageStatistic()
+func (s *Storage) statistical(ctx context.Context, opt *pairStorageStatistical) (statistic *StorageStatistic, err error) {
+	statistic = NewStorageStatistic()
 
 	output, err := s.bucket.GetStatisticsWithContext(ctx)
 	if err != nil {
@@ -394,4 +390,8 @@ func (s *Storage) fetch(ctx context.Context, path string, url string, opt *pairS
 		XQSFetchSource: service.String(url),
 	})
 	return err
+}
+
+func (s *Storage) listIndexSegment(ctx context.Context, seg Segment, opt *pairStorageListIndexSegment) (pi *PartIterator, err error) {
+	panic("not implemented")
 }
