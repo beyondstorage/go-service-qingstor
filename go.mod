@@ -12,3 +12,5 @@ require (
 	github.com/qingstor/qingstor-sdk-go/v4 v4.2.0
 	github.com/stretchr/testify v1.6.1
 )
+
+replace github.com/aos-dev/go-storage/v2 => ../go-storage

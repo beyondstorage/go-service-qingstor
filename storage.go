@@ -21,7 +21,8 @@ func (s *Storage) delete(ctx context.Context, path string, opt *pairStorageDelet
 	}
 	return nil
 }
-func (s *Storage) initIndexSegment(ctx context.Context, path string, opt *pairStorageInitIndexSegment) (seg typ.Segment, err error) {
+
+func (s *Storage) initSegment(ctx context.Context, path string, opt *pairStorageInitSegment) (seg typ.Segment, err error) {
 	input := &service.InitiateMultipartUploadInput{}
 
 	rp := s.getAbsPath(path)
@@ -31,10 +32,14 @@ func (s *Storage) initIndexSegment(ctx context.Context, path string, opt *pairSt
 		return
 	}
 
-	id := *output.UploadID
+	return typ.Segment{
+		Path: rp,
+		ID:   *output.UploadID,
+	}, nil
+}
 
-	seg = typ.NewIndexBasedSegment(path, id)
-	return seg, nil
+func (s *Storage) listIndexSegment(ctx context.Context, seg typ.Segment, opt *pairStorageListIndexSegment) (pi *typ.PartIterator, err error) {
+	panic("not implemented")
 }
 
 type listObjectInput service.ListObjectsInput
@@ -171,7 +176,10 @@ func (s *Storage) listNextPrefixSegments(ctx context.Context, page *typ.SegmentP
 
 	for _, v := range output.Uploads {
 		// TODO: we should handle rel prefix here.
-		seg := typ.NewIndexBasedSegment(*v.Key, *v.UploadID)
+		seg := &typ.Segment{
+			Path: *v.Key,
+			ID:   *v.UploadID,
+		}
 
 		page.Data = append(page.Data, seg)
 	}
@@ -293,20 +301,15 @@ func (s *Storage) write(ctx context.Context, path string, r io.Reader, opt *pair
 	return opt.Size, nil
 }
 func (s *Storage) writeIndexSegment(ctx context.Context, seg typ.Segment, r io.Reader, index int, size int64, opt *pairStorageWriteIndexSegment) (err error) {
-	p, err := seg.(*typ.IndexBasedSegment).InsertPart(index, size)
-	if err != nil {
-		return
-	}
-
-	rp := s.getAbsPath(seg.Path())
+	rp := s.getAbsPath(seg.Path)
 
 	if opt.HasReadCallbackFunc {
 		r = iowrap.CallbackReader(r, opt.ReadCallbackFunc)
 	}
 
 	_, err = s.bucket.UploadMultipartWithContext(ctx, rp, &service.UploadMultipartInput{
-		PartNumber:    service.Int(p.Index),
-		UploadID:      service.String(seg.ID()),
+		PartNumber:    service.Int(index),
+		UploadID:      service.String(seg.ID),
 		ContentLength: &size,
 		Body:          io.LimitReader(r, size),
 	})
@@ -343,18 +346,15 @@ func (s *Storage) move(ctx context.Context, src string, dst string, opt *pairSto
 }
 
 func (s *Storage) abortSegment(ctx context.Context, seg typ.Segment, opt *pairStorageAbortSegment) (err error) {
-	rp := s.getAbsPath(seg.Path())
-
-	_, err = s.bucket.AbortMultipartUploadWithContext(ctx, rp, &service.AbortMultipartUploadInput{
-		UploadID: service.String(seg.ID()),
+	_, err = s.bucket.AbortMultipartUploadWithContext(ctx, seg.Path, &service.AbortMultipartUploadInput{
+		UploadID: service.String(seg.ID),
 	})
 	if err != nil {
 		return
 	}
 	return
 }
-func (s *Storage) completeSegment(ctx context.Context, seg typ.Segment, opt *pairStorageCompleteSegment) (err error) {
-	parts := seg.(*typ.IndexBasedSegment).Parts()
+func (s *Storage) completeIndexSegment(ctx context.Context, seg typ.Segment, parts []*typ.Part, opt *pairStorageCompleteIndexSegment) (err error) {
 	objectParts := make([]*service.ObjectPartType, 0, len(parts))
 	for _, v := range parts {
 		objectParts = append(objectParts, &service.ObjectPartType{
@@ -363,10 +363,8 @@ func (s *Storage) completeSegment(ctx context.Context, seg typ.Segment, opt *pai
 		})
 	}
 
-	rp := s.getAbsPath(seg.Path())
-
-	_, err = s.bucket.CompleteMultipartUploadWithContext(ctx, rp, &service.CompleteMultipartUploadInput{
-		UploadID:    service.String(seg.ID()),
+	_, err = s.bucket.CompleteMultipartUploadWithContext(ctx, seg.Path, &service.CompleteMultipartUploadInput{
+		UploadID:    service.String(seg.ID),
 		ObjectParts: objectParts,
 	})
 	if err != nil {

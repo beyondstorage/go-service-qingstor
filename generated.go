@@ -422,8 +422,8 @@ func (s *Storage) parsePairStorageAbortSegment(opts []Pair) (*pairStorageAbortSe
 	return result, nil
 }
 
-// pairStorageCompleteSegment is the parsed struct
-type pairStorageCompleteSegment struct {
+// pairStorageCompleteIndexSegment is the parsed struct
+type pairStorageCompleteIndexSegment struct {
 	pairs []Pair
 
 	// Required pairs
@@ -431,9 +431,9 @@ type pairStorageCompleteSegment struct {
 	// Generated pairs
 }
 
-// parsePairStorageCompleteSegment will parse Pair slice into *pairStorageCompleteSegment
-func (s *Storage) parsePairStorageCompleteSegment(opts []Pair) (*pairStorageCompleteSegment, error) {
-	result := &pairStorageCompleteSegment{
+// parsePairStorageCompleteIndexSegment will parse Pair slice into *pairStorageCompleteIndexSegment
+func (s *Storage) parsePairStorageCompleteIndexSegment(opts []Pair) (*pairStorageCompleteIndexSegment, error) {
+	result := &pairStorageCompleteIndexSegment{
 		pairs: opts,
 	}
 
@@ -444,7 +444,7 @@ func (s *Storage) parsePairStorageCompleteSegment(opts []Pair) (*pairStorageComp
 		// Generated pairs
 		default:
 
-			if s.pairPolicy.All || s.pairPolicy.CompleteSegment {
+			if s.pairPolicy.All || s.pairPolicy.CompleteIndexSegment {
 				return nil, services.NewPairUnsupportedError(v)
 			}
 
@@ -550,8 +550,8 @@ func (s *Storage) parsePairStorageFetch(opts []Pair) (*pairStorageFetch, error) 
 	return result, nil
 }
 
-// pairStorageInitIndexSegment is the parsed struct
-type pairStorageInitIndexSegment struct {
+// pairStorageInitSegment is the parsed struct
+type pairStorageInitSegment struct {
 	pairs []Pair
 
 	// Required pairs
@@ -559,9 +559,9 @@ type pairStorageInitIndexSegment struct {
 	// Generated pairs
 }
 
-// parsePairStorageInitIndexSegment will parse Pair slice into *pairStorageInitIndexSegment
-func (s *Storage) parsePairStorageInitIndexSegment(opts []Pair) (*pairStorageInitIndexSegment, error) {
-	result := &pairStorageInitIndexSegment{
+// parsePairStorageInitSegment will parse Pair slice into *pairStorageInitSegment
+func (s *Storage) parsePairStorageInitSegment(opts []Pair) (*pairStorageInitSegment, error) {
+	result := &pairStorageInitSegment{
 		pairs: opts,
 	}
 
@@ -572,7 +572,7 @@ func (s *Storage) parsePairStorageInitIndexSegment(opts []Pair) (*pairStorageIni
 		// Generated pairs
 		default:
 
-			if s.pairPolicy.All || s.pairPolicy.InitIndexSegment {
+			if s.pairPolicy.All || s.pairPolicy.InitSegment {
 				return nil, services.NewPairUnsupportedError(v)
 			}
 
@@ -610,6 +610,38 @@ func (s *Storage) parsePairStorageList(opts []Pair) (*pairStorageList, error) {
 		default:
 
 			if s.pairPolicy.All || s.pairPolicy.List {
+				return nil, services.NewPairUnsupportedError(v)
+			}
+
+		}
+	}
+
+	return result, nil
+}
+
+// pairStorageListIndexSegment is the parsed struct
+type pairStorageListIndexSegment struct {
+	pairs []Pair
+
+	// Required pairs
+	// Optional pairs
+	// Generated pairs
+}
+
+// parsePairStorageListIndexSegment will parse Pair slice into *pairStorageListIndexSegment
+func (s *Storage) parsePairStorageListIndexSegment(opts []Pair) (*pairStorageListIndexSegment, error) {
+	result := &pairStorageListIndexSegment{
+		pairs: opts,
+	}
+
+	for _, v := range opts {
+		switch v.Key {
+		// Required pairs
+		// Optional pairs
+		// Generated pairs
+		default:
+
+			if s.pairPolicy.All || s.pairPolicy.ListIndexSegment {
 				return nil, services.NewPairUnsupportedError(v)
 			}
 
@@ -979,7 +1011,7 @@ func (s *Storage) AbortSegment(seg Segment, pairs ...Pair) (err error) {
 // AbortSegmentWithContext will abort a segment.
 func (s *Storage) AbortSegmentWithContext(ctx context.Context, seg Segment, pairs ...Pair) (err error) {
 	defer func() {
-		err = s.formatError("abort_segment", err, seg.Path(), seg.ID())
+		err = s.formatError("abort_segment", err, seg.Path, seg.ID)
 	}()
 	var opt *pairStorageAbortSegment
 	opt, err = s.parsePairStorageAbortSegment(pairs)
@@ -990,26 +1022,26 @@ func (s *Storage) AbortSegmentWithContext(ctx context.Context, seg Segment, pair
 	return s.abortSegment(ctx, seg, opt)
 }
 
-// CompleteSegment will complete a segment and merge them into a File.
+// CompleteIndexSegment will complete a segment and merge them into a File.
 //
 // This function will create a context by default.
-func (s *Storage) CompleteSegment(seg Segment, pairs ...Pair) (err error) {
+func (s *Storage) CompleteIndexSegment(seg Segment, parts []*Part, pairs ...Pair) (err error) {
 	ctx := context.Background()
-	return s.CompleteSegmentWithContext(ctx, seg, pairs...)
+	return s.CompleteIndexSegmentWithContext(ctx, seg, parts, pairs...)
 }
 
-// CompleteSegmentWithContext will complete a segment and merge them into a File.
-func (s *Storage) CompleteSegmentWithContext(ctx context.Context, seg Segment, pairs ...Pair) (err error) {
+// CompleteIndexSegmentWithContext will complete a segment and merge them into a File.
+func (s *Storage) CompleteIndexSegmentWithContext(ctx context.Context, seg Segment, parts []*Part, pairs ...Pair) (err error) {
 	defer func() {
-		err = s.formatError("complete_segment", err, seg.Path(), seg.ID())
+		err = s.formatError("complete_index_segment", err, seg.Path, seg.ID)
 	}()
-	var opt *pairStorageCompleteSegment
-	opt, err = s.parsePairStorageCompleteSegment(pairs)
+	var opt *pairStorageCompleteIndexSegment
+	opt, err = s.parsePairStorageCompleteIndexSegment(pairs)
 	if err != nil {
 		return
 	}
 
-	return s.completeSegment(ctx, seg, opt)
+	return s.completeIndexSegment(ctx, seg, parts, opt)
 }
 
 // Copy will copy an Object or multiple object in the service.
@@ -1078,26 +1110,26 @@ func (s *Storage) FetchWithContext(ctx context.Context, path string, url string,
 	return s.fetch(ctx, path, url, opt)
 }
 
-// InitIndexSegment will init an index based segment.
+// InitSegment will init a segment.
 //
 // This function will create a context by default.
-func (s *Storage) InitIndexSegment(path string, pairs ...Pair) (seg Segment, err error) {
+func (s *Storage) InitSegment(path string, pairs ...Pair) (seg Segment, err error) {
 	ctx := context.Background()
-	return s.InitIndexSegmentWithContext(ctx, path, pairs...)
+	return s.InitSegmentWithContext(ctx, path, pairs...)
 }
 
-// InitIndexSegmentWithContext will init an index based segment.
-func (s *Storage) InitIndexSegmentWithContext(ctx context.Context, path string, pairs ...Pair) (seg Segment, err error) {
+// InitSegmentWithContext will init a segment.
+func (s *Storage) InitSegmentWithContext(ctx context.Context, path string, pairs ...Pair) (seg Segment, err error) {
 	defer func() {
-		err = s.formatError("init_index_segment", err, path)
+		err = s.formatError("init_segment", err, path)
 	}()
-	var opt *pairStorageInitIndexSegment
-	opt, err = s.parsePairStorageInitIndexSegment(pairs)
+	var opt *pairStorageInitSegment
+	opt, err = s.parsePairStorageInitSegment(pairs)
 	if err != nil {
 		return
 	}
 
-	return s.initIndexSegment(ctx, path, opt)
+	return s.initSegment(ctx, path, opt)
 }
 
 // List will return list a specific path.
@@ -1122,6 +1154,28 @@ func (s *Storage) ListWithContext(ctx context.Context, path string, pairs ...Pai
 	return s.list(ctx, path, opt)
 }
 
+// ListIndexSegment
+//
+// This function will create a context by default.
+func (s *Storage) ListIndexSegment(seg Segment, pairs ...Pair) (pi *PartIterator, err error) {
+	ctx := context.Background()
+	return s.ListIndexSegmentWithContext(ctx, seg, pairs...)
+}
+
+// ListIndexSegmentWithContext
+func (s *Storage) ListIndexSegmentWithContext(ctx context.Context, seg Segment, pairs ...Pair) (pi *PartIterator, err error) {
+	defer func() {
+		err = s.formatError("list_index_segment", err, seg.Path, seg.ID)
+	}()
+	var opt *pairStorageListIndexSegment
+	opt, err = s.parsePairStorageListIndexSegment(pairs)
+	if err != nil {
+		return
+	}
+
+	return s.listIndexSegment(ctx, seg, opt)
+}
+
 // ListSegments will list segments.
 //
 // This function will create a context by default.
@@ -1144,7 +1198,7 @@ func (s *Storage) ListSegmentsWithContext(ctx context.Context, path string, pair
 	return s.listSegments(ctx, path, opt)
 }
 
-// Metadata will return current storager's metadata.
+// Metadata will return current storager metadata.
 //
 // This function will create a context by default.
 func (s *Storage) Metadata(pairs ...Pair) (meta *StorageMeta, err error) {
@@ -1152,7 +1206,7 @@ func (s *Storage) Metadata(pairs ...Pair) (meta *StorageMeta, err error) {
 	return s.MetadataWithContext(ctx, pairs...)
 }
 
-// MetadataWithContext will return current storager's metadata.
+// MetadataWithContext will return current storager metadata.
 func (s *Storage) MetadataWithContext(ctx context.Context, pairs ...Pair) (meta *StorageMeta, err error) {
 	defer func() {
 		err = s.formatError("metadata", err)
@@ -1309,7 +1363,7 @@ func (s *Storage) WriteIndexSegment(seg Segment, r io.Reader, index int, size in
 // WriteIndexSegmentWithContext will write a part into an index based segment.
 func (s *Storage) WriteIndexSegmentWithContext(ctx context.Context, seg Segment, r io.Reader, index int, size int64, pairs ...Pair) (err error) {
 	defer func() {
-		err = s.formatError("write_index_segment", err, seg.Path(), seg.ID())
+		err = s.formatError("write_index_segment", err, seg.Path, seg.ID)
 	}()
 	var opt *pairStorageWriteIndexSegment
 	opt, err = s.parsePairStorageWriteIndexSegment(pairs)
