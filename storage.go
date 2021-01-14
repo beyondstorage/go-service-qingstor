@@ -9,8 +9,50 @@ import (
 
 	"github.com/aos-dev/go-storage/v2/pkg/headers"
 	"github.com/aos-dev/go-storage/v2/pkg/iowrap"
-	typ "github.com/aos-dev/go-storage/v2/types"
+	. "github.com/aos-dev/go-storage/v2/types"
 )
+
+func (s *Storage) abortSegment(ctx context.Context, seg Segment, opt *pairStorageAbortSegment) (err error) {
+	_, err = s.bucket.AbortMultipartUploadWithContext(ctx, seg.Path, &service.AbortMultipartUploadInput{
+		UploadID: service.String(seg.ID),
+	})
+	if err != nil {
+		return
+	}
+	return
+}
+
+func (s *Storage) completeIndexSegment(ctx context.Context, seg Segment, parts []*Part, opt *pairStorageCompleteIndexSegment) (err error) {
+	objectParts := make([]*service.ObjectPartType, 0, len(parts))
+	for _, v := range parts {
+		objectParts = append(objectParts, &service.ObjectPartType{
+			PartNumber: service.Int(v.Index),
+			Size:       service.Int64(v.Size),
+		})
+	}
+
+	_, err = s.bucket.CompleteMultipartUploadWithContext(ctx, seg.Path, &service.CompleteMultipartUploadInput{
+		UploadID:    service.String(seg.ID),
+		ObjectParts: objectParts,
+	})
+	if err != nil {
+		return
+	}
+	return
+}
+
+func (s *Storage) copy(ctx context.Context, src string, dst string, opt *pairStorageCopy) (err error) {
+	rs := s.getAbsPath(src)
+	rd := s.getAbsPath(dst)
+
+	_, err = s.bucket.PutObjectWithContext(ctx, rd, &service.PutObjectInput{
+		XQSCopySource: &rs,
+	})
+	if err != nil {
+		return
+	}
+	return nil
+}
 
 func (s *Storage) delete(ctx context.Context, path string, opt *pairStorageDelete) (err error) {
 	rp := s.getAbsPath(path)
@@ -21,7 +63,15 @@ func (s *Storage) delete(ctx context.Context, path string, opt *pairStorageDelet
 	}
 	return nil
 }
-func (s *Storage) initIndexSegment(ctx context.Context, path string, opt *pairStorageInitIndexSegment) (seg typ.Segment, err error) {
+
+func (s *Storage) fetch(ctx context.Context, path string, url string, opt *pairStorageFetch) (err error) {
+	_, err = s.bucket.PutObjectWithContext(ctx, path, &service.PutObjectInput{
+		XQSFetchSource: service.String(url),
+	})
+	return err
+}
+
+func (s *Storage) initSegment(ctx context.Context, path string, opt *pairStorageInitSegment) (seg Segment, err error) {
 	input := &service.InitiateMultipartUploadInput{}
 
 	rp := s.getAbsPath(path)
@@ -31,45 +81,113 @@ func (s *Storage) initIndexSegment(ctx context.Context, path string, opt *pairSt
 		return
 	}
 
-	id := *output.UploadID
-
-	seg = typ.NewIndexBasedSegment(path, id)
-	return seg, nil
+	return Segment{
+		Path: rp,
+		ID:   *output.UploadID,
+	}, nil
 }
 
-type listObjectInput service.ListObjectsInput
-
-func (i *listObjectInput) ContinuationToken() string {
-	return convert.StringValue(i.Marker)
-}
-
-func (s *Storage) list(ctx context.Context, dir string, opt *pairStorageList) (oi *typ.ObjectIterator, err error) {
-	marker := ""
-	limit := 200
-
-	rp := s.getAbsPath(dir)
-
-	input := &listObjectInput{
-		Limit:  &limit,
-		Marker: &marker,
-		Prefix: &rp,
+func (s *Storage) list(ctx context.Context, path string, opt *pairStorageList) (oi *ObjectIterator, err error) {
+	input := &objectPageStatus{
+		limit:  200,
+		marker: "",
+		prefix: s.getAbsPath(path),
 	}
 
-	var nextFn typ.NextObjectFunc
-	if opt.HasListType && opt.ListType == typ.ListTypeDir {
-		input.Delimiter = convert.String("/")
-		nextFn = s.listNextDir
+	var nextFn NextObjectFunc
+	if opt.HasListType && opt.ListType == ListTypeDir {
+		input.delimiter = "/"
+		nextFn = s.nextDirPage
 	} else {
-		nextFn = s.listNextPrefix
+		nextFn = s.nextPrefixPage
 	}
 
-	return typ.NewObjectIterator(ctx, nextFn, input), nil
+	return NewObjectIterator(ctx, nextFn, input), nil
 }
-func (s *Storage) listNextDir(ctx context.Context, page *typ.ObjectPage) error {
-	input := page.Status.(*listObjectInput)
-	serviceInput := service.ListObjectsInput(*input)
 
-	output, err := s.bucket.ListObjectsWithContext(ctx, &serviceInput)
+func (s *Storage) listIndexSegment(ctx context.Context, seg Segment, opt *pairStorageListIndexSegment) (pi *PartIterator, err error) {
+	input := &partPageStatus{
+		limit:    200,
+		prefix:   seg.Path,
+		uploadID: seg.ID,
+	}
+
+	return NewPartIterator(ctx, s.nextPartPage, input), nil
+}
+
+func (s *Storage) listNextPrefixSegments(ctx context.Context, page *SegmentPage) error {
+	input := page.Status.(*segmentPageStatus)
+
+	output, err := s.bucket.ListMultipartUploadsWithContext(ctx, &service.ListMultipartUploadsInput{
+		KeyMarker:      &input.keyMarker,
+		Limit:          &input.limit,
+		Prefix:         &input.prefix,
+		UploadIDMarker: &input.uploadIdMarker,
+	})
+	if err != nil {
+		return err
+	}
+
+	for _, v := range output.Uploads {
+		seg := &Segment{
+			Path: *v.Key,
+			ID:   *v.UploadID,
+		}
+
+		page.Data = append(page.Data, seg)
+	}
+
+	input.keyMarker = service.StringValue(output.NextKeyMarker)
+	input.uploadIdMarker = service.StringValue(output.NextUploadIDMarker)
+
+	if input.keyMarker == "" && input.uploadIdMarker == "" {
+		return IterateDone
+	}
+	if output.HasMore != nil && !*output.HasMore {
+		return IterateDone
+	}
+	return nil
+}
+
+func (s *Storage) listSegments(ctx context.Context, prefix string, opt *pairStorageListSegments) (si *SegmentIterator, err error) {
+	input := &segmentPageStatus{
+		limit:  200,
+		prefix: s.getAbsPath(prefix),
+	}
+
+	return NewSegmentIterator(ctx, s.listNextPrefixSegments, input), nil
+}
+
+func (s *Storage) metadata(ctx context.Context, opt *pairStorageMetadata) (meta *StorageMeta, err error) {
+	meta = NewStorageMeta()
+	meta.Name = *s.properties.BucketName
+	meta.WorkDir = s.workDir
+	meta.SetLocation(*s.properties.Zone)
+	return meta, nil
+}
+
+func (s *Storage) move(ctx context.Context, src string, dst string, opt *pairStorageMove) (err error) {
+	rs := s.getAbsPath(src)
+	rd := s.getAbsPath(dst)
+
+	_, err = s.bucket.PutObjectWithContext(ctx, rd, &service.PutObjectInput{
+		XQSMoveSource: &rs,
+	})
+	if err != nil {
+		return
+	}
+	return nil
+}
+
+func (s *Storage) nextDirPage(ctx context.Context, page *ObjectPage) error {
+	input := page.Status.(*objectPageStatus)
+
+	output, err := s.bucket.ListObjectsWithContext(ctx, &service.ListObjectsInput{
+		Delimiter: &input.delimiter,
+		Limit:     &input.limit,
+		Marker:    &input.marker,
+		Prefix:    &input.prefix,
+	})
 	if err != nil {
 		return err
 	}
@@ -78,14 +196,14 @@ func (s *Storage) listNextDir(ctx context.Context, page *typ.ObjectPage) error {
 		o := s.newObject(true)
 		o.ID = *v
 		o.Name = s.getRelPath(*v)
-		o.Type = typ.ObjectTypeDir
+		o.Type = ObjectTypeDir
 
 		page.Data = append(page.Data, o)
 	}
 
 	for _, v := range output.Keys {
 		// add filter to exclude dir-key itself, which would exist if created in console, see issue #365
-		if convert.StringValue(v.Key) == *input.Prefix {
+		if convert.StringValue(v.Key) == input.prefix {
 			continue
 		}
 		o, err := s.formatFileObject(v)
@@ -97,24 +215,58 @@ func (s *Storage) listNextDir(ctx context.Context, page *typ.ObjectPage) error {
 	}
 
 	if service.StringValue(output.NextMarker) == "" {
-		return typ.IterateDone
+		return IterateDone
 	}
 	if output.HasMore != nil && !*output.HasMore {
-		return typ.IterateDone
+		return IterateDone
 	}
 	if len(output.Keys) == 0 {
-		return typ.IterateDone
+		return IterateDone
 	}
 
-	input.Marker = output.NextMarker
+	input.marker = *output.NextMarker
 	return nil
 }
 
-func (s *Storage) listNextPrefix(ctx context.Context, page *typ.ObjectPage) error {
-	input := page.Status.(*listObjectInput)
-	serviceInput := service.ListObjectsInput(*input)
+func (s *Storage) nextPartPage(ctx context.Context, page *PartPage) error {
+	input := page.Status.(*partPageStatus)
 
-	output, err := s.bucket.ListObjectsWithContext(ctx, &serviceInput)
+	output, err := s.bucket.ListMultipartWithContext(ctx, input.prefix, &service.ListMultipartInput{
+		Limit:            &input.limit,
+		PartNumberMarker: &input.partNumberMarker,
+		UploadID:         &input.uploadID,
+	})
+	if err != nil {
+		return err
+	}
+
+	for _, v := range output.ObjectParts {
+		p := &Part{
+			Index: *v.PartNumber,
+			Size:  *v.Size,
+			ETag:  service.StringValue(v.Etag),
+		}
+
+		page.Data = append(page.Data, p)
+	}
+
+	// FIXME: QingStor ListMulitpart API looks like buggy.
+	input.partNumberMarker += len(output.ObjectParts)
+	if input.partNumberMarker >= service.IntValue(output.Count) {
+		return IterateDone
+	}
+
+	return nil
+}
+
+func (s *Storage) nextPrefixPage(ctx context.Context, page *ObjectPage) error {
+	input := page.Status.(*objectPageStatus)
+
+	output, err := s.bucket.ListObjectsWithContext(ctx, &service.ListObjectsInput{
+		Limit:  &input.limit,
+		Marker: &input.marker,
+		Prefix: &input.prefix,
+	})
 	if err != nil {
 		return err
 	}
@@ -129,71 +281,19 @@ func (s *Storage) listNextPrefix(ctx context.Context, page *typ.ObjectPage) erro
 	}
 
 	if service.StringValue(output.NextMarker) == "" {
-		return typ.IterateDone
+		return IterateDone
 	}
 	if output.HasMore != nil && !*output.HasMore {
-		return typ.IterateDone
+		return IterateDone
 	}
 	if len(output.Keys) == 0 {
-		return typ.IterateDone
+		return IterateDone
 	}
 
-	input.Marker = output.NextMarker
+	input.marker = *output.NextMarker
 	return nil
 }
 
-type listMultipartUploadsInput service.ListMultipartUploadsInput
-
-func (i *listMultipartUploadsInput) ContinuationToken() string {
-	return convert.StringValue(i.UploadIDMarker)
-}
-func (s *Storage) listSegments(ctx context.Context, prefix string, opt *pairStorageListSegments) (si *typ.SegmentIterator, err error) {
-	limit := 200
-
-	rp := s.getAbsPath(prefix)
-
-	input := &listMultipartUploadsInput{
-		Limit:  &limit,
-		Prefix: &rp,
-	}
-
-	return typ.NewSegmentIterator(ctx, s.listNextPrefixSegments, input), nil
-}
-
-func (s *Storage) listNextPrefixSegments(ctx context.Context, page *typ.SegmentPage) error {
-	input := page.Status.(*listMultipartUploadsInput)
-	serviceInput := service.ListMultipartUploadsInput(*input)
-
-	output, err := s.bucket.ListMultipartUploadsWithContext(ctx, &serviceInput)
-	if err != nil {
-		return err
-	}
-
-	for _, v := range output.Uploads {
-		// TODO: we should handle rel prefix here.
-		seg := typ.NewIndexBasedSegment(*v.Key, *v.UploadID)
-
-		page.Data = append(page.Data, seg)
-	}
-
-	input.KeyMarker = output.NextKeyMarker
-	input.UploadIDMarker = output.NextUploadIDMarker
-	if service.StringValue(input.KeyMarker) == "" && service.StringValue(input.UploadIDMarker) == "" {
-		return typ.IterateDone
-	}
-	if output.HasMore != nil && !*output.HasMore {
-		return typ.IterateDone
-	}
-
-	return nil
-}
-func (s *Storage) metadata(ctx context.Context, opt *pairStorageMetadata) (meta *typ.StorageMeta, err error) {
-	meta = typ.NewStorageMeta()
-	meta.Name = *s.properties.BucketName
-	meta.WorkDir = s.workDir
-	meta.SetLocation(*s.properties.Zone)
-	return meta, nil
-}
 func (s *Storage) reach(ctx context.Context, path string, opt *pairStorageReach) (url string, err error) {
 	// FIXME: sdk should export GetObjectRequest as interface too?
 	bucket := s.bucket.(*service.Bucket)
@@ -214,6 +314,7 @@ func (s *Storage) reach(ctx context.Context, path string, opt *pairStorageReach)
 	}
 	return r.HTTPRequest.URL.String(), nil
 }
+
 func (s *Storage) read(ctx context.Context, path string, w io.Writer, opt *pairStorageRead) (n int64, err error) {
 	input := &service.GetObjectInput{}
 
@@ -237,7 +338,8 @@ func (s *Storage) read(ctx context.Context, path string, w io.Writer, opt *pairS
 
 	return io.Copy(w, rc)
 }
-func (s *Storage) stat(ctx context.Context, path string, opt *pairStorageStat) (o *typ.Object, err error) {
+
+func (s *Storage) stat(ctx context.Context, path string, opt *pairStorageStat) (o *Object, err error) {
 	input := &service.HeadObjectInput{}
 
 	rp := s.getAbsPath(path)
@@ -250,7 +352,7 @@ func (s *Storage) stat(ctx context.Context, path string, opt *pairStorageStat) (
 	o = s.newObject(true)
 	o.ID = rp
 	o.Name = path
-	o.Type = typ.ObjectTypeFile
+	o.Type = ObjectTypeFile
 
 	o.SetSize(service.Int64Value(output.ContentLength))
 	o.SetUpdatedAt(service.TimeValue(output.LastModified))
@@ -268,6 +370,24 @@ func (s *Storage) stat(ctx context.Context, path string, opt *pairStorageStat) (
 
 	return o, nil
 }
+
+func (s *Storage) statistical(ctx context.Context, opt *pairStorageStatistical) (statistic *StorageStatistic, err error) {
+	statistic = NewStorageStatistic()
+
+	output, err := s.bucket.GetStatisticsWithContext(ctx)
+	if err != nil {
+		return
+	}
+
+	if output.Size != nil {
+		statistic.SetSize(*output.Size)
+	}
+	if output.Count != nil {
+		statistic.SetCount(*output.Count)
+	}
+	return statistic, nil
+}
+
 func (s *Storage) write(ctx context.Context, path string, r io.Reader, opt *pairStorageWrite) (n int64, err error) {
 	if opt.HasReadCallbackFunc {
 		r = iowrap.CallbackReader(r, opt.ReadCallbackFunc)
@@ -292,21 +412,17 @@ func (s *Storage) write(ctx context.Context, path string, r io.Reader, opt *pair
 	}
 	return opt.Size, nil
 }
-func (s *Storage) writeIndexSegment(ctx context.Context, seg typ.Segment, r io.Reader, index int, size int64, opt *pairStorageWriteIndexSegment) (err error) {
-	p, err := seg.(*typ.IndexBasedSegment).InsertPart(index, size)
-	if err != nil {
-		return
-	}
 
-	rp := s.getAbsPath(seg.Path())
+func (s *Storage) writeIndexSegment(ctx context.Context, seg Segment, r io.Reader, index int, size int64, opt *pairStorageWriteIndexSegment) (err error) {
+	rp := s.getAbsPath(seg.Path)
 
 	if opt.HasReadCallbackFunc {
 		r = iowrap.CallbackReader(r, opt.ReadCallbackFunc)
 	}
 
 	_, err = s.bucket.UploadMultipartWithContext(ctx, rp, &service.UploadMultipartInput{
-		PartNumber:    service.Int(p.Index),
-		UploadID:      service.String(seg.ID()),
+		PartNumber:    service.Int(index),
+		UploadID:      service.String(seg.ID),
 		ContentLength: &size,
 		Body:          io.LimitReader(r, size),
 	})
@@ -314,86 +430,4 @@ func (s *Storage) writeIndexSegment(ctx context.Context, seg typ.Segment, r io.R
 		return
 	}
 	return
-}
-
-func (s *Storage) copy(ctx context.Context, src string, dst string, opt *pairStorageCopy) (err error) {
-	rs := s.getAbsPath(src)
-	rd := s.getAbsPath(dst)
-
-	_, err = s.bucket.PutObjectWithContext(ctx, rd, &service.PutObjectInput{
-		XQSCopySource: &rs,
-	})
-	if err != nil {
-		return
-	}
-	return nil
-}
-
-func (s *Storage) move(ctx context.Context, src string, dst string, opt *pairStorageMove) (err error) {
-	rs := s.getAbsPath(src)
-	rd := s.getAbsPath(dst)
-
-	_, err = s.bucket.PutObjectWithContext(ctx, rd, &service.PutObjectInput{
-		XQSMoveSource: &rs,
-	})
-	if err != nil {
-		return
-	}
-	return nil
-}
-
-func (s *Storage) abortSegment(ctx context.Context, seg typ.Segment, opt *pairStorageAbortSegment) (err error) {
-	rp := s.getAbsPath(seg.Path())
-
-	_, err = s.bucket.AbortMultipartUploadWithContext(ctx, rp, &service.AbortMultipartUploadInput{
-		UploadID: service.String(seg.ID()),
-	})
-	if err != nil {
-		return
-	}
-	return
-}
-func (s *Storage) completeSegment(ctx context.Context, seg typ.Segment, opt *pairStorageCompleteSegment) (err error) {
-	parts := seg.(*typ.IndexBasedSegment).Parts()
-	objectParts := make([]*service.ObjectPartType, 0, len(parts))
-	for _, v := range parts {
-		objectParts = append(objectParts, &service.ObjectPartType{
-			PartNumber: service.Int(v.Index),
-			Size:       service.Int64(v.Size),
-		})
-	}
-
-	rp := s.getAbsPath(seg.Path())
-
-	_, err = s.bucket.CompleteMultipartUploadWithContext(ctx, rp, &service.CompleteMultipartUploadInput{
-		UploadID:    service.String(seg.ID()),
-		ObjectParts: objectParts,
-	})
-	if err != nil {
-		return
-	}
-	return
-}
-func (s *Storage) statistical(ctx context.Context, opt *pairStorageStatistical) (statistic *typ.StorageStatistic, err error) {
-	statistic = typ.NewStorageStatistic()
-
-	output, err := s.bucket.GetStatisticsWithContext(ctx)
-	if err != nil {
-		return
-	}
-
-	if output.Size != nil {
-		statistic.SetSize(*output.Size)
-	}
-	if output.Count != nil {
-		statistic.SetCount(*output.Count)
-	}
-	return statistic, nil
-}
-
-func (s *Storage) fetch(ctx context.Context, path string, url string, opt *pairStorageFetch) (err error) {
-	_, err = s.bucket.PutObjectWithContext(ctx, path, &service.PutObjectInput{
-		XQSFetchSource: service.String(url),
-	})
-	return err
 }

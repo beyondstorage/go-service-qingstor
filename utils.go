@@ -30,7 +30,7 @@ type Service struct {
 	client *http.Client
 }
 
-// String implements Service.String
+// String implements Service.String.
 func (s *Service) String() string {
 	if s.config == nil {
 		return fmt.Sprintf("Servicer qingstor")

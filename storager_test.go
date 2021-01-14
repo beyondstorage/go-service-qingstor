@@ -115,7 +115,10 @@ func TestStorage_AbortSegment(t *testing.T) {
 	// Test valid segment.
 	path := uuid.New().String()
 	id := uuid.New().String()
-	seg := NewIndexBasedSegment(path, id)
+	seg := Segment{
+		Path: path,
+		ID:   id,
+	}
 	mockBucket.EXPECT().AbortMultipartUploadWithContext(gomock.Any(), gomock.Any(), gomock.Any()).Do(func(ctx context.Context, inputPath string, input *service.AbortMultipartUploadInput) {
 		assert.Equal(t, path, inputPath)
 		assert.Equal(t, id, *input.UploadID)
@@ -132,7 +135,10 @@ func TestStorage_CompleteSegment(t *testing.T) {
 		mockBucket := NewMockBucket(ctrl)
 
 		path, id := uuid.New().String(), uuid.New().String()
-		seg := NewIndexBasedSegment(path, id)
+		seg := Segment{
+			Path: path,
+			ID:   id,
+		}
 
 		client := Storage{
 			bucket: mockBucket,
@@ -144,7 +150,7 @@ func TestStorage_CompleteSegment(t *testing.T) {
 				assert.Equal(t, id, *input.UploadID)
 			})
 
-		err := client.CompleteSegment(seg)
+		err := client.CompleteIndexSegment(seg, nil)
 		assert.NoError(t, err)
 	})
 }
@@ -240,7 +246,7 @@ func TestStorage_InitSegment(t *testing.T) {
 	tests := []struct {
 		name     string
 		path     string
-		segments map[string]*IndexBasedSegment
+		segments map[string]*Segment
 		hasCall  bool
 		mockFn   func(context.Context, string, *service.InitiateMultipartUploadInput) (*service.InitiateMultipartUploadOutput, error)
 		hasError bool
@@ -248,7 +254,7 @@ func TestStorage_InitSegment(t *testing.T) {
 	}{
 		{
 			"valid init .",
-			"test", map[string]*IndexBasedSegment{},
+			"test", map[string]*Segment{},
 			true,
 			func(ctx context.Context, inputPath string, input *service.InitiateMultipartUploadInput) (*service.InitiateMultipartUploadOutput, error) {
 				assert.Equal(t, "test", inputPath)
@@ -263,8 +269,8 @@ func TestStorage_InitSegment(t *testing.T) {
 		{
 			". already exist",
 			"test",
-			map[string]*IndexBasedSegment{
-				"test": NewIndexBasedSegment("xxx", "test_segment_id"),
+			map[string]*Segment{
+				"test": {Path: "xxx", ID: "test_segment_id"},
 			},
 			true,
 			func(ctx context.Context, inputPath string, input *service.InitiateMultipartUploadInput) (*service.InitiateMultipartUploadOutput, error) {
@@ -288,7 +294,7 @@ func TestStorage_InitSegment(t *testing.T) {
 			bucket: mockBucket,
 		}
 
-		_, err := client.InitIndexSegment(v.path)
+		_, err := client.InitSegment(v.path)
 		if v.hasError {
 			assert.Error(t, err)
 			assert.True(t, errors.Is(err, v.wantErr))
@@ -532,7 +538,10 @@ func TestStorage_WriteSegment(t *testing.T) {
 		mockBucket := NewMockBucket(ctrl)
 
 		path, id := uuid.New().String(), uuid.New().String()
-		seg := NewIndexBasedSegment(path, id)
+		seg := Segment{
+			Path: path,
+			ID:   id,
+		}
 
 		client := Storage{
 			bucket: mockBucket,
@@ -576,7 +585,7 @@ func TestStorage_ListPrefixSegments(t *testing.T) {
 				},
 			},
 			[]Segment{
-				NewIndexBasedSegment(keys[0], keys[1]),
+				{Path: keys[0], ID: keys[1]},
 			},
 			nil,
 		},
@@ -593,7 +602,7 @@ func TestStorage_ListPrefixSegments(t *testing.T) {
 				},
 			},
 			[]Segment{
-				NewIndexBasedSegment(keys[1], keys[2]),
+				{Path: keys[1], ID: keys[2]},
 			},
 			nil,
 		},
@@ -639,7 +648,7 @@ func TestStorage_ListPrefixSegments(t *testing.T) {
 				if err != nil {
 					break
 				}
-				items = append(items, seg)
+				items = append(items, *seg)
 			}
 			assert.Equal(t, v.items, items)
 		})
