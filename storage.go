@@ -3,9 +3,10 @@ package qingstor
 import (
 	"context"
 	"fmt"
+	"io"
+
 	"github.com/pengsrc/go-shared/convert"
 	"github.com/qingstor/qingstor-sdk-go/v4/service"
-	"io"
 
 	"github.com/aos-dev/go-storage/v2/pkg/headers"
 	"github.com/aos-dev/go-storage/v2/pkg/iowrap"
