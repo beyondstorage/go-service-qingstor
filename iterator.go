@@ -5,26 +5,18 @@ import (
 )
 
 type objectPageStatus struct {
-	delimiter string
-	limit     int
-	marker    string
-	prefix    string
+	delimiter    string
+	limit        int
+	marker       string
+	prefix       string
+	partIdMarker string
 }
 
 func (i *objectPageStatus) ContinuationToken() string {
+	if i.partIdMarker != "" {
+		return i.marker + "/" + i.partIdMarker
+	}
 	return i.marker
-}
-
-type segmentPageStatus struct {
-	delimiter      string
-	keyMarker      string
-	limit          int
-	prefix         string
-	uploadIdMarker string
-}
-
-func (i *segmentPageStatus) ContinuationToken() string {
-	return i.keyMarker + "/" + i.uploadIdMarker
 }
 
 type storagePageStatus struct {

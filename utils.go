@@ -312,8 +312,8 @@ func (s *Storage) newObject(done bool) *typ.Object {
 func (s *Storage) formatFileObject(v *service.KeyType) (o *typ.Object, err error) {
 	o = s.newObject(false)
 	o.ID = *v.Key
-	o.Name = s.getRelPath(*v.Key)
-	o.Type = typ.ObjectTypeFile
+	o.Path = s.getRelPath(*v.Key)
+	o.Mode |= typ.ModeRead
 
 	o.SetSize(service.Int64Value(v.Size))
 	o.SetUpdatedAt(convertUnixTimestampToTime(service.IntValue(v.Modified)))

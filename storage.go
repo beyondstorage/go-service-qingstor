@@ -2,27 +2,21 @@ package qingstor
 
 import (
 	"context"
-	"io"
-
+	"fmt"
 	"github.com/pengsrc/go-shared/convert"
 	"github.com/qingstor/qingstor-sdk-go/v4/service"
+	"io"
 
 	"github.com/aos-dev/go-storage/v2/pkg/headers"
 	"github.com/aos-dev/go-storage/v2/pkg/iowrap"
 	. "github.com/aos-dev/go-storage/v2/types"
 )
 
-func (s *Storage) abortSegment(ctx context.Context, seg Segment, opt *pairStorageAbortSegment) (err error) {
-	_, err = s.bucket.AbortMultipartUploadWithContext(ctx, seg.Path, &service.AbortMultipartUploadInput{
-		UploadID: service.String(seg.ID),
-	})
-	if err != nil {
-		return
+func (s *Storage) completePart(ctx context.Context, o *Object, parts []*Part, opt *pairStorageCompletePart) (err error) {
+	if o.Mode&ModePart == 0 {
+		return fmt.Errorf("object is not a part object")
 	}
-	return
-}
 
-func (s *Storage) completeIndexSegment(ctx context.Context, seg Segment, parts []*Part, opt *pairStorageCompleteIndexSegment) (err error) {
 	objectParts := make([]*service.ObjectPartType, 0, len(parts))
 	for _, v := range parts {
 		objectParts = append(objectParts, &service.ObjectPartType{
@@ -31,8 +25,8 @@ func (s *Storage) completeIndexSegment(ctx context.Context, seg Segment, parts [
 		})
 	}
 
-	_, err = s.bucket.CompleteMultipartUploadWithContext(ctx, seg.Path, &service.CompleteMultipartUploadInput{
-		UploadID:    service.String(seg.ID),
+	_, err = s.bucket.CompleteMultipartUploadWithContext(ctx, o.ID, &service.CompleteMultipartUploadInput{
+		UploadID:    service.String(o.MustGetPartID()),
 		ObjectParts: objectParts,
 	})
 	if err != nil {
@@ -54,8 +48,37 @@ func (s *Storage) copy(ctx context.Context, src string, dst string, opt *pairSto
 	return nil
 }
 
+func (s *Storage) createPart(ctx context.Context, path string, opt *pairStorageCreatePart) (o *Object, err error) {
+	input := &service.InitiateMultipartUploadInput{}
+
+	rp := s.getAbsPath(path)
+
+	output, err := s.bucket.InitiateMultipartUploadWithContext(ctx, rp, input)
+	if err != nil {
+		return
+	}
+
+	o = s.newObject(true)
+	o.ID = rp
+	o.Path = path
+	o.Mode |= ModePart
+	o.SetPartID(*output.UploadID)
+
+	return o, nil
+}
+
 func (s *Storage) delete(ctx context.Context, path string, opt *pairStorageDelete) (err error) {
 	rp := s.getAbsPath(path)
+
+	if opt.HasPartID {
+		_, err = s.bucket.AbortMultipartUploadWithContext(ctx, rp, &service.AbortMultipartUploadInput{
+			UploadID: service.String(opt.PartID),
+		})
+		if err != nil {
+			return
+		}
+		return
+	}
 
 	_, err = s.bucket.DeleteObjectWithContext(ctx, rp)
 	if err != nil {
@@ -71,76 +94,56 @@ func (s *Storage) fetch(ctx context.Context, path string, url string, opt *pairS
 	return err
 }
 
-func (s *Storage) initSegment(ctx context.Context, path string, opt *pairStorageInitSegment) (seg Segment, err error) {
-	input := &service.InitiateMultipartUploadInput{}
-
-	rp := s.getAbsPath(path)
-
-	output, err := s.bucket.InitiateMultipartUploadWithContext(ctx, rp, input)
-	if err != nil {
-		return
-	}
-
-	return Segment{
-		Path: rp,
-		ID:   *output.UploadID,
-	}, nil
-}
-
 func (s *Storage) list(ctx context.Context, path string, opt *pairStorageList) (oi *ObjectIterator, err error) {
 	input := &objectPageStatus{
 		limit:  200,
-		marker: "",
 		prefix: s.getAbsPath(path),
 	}
 
 	var nextFn NextObjectFunc
-	if opt.HasListType && opt.ListType == ListTypeDir {
+
+	switch {
+	case opt.ListMode.IsPart():
+		nextFn = s.listNextPrefixPartObjects
+	case opt.ListMode.IsDir():
 		input.delimiter = "/"
 		nextFn = s.nextDirPage
-	} else {
+	case opt.ListMode.IsPrefix():
 		nextFn = s.nextPrefixPage
+	default:
+		return nil, fmt.Errorf("invalid list mode")
 	}
 
 	return NewObjectIterator(ctx, nextFn, input), nil
 }
 
-func (s *Storage) listIndexSegment(ctx context.Context, seg Segment, opt *pairStorageListIndexSegment) (pi *PartIterator, err error) {
-	input := &partPageStatus{
-		limit:    200,
-		prefix:   seg.Path,
-		uploadID: seg.ID,
-	}
-
-	return NewPartIterator(ctx, s.nextPartPage, input), nil
-}
-
-func (s *Storage) listNextPrefixSegments(ctx context.Context, page *SegmentPage) error {
-	input := page.Status.(*segmentPageStatus)
+func (s *Storage) listNextPrefixPartObjects(ctx context.Context, page *ObjectPage) error {
+	input := page.Status.(*objectPageStatus)
 
 	output, err := s.bucket.ListMultipartUploadsWithContext(ctx, &service.ListMultipartUploadsInput{
-		KeyMarker:      &input.keyMarker,
+		KeyMarker:      &input.marker,
 		Limit:          &input.limit,
 		Prefix:         &input.prefix,
-		UploadIDMarker: &input.uploadIdMarker,
+		UploadIDMarker: &input.partIdMarker,
 	})
 	if err != nil {
 		return err
 	}
 
 	for _, v := range output.Uploads {
-		seg := &Segment{
-			Path: *v.Key,
-			ID:   *v.UploadID,
-		}
+		o := s.newObject(true)
+		o.ID = *v.Key
+		o.Path = s.getRelPath(*v.Key)
+		o.Mode |= ModePart
+		o.SetPartID(*v.UploadID)
 
-		page.Data = append(page.Data, seg)
+		page.Data = append(page.Data, o)
 	}
 
-	input.keyMarker = service.StringValue(output.NextKeyMarker)
-	input.uploadIdMarker = service.StringValue(output.NextUploadIDMarker)
+	input.marker = service.StringValue(output.NextKeyMarker)
+	input.partIdMarker = service.StringValue(output.NextUploadIDMarker)
 
-	if input.keyMarker == "" && input.uploadIdMarker == "" {
+	if input.marker == "" && input.partIdMarker == "" {
 		return IterateDone
 	}
 	if output.HasMore != nil && !*output.HasMore {
@@ -149,13 +152,18 @@ func (s *Storage) listNextPrefixSegments(ctx context.Context, page *SegmentPage)
 	return nil
 }
 
-func (s *Storage) listSegments(ctx context.Context, prefix string, opt *pairStorageListSegments) (si *SegmentIterator, err error) {
-	input := &segmentPageStatus{
-		limit:  200,
-		prefix: s.getAbsPath(prefix),
+func (s *Storage) listPart(ctx context.Context, o *Object, opt *pairStorageListPart) (pi *PartIterator, err error) {
+	if o.Mode&ModePart == 0 {
+		return nil, fmt.Errorf("object is not a part object")
 	}
 
-	return NewSegmentIterator(ctx, s.listNextPrefixSegments, input), nil
+	input := &partPageStatus{
+		limit:    200,
+		prefix:   o.ID,
+		uploadID: o.MustGetPartID(),
+	}
+
+	return NewPartIterator(ctx, s.nextPartPage, input), nil
 }
 
 func (s *Storage) metadata(ctx context.Context, opt *pairStorageMetadata) (meta *StorageMeta, err error) {
@@ -195,8 +203,8 @@ func (s *Storage) nextDirPage(ctx context.Context, page *ObjectPage) error {
 	for _, v := range output.CommonPrefixes {
 		o := s.newObject(true)
 		o.ID = *v
-		o.Name = s.getRelPath(*v)
-		o.Type = ObjectTypeDir
+		o.Path = s.getRelPath(*v)
+		o.Mode |= ModeDir
 
 		page.Data = append(page.Data, o)
 	}
@@ -351,8 +359,8 @@ func (s *Storage) stat(ctx context.Context, path string, opt *pairStorageStat) (
 
 	o = s.newObject(true)
 	o.ID = rp
-	o.Name = path
-	o.Type = ObjectTypeFile
+	o.Path = path
+	o.Mode |= ModeRead
 
 	o.SetSize(service.Int64Value(output.ContentLength))
 	o.SetUpdatedAt(service.TimeValue(output.LastModified))
@@ -388,14 +396,14 @@ func (s *Storage) statistical(ctx context.Context, opt *pairStorageStatistical) 
 	return statistic, nil
 }
 
-func (s *Storage) write(ctx context.Context, path string, r io.Reader, opt *pairStorageWrite) (n int64, err error) {
+func (s *Storage) write(ctx context.Context, path string, r io.Reader, size int64, opt *pairStorageWrite) (n int64, err error) {
 	if opt.HasReadCallbackFunc {
 		r = iowrap.CallbackReader(r, opt.ReadCallbackFunc)
 	}
 
 	input := &service.PutObjectInput{
-		ContentLength: &opt.Size,
-		Body:          io.LimitReader(r, opt.Size),
+		ContentLength: &size,
+		Body:          io.LimitReader(r, size),
 	}
 	if opt.HasContentMd5 {
 		input.ContentMD5 = &opt.ContentMd5
@@ -410,24 +418,22 @@ func (s *Storage) write(ctx context.Context, path string, r io.Reader, opt *pair
 	if err != nil {
 		return
 	}
-	return opt.Size, nil
+	return size, nil
 }
 
-func (s *Storage) writeIndexSegment(ctx context.Context, seg Segment, r io.Reader, index int, size int64, opt *pairStorageWriteIndexSegment) (err error) {
-	rp := s.getAbsPath(seg.Path)
-
-	if opt.HasReadCallbackFunc {
-		r = iowrap.CallbackReader(r, opt.ReadCallbackFunc)
+func (s *Storage) writePart(ctx context.Context, o *Object, r io.Reader, size int64, index int, opt *pairStorageWritePart) (n int64, err error) {
+	if o.Mode&ModePart == 0 {
+		return 0, fmt.Errorf("object is not a part object")
 	}
 
-	_, err = s.bucket.UploadMultipartWithContext(ctx, rp, &service.UploadMultipartInput{
+	_, err = s.bucket.UploadMultipartWithContext(ctx, o.ID, &service.UploadMultipartInput{
 		PartNumber:    service.Int(index),
-		UploadID:      service.String(seg.ID),
+		UploadID:      service.String(o.MustGetPartID()),
 		ContentLength: &size,
 		Body:          io.LimitReader(r, size),
 	})
 	if err != nil {
 		return
 	}
-	return
+	return size, nil
 }
