@@ -390,8 +390,8 @@ func parsePairStorageNew(opts []Pair) (*pairStorageNew, error) {
 	return result, nil
 }
 
-// pairStorageCompletePart is the parsed struct
-type pairStorageCompletePart struct {
+// pairStorageCompleteMultipart is the parsed struct
+type pairStorageCompleteMultipart struct {
 	pairs []Pair
 
 	// Required pairs
@@ -399,9 +399,9 @@ type pairStorageCompletePart struct {
 	// Generated pairs
 }
 
-// parsePairStorageCompletePart will parse Pair slice into *pairStorageCompletePart
-func (s *Storage) parsePairStorageCompletePart(opts []Pair) (*pairStorageCompletePart, error) {
-	result := &pairStorageCompletePart{
+// parsePairStorageCompleteMultipart will parse Pair slice into *pairStorageCompleteMultipart
+func (s *Storage) parsePairStorageCompleteMultipart(opts []Pair) (*pairStorageCompleteMultipart, error) {
+	result := &pairStorageCompleteMultipart{
 		pairs: opts,
 	}
 
@@ -412,7 +412,7 @@ func (s *Storage) parsePairStorageCompletePart(opts []Pair) (*pairStorageComplet
 		// Generated pairs
 		default:
 
-			if s.pairPolicy.All || s.pairPolicy.CompletePart {
+			if s.pairPolicy.All || s.pairPolicy.CompleteMultipart {
 				return nil, services.NewPairUnsupportedError(v)
 			}
 
@@ -454,8 +454,8 @@ func (s *Storage) parsePairStorageCopy(opts []Pair) (*pairStorageCopy, error) {
 	return result, nil
 }
 
-// pairStorageCreatePart is the parsed struct
-type pairStorageCreatePart struct {
+// pairStorageCreateMultipart is the parsed struct
+type pairStorageCreateMultipart struct {
 	pairs []Pair
 
 	// Required pairs
@@ -463,9 +463,9 @@ type pairStorageCreatePart struct {
 	// Generated pairs
 }
 
-// parsePairStorageCreatePart will parse Pair slice into *pairStorageCreatePart
-func (s *Storage) parsePairStorageCreatePart(opts []Pair) (*pairStorageCreatePart, error) {
-	result := &pairStorageCreatePart{
+// parsePairStorageCreateMultipart will parse Pair slice into *pairStorageCreateMultipart
+func (s *Storage) parsePairStorageCreateMultipart(opts []Pair) (*pairStorageCreateMultipart, error) {
+	result := &pairStorageCreateMultipart{
 		pairs: opts,
 	}
 
@@ -476,7 +476,7 @@ func (s *Storage) parsePairStorageCreatePart(opts []Pair) (*pairStorageCreatePar
 		// Generated pairs
 		default:
 
-			if s.pairPolicy.All || s.pairPolicy.CreatePart {
+			if s.pairPolicy.All || s.pairPolicy.CreateMultipart {
 				return nil, services.NewPairUnsupportedError(v)
 			}
 
@@ -592,8 +592,8 @@ func (s *Storage) parsePairStorageList(opts []Pair) (*pairStorageList, error) {
 	return result, nil
 }
 
-// pairStorageListPart is the parsed struct
-type pairStorageListPart struct {
+// pairStorageListMultipart is the parsed struct
+type pairStorageListMultipart struct {
 	pairs []Pair
 
 	// Required pairs
@@ -601,9 +601,9 @@ type pairStorageListPart struct {
 	// Generated pairs
 }
 
-// parsePairStorageListPart will parse Pair slice into *pairStorageListPart
-func (s *Storage) parsePairStorageListPart(opts []Pair) (*pairStorageListPart, error) {
-	result := &pairStorageListPart{
+// parsePairStorageListMultipart will parse Pair slice into *pairStorageListMultipart
+func (s *Storage) parsePairStorageListMultipart(opts []Pair) (*pairStorageListMultipart, error) {
+	result := &pairStorageListMultipart{
 		pairs: opts,
 	}
 
@@ -614,7 +614,7 @@ func (s *Storage) parsePairStorageListPart(opts []Pair) (*pairStorageListPart, e
 		// Generated pairs
 		default:
 
-			if s.pairPolicy.All || s.pairPolicy.ListPart {
+			if s.pairPolicy.All || s.pairPolicy.ListMultipart {
 				return nil, services.NewPairUnsupportedError(v)
 			}
 
@@ -896,8 +896,8 @@ func (s *Storage) parsePairStorageWrite(opts []Pair) (*pairStorageWrite, error) 
 	return result, nil
 }
 
-// pairStorageWritePart is the parsed struct
-type pairStorageWritePart struct {
+// pairStorageWriteMultipart is the parsed struct
+type pairStorageWriteMultipart struct {
 	pairs []Pair
 
 	// Required pairs
@@ -905,9 +905,9 @@ type pairStorageWritePart struct {
 	// Generated pairs
 }
 
-// parsePairStorageWritePart will parse Pair slice into *pairStorageWritePart
-func (s *Storage) parsePairStorageWritePart(opts []Pair) (*pairStorageWritePart, error) {
-	result := &pairStorageWritePart{
+// parsePairStorageWriteMultipart will parse Pair slice into *pairStorageWriteMultipart
+func (s *Storage) parsePairStorageWriteMultipart(opts []Pair) (*pairStorageWriteMultipart, error) {
+	result := &pairStorageWriteMultipart{
 		pairs: opts,
 	}
 
@@ -918,7 +918,7 @@ func (s *Storage) parsePairStorageWritePart(opts []Pair) (*pairStorageWritePart,
 		// Generated pairs
 		default:
 
-			if s.pairPolicy.All || s.pairPolicy.WritePart {
+			if s.pairPolicy.All || s.pairPolicy.WriteMultipart {
 				return nil, services.NewPairUnsupportedError(v)
 			}
 
@@ -928,26 +928,26 @@ func (s *Storage) parsePairStorageWritePart(opts []Pair) (*pairStorageWritePart,
 	return result, nil
 }
 
-// CompletePart
+// CompleteMultipart will complete a multipart upload and construct an Object.
 //
 // This function will create a context by default.
-func (s *Storage) CompletePart(o *Object, parts []*Part, pairs ...Pair) (err error) {
+func (s *Storage) CompleteMultipart(o *Object, parts []*Part, pairs ...Pair) (err error) {
 	ctx := context.Background()
-	return s.CompletePartWithContext(ctx, o, parts, pairs...)
+	return s.CompleteMultipartWithContext(ctx, o, parts, pairs...)
 }
 
-// CompletePartWithContext
-func (s *Storage) CompletePartWithContext(ctx context.Context, o *Object, parts []*Part, pairs ...Pair) (err error) {
+// CompleteMultipartWithContext will complete a multipart upload and construct an Object.
+func (s *Storage) CompleteMultipartWithContext(ctx context.Context, o *Object, parts []*Part, pairs ...Pair) (err error) {
 	defer func() {
-		err = s.formatError("complete_part", err)
+		err = s.formatError("complete_multipart", err)
 	}()
-	var opt *pairStorageCompletePart
-	opt, err = s.parsePairStorageCompletePart(pairs)
+	var opt *pairStorageCompleteMultipart
+	opt, err = s.parsePairStorageCompleteMultipart(pairs)
 	if err != nil {
 		return
 	}
 
-	return s.completePart(ctx, o, parts, opt)
+	return s.completeMultipart(ctx, o, parts, opt)
 }
 
 // Copy will copy an Object or multiple object in the service.
@@ -972,26 +972,26 @@ func (s *Storage) CopyWithContext(ctx context.Context, src string, dst string, p
 	return s.copy(ctx, src, dst, opt)
 }
 
-// CreatePart
+// CreateMultipart will create a new multipart.
 //
 // This function will create a context by default.
-func (s *Storage) CreatePart(path string, pairs ...Pair) (o *Object, err error) {
+func (s *Storage) CreateMultipart(path string, pairs ...Pair) (o *Object, err error) {
 	ctx := context.Background()
-	return s.CreatePartWithContext(ctx, path, pairs...)
+	return s.CreateMultipartWithContext(ctx, path, pairs...)
 }
 
-// CreatePartWithContext
-func (s *Storage) CreatePartWithContext(ctx context.Context, path string, pairs ...Pair) (o *Object, err error) {
+// CreateMultipartWithContext will create a new multipart.
+func (s *Storage) CreateMultipartWithContext(ctx context.Context, path string, pairs ...Pair) (o *Object, err error) {
 	defer func() {
-		err = s.formatError("create_part", err, path)
+		err = s.formatError("create_multipart", err, path)
 	}()
-	var opt *pairStorageCreatePart
-	opt, err = s.parsePairStorageCreatePart(pairs)
+	var opt *pairStorageCreateMultipart
+	opt, err = s.parsePairStorageCreateMultipart(pairs)
 	if err != nil {
 		return
 	}
 
-	return s.createPart(ctx, path, opt)
+	return s.createMultipart(ctx, path, opt)
 }
 
 // Delete will delete an Object from service.
@@ -1060,26 +1060,26 @@ func (s *Storage) ListWithContext(ctx context.Context, path string, pairs ...Pai
 	return s.list(ctx, path, opt)
 }
 
-// ListPart
+// ListMultipart will list parts belong to this multipart.
 //
 // This function will create a context by default.
-func (s *Storage) ListPart(o *Object, pairs ...Pair) (pi *PartIterator, err error) {
+func (s *Storage) ListMultipart(o *Object, pairs ...Pair) (pi *PartIterator, err error) {
 	ctx := context.Background()
-	return s.ListPartWithContext(ctx, o, pairs...)
+	return s.ListMultipartWithContext(ctx, o, pairs...)
 }
 
-// ListPartWithContext
-func (s *Storage) ListPartWithContext(ctx context.Context, o *Object, pairs ...Pair) (pi *PartIterator, err error) {
+// ListMultipartWithContext will list parts belong to this multipart.
+func (s *Storage) ListMultipartWithContext(ctx context.Context, o *Object, pairs ...Pair) (pi *PartIterator, err error) {
 	defer func() {
-		err = s.formatError("list_part", err)
+		err = s.formatError("list_multipart", err)
 	}()
-	var opt *pairStorageListPart
-	opt, err = s.parsePairStorageListPart(pairs)
+	var opt *pairStorageListMultipart
+	opt, err = s.parsePairStorageListMultipart(pairs)
 	if err != nil {
 		return
 	}
 
-	return s.listPart(ctx, o, opt)
+	return s.listMultipart(ctx, o, opt)
 }
 
 // Metadata will return current storager metadata.
@@ -1236,24 +1236,24 @@ func (s *Storage) WriteWithContext(ctx context.Context, path string, r io.Reader
 	return s.write(ctx, path, r, size, opt)
 }
 
-// WritePart
+// WriteMultipart will write content to a multipart.
 //
 // This function will create a context by default.
-func (s *Storage) WritePart(o *Object, r io.Reader, size int64, index int, pairs ...Pair) (n int64, err error) {
+func (s *Storage) WriteMultipart(o *Object, r io.Reader, size int64, index int, pairs ...Pair) (n int64, err error) {
 	ctx := context.Background()
-	return s.WritePartWithContext(ctx, o, r, size, index, pairs...)
+	return s.WriteMultipartWithContext(ctx, o, r, size, index, pairs...)
 }
 
-// WritePartWithContext
-func (s *Storage) WritePartWithContext(ctx context.Context, o *Object, r io.Reader, size int64, index int, pairs ...Pair) (n int64, err error) {
+// WriteMultipartWithContext will write content to a multipart.
+func (s *Storage) WriteMultipartWithContext(ctx context.Context, o *Object, r io.Reader, size int64, index int, pairs ...Pair) (n int64, err error) {
 	defer func() {
-		err = s.formatError("write_part", err)
+		err = s.formatError("write_multipart", err)
 	}()
-	var opt *pairStorageWritePart
-	opt, err = s.parsePairStorageWritePart(pairs)
+	var opt *pairStorageWriteMultipart
+	opt, err = s.parsePairStorageWriteMultipart(pairs)
 	if err != nil {
 		return
 	}
 
-	return s.writePart(ctx, o, r, size, index, opt)
+	return s.writeMultipart(ctx, o, r, size, index, opt)
 }

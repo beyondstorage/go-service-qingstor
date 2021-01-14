@@ -5,10 +5,10 @@ go 1.14
 require (
 	bou.ke/monkey v1.0.2
 	github.com/aos-dev/go-integration-test/v2 v2.0.0-20210114085812-b07ff7ad9929
-	github.com/aos-dev/go-storage/v2 v2.0.1-0.20210114085352-83ad63ab0843
+	github.com/aos-dev/go-storage/v2 v2.0.1-0.20210114150430-47cf11d710c6
 	github.com/golang/mock v1.4.4
 	github.com/google/uuid v1.1.4
 	github.com/pengsrc/go-shared v0.2.1-0.20190131101655-1999055a4a14
 	github.com/qingstor/qingstor-sdk-go/v4 v4.2.0
-	github.com/stretchr/testify v1.6.1
+	github.com/stretchr/testify v1.7.0
 )

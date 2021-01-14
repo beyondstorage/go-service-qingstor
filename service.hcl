@@ -21,7 +21,7 @@ namespace "service" {
   }
 }
 namespace "storage" {
-  implement = ["copier", "fetcher", "mover", "parter", "reacher", "statistician"]
+  implement = ["copier", "fetcher", "mover", "multiparter", "reacher", "statistician"]
 
   new {
     required = ["name"]

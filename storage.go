@@ -12,7 +12,7 @@ import (
 	. "github.com/aos-dev/go-storage/v2/types"
 )
 
-func (s *Storage) completePart(ctx context.Context, o *Object, parts []*Part, opt *pairStorageCompletePart) (err error) {
+func (s *Storage) completeMultipart(ctx context.Context, o *Object, parts []*Part, opt *pairStorageCompleteMultipart) (err error) {
 	if o.Mode&ModePart == 0 {
 		return fmt.Errorf("object is not a part object")
 	}
@@ -26,7 +26,7 @@ func (s *Storage) completePart(ctx context.Context, o *Object, parts []*Part, op
 	}
 
 	_, err = s.bucket.CompleteMultipartUploadWithContext(ctx, o.ID, &service.CompleteMultipartUploadInput{
-		UploadID:    service.String(o.MustGetPartID()),
+		UploadID:    service.String(o.MustGetMultipartID()),
 		ObjectParts: objectParts,
 	})
 	if err != nil {
@@ -48,7 +48,7 @@ func (s *Storage) copy(ctx context.Context, src string, dst string, opt *pairSto
 	return nil
 }
 
-func (s *Storage) createPart(ctx context.Context, path string, opt *pairStorageCreatePart) (o *Object, err error) {
+func (s *Storage) createMultipart(ctx context.Context, path string, opt *pairStorageCreateMultipart) (o *Object, err error) {
 	input := &service.InitiateMultipartUploadInput{}
 
 	rp := s.getAbsPath(path)
@@ -62,7 +62,7 @@ func (s *Storage) createPart(ctx context.Context, path string, opt *pairStorageC
 	o.ID = rp
 	o.Path = path
 	o.Mode |= ModePart
-	o.SetPartID(*output.UploadID)
+	o.SetMultipartID(*output.UploadID)
 
 	return o, nil
 }
@@ -117,6 +117,20 @@ func (s *Storage) list(ctx context.Context, path string, opt *pairStorageList) (
 	return NewObjectIterator(ctx, nextFn, input), nil
 }
 
+func (s *Storage) listMultipart(ctx context.Context, o *Object, opt *pairStorageListMultipart) (pi *PartIterator, err error) {
+	if o.Mode&ModePart == 0 {
+		return nil, fmt.Errorf("object is not a part object")
+	}
+
+	input := &partPageStatus{
+		limit:    200,
+		prefix:   o.ID,
+		uploadID: o.MustGetMultipartID(),
+	}
+
+	return NewPartIterator(ctx, s.nextPartPage, input), nil
+}
+
 func (s *Storage) listNextPrefixPartObjects(ctx context.Context, page *ObjectPage) error {
 	input := page.Status.(*objectPageStatus)
 
@@ -135,7 +149,7 @@ func (s *Storage) listNextPrefixPartObjects(ctx context.Context, page *ObjectPag
 		o.ID = *v.Key
 		o.Path = s.getRelPath(*v.Key)
 		o.Mode |= ModePart
-		o.SetPartID(*v.UploadID)
+		o.SetMultipartID(*v.UploadID)
 
 		page.Data = append(page.Data, o)
 	}
@@ -150,20 +164,6 @@ func (s *Storage) listNextPrefixPartObjects(ctx context.Context, page *ObjectPag
 		return IterateDone
 	}
 	return nil
-}
-
-func (s *Storage) listPart(ctx context.Context, o *Object, opt *pairStorageListPart) (pi *PartIterator, err error) {
-	if o.Mode&ModePart == 0 {
-		return nil, fmt.Errorf("object is not a part object")
-	}
-
-	input := &partPageStatus{
-		limit:    200,
-		prefix:   o.ID,
-		uploadID: o.MustGetPartID(),
-	}
-
-	return NewPartIterator(ctx, s.nextPartPage, input), nil
 }
 
 func (s *Storage) metadata(ctx context.Context, opt *pairStorageMetadata) (meta *StorageMeta, err error) {
@@ -421,14 +421,14 @@ func (s *Storage) write(ctx context.Context, path string, r io.Reader, size int6
 	return size, nil
 }
 
-func (s *Storage) writePart(ctx context.Context, o *Object, r io.Reader, size int64, index int, opt *pairStorageWritePart) (n int64, err error) {
+func (s *Storage) writeMultipart(ctx context.Context, o *Object, r io.Reader, size int64, index int, opt *pairStorageWriteMultipart) (n int64, err error) {
 	if o.Mode&ModePart == 0 {
 		return 0, fmt.Errorf("object is not a part object")
 	}
 
 	_, err = s.bucket.UploadMultipartWithContext(ctx, o.ID, &service.UploadMultipartInput{
 		PartNumber:    service.Int(index),
-		UploadID:      service.String(o.MustGetPartID()),
+		UploadID:      service.String(o.MustGetMultipartID()),
 		ContentLength: &size,
 		Body:          io.LimitReader(r, size),
 	})
