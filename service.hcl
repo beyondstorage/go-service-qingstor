@@ -21,15 +21,18 @@ namespace "service" {
   }
 }
 namespace "storage" {
-  implement = ["copier", "fetcher", "index_segmenter", "mover", "reacher", "segmenter", "statistician"]
+  implement = ["copier", "fetcher", "mover", "multiparter", "reacher", "statistician"]
 
   new {
     required = ["name"]
     optional = ["disable_uri_cleaning", "http_client_options", "location", "pair_policy", "work_dir"]
   }
 
+  op "delete" {
+    optional = ["part_id"]
+  }
   op "list" {
-    optional = ["list_type"]
+    optional = ["list_mode"]
   }
   op "reach" {
     required = ["expire"]
@@ -38,11 +41,7 @@ namespace "storage" {
     optional = ["offset", "read_callback_func", "size"]
   }
   op "write" {
-    required = ["size"]
     optional = ["content_md5", "content_type", "offset", "read_callback_func", "storage_class"]
-  }
-  op "write_index_segment" {
-    optional = ["read_callback_func"]
   }
 }
 
