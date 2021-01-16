@@ -8,9 +8,9 @@ import (
 	"github.com/pengsrc/go-shared/convert"
 	"github.com/qingstor/qingstor-sdk-go/v4/service"
 
-	"github.com/aos-dev/go-storage/v2/pkg/headers"
-	"github.com/aos-dev/go-storage/v2/pkg/iowrap"
-	. "github.com/aos-dev/go-storage/v2/types"
+	"github.com/aos-dev/go-storage/v3/pkg/headers"
+	"github.com/aos-dev/go-storage/v3/pkg/iowrap"
+	. "github.com/aos-dev/go-storage/v3/types"
 )
 
 func (s *Storage) completeMultipart(ctx context.Context, o *Object, parts []*Part, opt *pairStorageCompleteMultipart) (err error) {
@@ -71,9 +71,9 @@ func (s *Storage) createMultipart(ctx context.Context, path string, opt *pairSto
 func (s *Storage) delete(ctx context.Context, path string, opt *pairStorageDelete) (err error) {
 	rp := s.getAbsPath(path)
 
-	if opt.HasPartID {
+	if opt.HasMultipartID {
 		_, err = s.bucket.AbortMultipartUploadWithContext(ctx, rp, &service.AbortMultipartUploadInput{
-			UploadID: service.String(opt.PartID),
+			UploadID: service.String(opt.MultipartID),
 		})
 		if err != nil {
 			return
@@ -341,8 +341,8 @@ func (s *Storage) read(ctx context.Context, path string, w io.Writer, opt *pairS
 	defer output.Body.Close()
 
 	rc := output.Body
-	if opt.HasReadCallbackFunc {
-		rc = iowrap.CallbackReadCloser(rc, opt.ReadCallbackFunc)
+	if opt.HasIoCallback {
+		rc = iowrap.CallbackReadCloser(rc, opt.IoCallback)
 	}
 
 	return io.Copy(w, rc)
@@ -370,7 +370,7 @@ func (s *Storage) stat(ctx context.Context, path string, opt *pairStorageStat) (
 		o.SetContentType(service.StringValue(output.ContentType))
 	}
 	if output.ETag != nil {
-		o.SetETag(service.StringValue(output.ETag))
+		o.SetEtag(service.StringValue(output.ETag))
 	}
 
 	if v := service.StringValue(output.XQSStorageClass); v != "" {
@@ -380,26 +380,9 @@ func (s *Storage) stat(ctx context.Context, path string, opt *pairStorageStat) (
 	return o, nil
 }
 
-func (s *Storage) statistical(ctx context.Context, opt *pairStorageStatistical) (statistic *StorageStatistic, err error) {
-	statistic = NewStorageStatistic()
-
-	output, err := s.bucket.GetStatisticsWithContext(ctx)
-	if err != nil {
-		return
-	}
-
-	if output.Size != nil {
-		statistic.SetSize(*output.Size)
-	}
-	if output.Count != nil {
-		statistic.SetCount(*output.Count)
-	}
-	return statistic, nil
-}
-
 func (s *Storage) write(ctx context.Context, path string, r io.Reader, size int64, opt *pairStorageWrite) (n int64, err error) {
-	if opt.HasReadCallbackFunc {
-		r = iowrap.CallbackReader(r, opt.ReadCallbackFunc)
+	if opt.HasIoCallback {
+		r = iowrap.CallbackReader(r, opt.IoCallback)
 	}
 
 	input := &service.PutObjectInput{

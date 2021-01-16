@@ -11,10 +11,10 @@ import (
 	"github.com/qingstor/qingstor-sdk-go/v4/service"
 	"github.com/stretchr/testify/assert"
 
-	"github.com/aos-dev/go-storage/v2/pairs"
-	"github.com/aos-dev/go-storage/v2/pkg/credential"
-	"github.com/aos-dev/go-storage/v2/pkg/endpoint"
-	"github.com/aos-dev/go-storage/v2/services"
+	"github.com/aos-dev/go-storage/v3/pairs"
+	"github.com/aos-dev/go-storage/v3/pkg/credential"
+	"github.com/aos-dev/go-storage/v3/pkg/endpoint"
+	"github.com/aos-dev/go-storage/v3/services"
 )
 
 func Test_New(t *testing.T) {
@@ -33,8 +33,8 @@ func Test_New(t *testing.T) {
 	name := uuid.New().String()
 	port := 1234
 	srv, store, err := New(
-		pairs.WithCredential(credential.MustNewHmac(accessKey, secretKey)),
-		pairs.WithEndpoint(endpoint.NewHTTP(host, port)),
+		pairs.WithCredential(credential.NewHmac(accessKey, secretKey).String()),
+		pairs.WithEndpoint(endpoint.NewHTTP(host, port).String()),
 		pairs.WithLocation("test"),
 		pairs.WithName(name),
 	)

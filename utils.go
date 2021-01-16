@@ -3,6 +3,7 @@ package qingstor
 import (
 	"errors"
 	"fmt"
+	"github.com/aos-dev/go-storage/v3/pkg/endpoint"
 	"net/http"
 	"regexp"
 	"strings"
@@ -14,12 +15,12 @@ import (
 	qserror "github.com/qingstor/qingstor-sdk-go/v4/request/errors"
 	"github.com/qingstor/qingstor-sdk-go/v4/service"
 
-	ps "github.com/aos-dev/go-storage/v2/pairs"
-	"github.com/aos-dev/go-storage/v2/pkg/credential"
-	"github.com/aos-dev/go-storage/v2/pkg/headers"
-	"github.com/aos-dev/go-storage/v2/pkg/httpclient"
-	"github.com/aos-dev/go-storage/v2/services"
-	typ "github.com/aos-dev/go-storage/v2/types"
+	ps "github.com/aos-dev/go-storage/v3/pairs"
+	"github.com/aos-dev/go-storage/v3/pkg/credential"
+	"github.com/aos-dev/go-storage/v3/pkg/headers"
+	"github.com/aos-dev/go-storage/v3/pkg/httpclient"
+	"github.com/aos-dev/go-storage/v3/services"
+	typ "github.com/aos-dev/go-storage/v3/types"
 )
 
 // Service is the qingstor service config.
@@ -91,19 +92,29 @@ func newServicer(pairs ...typ.Pair) (srv *Service, err error) {
 		client: httpclient.New(opt.HTTPClientOptions),
 	}
 
-	credProtocol, cred := opt.Credential.Protocol(), opt.Credential.Value()
-	if credProtocol != credential.ProtocolHmac {
-		return nil, services.NewPairUnsupportedError(ps.WithCredential(opt.Credential))
-	}
+	var cfg *qsconfig.Config
 
-	cfg, err := qsconfig.New(cred[0], cred[1])
+	// Set config's credential.
+	cp, err := credential.Parse(opt.Credential)
 	if err != nil {
 		return nil, err
+	}
+	switch cp.Protocol() {
+	case credential.ProtocolHmac:
+		cfg, err = qsconfig.New(cp.Hmac())
+		if err != nil {
+			return nil, err
+		}
+	default:
+		return nil, services.NewPairUnsupportedError(ps.WithCredential(opt.Credential))
 	}
 
 	// Set config's endpoint
 	if opt.HasEndpoint {
-		ep := opt.Endpoint.Value()
+		ep, err := endpoint.Parse(opt.Endpoint)
+		if err != nil {
+			return nil, err
+		}
 		cfg.Host = ep.Host
 		cfg.Port = ep.Port
 		cfg.Protocol = ep.Protocol
@@ -325,7 +336,7 @@ func (s *Storage) formatFileObject(v *service.KeyType) (o *typ.Object, err error
 		setStorageClass(o, value)
 	}
 	if v.Etag != nil {
-		o.SetETag(service.StringValue(v.Etag))
+		o.SetEtag(service.StringValue(v.Etag))
 	}
 	return o, nil
 }

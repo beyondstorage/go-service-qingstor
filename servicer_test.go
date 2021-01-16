@@ -16,17 +16,17 @@ import (
 	"github.com/qingstor/qingstor-sdk-go/v4/service"
 	"github.com/stretchr/testify/assert"
 
-	"github.com/aos-dev/go-storage/v2/pairs"
-	"github.com/aos-dev/go-storage/v2/pkg/credential"
-	"github.com/aos-dev/go-storage/v2/services"
-	"github.com/aos-dev/go-storage/v2/types"
+	"github.com/aos-dev/go-storage/v3/pairs"
+	"github.com/aos-dev/go-storage/v3/pkg/credential"
+	"github.com/aos-dev/go-storage/v3/services"
+	"github.com/aos-dev/go-storage/v3/types"
 )
 
 func TestService_String(t *testing.T) {
 	accessKey := uuid.New().String()
 	secretKey := uuid.New().String()
 
-	srv, err := NewServicer(pairs.WithCredential(credential.MustNewHmac(accessKey, secretKey)))
+	srv, err := NewServicer(pairs.WithCredential(credential.NewHmac(accessKey, secretKey).String()))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -266,7 +266,7 @@ func TestService_List(t *testing.T) {
 func ExampleNew() {
 	_, _, err := New(
 		pairs.WithCredential(
-			credential.MustNewHmac("test_access_key", "test_secret_key"),
+			credential.NewHmac("test_access_key", "test_secret_key").String(),
 		),
 	)
 	if err != nil {
@@ -277,7 +277,7 @@ func ExampleNew() {
 func ExampleService_Get() {
 	srv, _, err := New(
 		pairs.WithCredential(
-			credential.MustNewHmac("test_access_key", "test_secret_key"),
+			credential.NewHmac("test_access_key", "test_secret_key").String(),
 		),
 	)
 	if err != nil {
