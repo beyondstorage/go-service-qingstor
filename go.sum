@@ -6,12 +6,10 @@ github.com/Xuanwo/templateutils v0.0.0-20201019101431-c73b871118f2 h1:ydpBZm38sX
 github.com/Xuanwo/templateutils v0.0.0-20201019101431-c73b871118f2/go.mod h1:x0qS7gfgEm24b8V9U+0zBEBAu/VpxZhO/+EWtpgEgDw=
 github.com/agext/levenshtein v1.2.1 h1:QmvMAjj2aEICytGiWzmxoE0x2KZvE0fvmqMOfy2tjT8=
 github.com/agext/levenshtein v1.2.1/go.mod h1:JEDfjyjHDjOF/1e4FlBE/PkbqA9OfWu2ki2W0IB5558=
-github.com/aos-dev/go-integration-test/v2 v2.0.0-20210112071015-339e9258b7b2 h1:gBe610/EhKOJKDay1jGzJXY/+OdxJ0at0ukAO7lDF5I=
-github.com/aos-dev/go-integration-test/v2 v2.0.0-20210112071015-339e9258b7b2/go.mod h1:/QyyTGYulgbdZr0smf9PPWsSplLp7ULbZe2zBTk5ycA=
-github.com/aos-dev/go-storage/v2 v2.0.1-0.20210112061652-0b7e2ab57b88/go.mod h1:6mNwhRUOEiBFebskENkrfQPljurlnBY87sRl4VynWZY=
+github.com/aos-dev/go-integration-test/v2 v2.0.0-20210116105857-6da26dd14f81 h1:AXK2hDKhbY+y3xK1VMpdaF2qZD4kvsb94w2qWZHBoaI=
+github.com/aos-dev/go-integration-test/v2 v2.0.0-20210116105857-6da26dd14f81/go.mod h1:GC+v4fTcMUHxFRutZCjb1RPpE9/2Nn67M+ytIWHay/Q=
 github.com/aos-dev/go-storage/v2 v2.0.1-0.20210115064600-bce000125e85 h1:78u0ZdWeAWYgqynI1LVq+v4Lznd1x53+9RwcqL55tRE=
 github.com/aos-dev/go-storage/v2 v2.0.1-0.20210115064600-bce000125e85/go.mod h1:yDX/BMgdQeKKBnaqwgfk1jMnxGj+nKsRKxRj0uIcKYU=
-github.com/aos-dev/specs/go v0.0.0-20210112040534-0e8e3c366e28/go.mod h1:lJ9DsZG2t1cMcn4DiUqfbGoKoyUgF+TOC4R5YVyqhns=
 github.com/aos-dev/specs/go v0.0.0-20210115050339-600fe76f7784 h1:T6UARjsuAQv8cky0itpS1Bdhq+cbtmM7Ss1xPGPylAw=
 github.com/aos-dev/specs/go v0.0.0-20210115050339-600fe76f7784/go.mod h1:33hICDZmcWeWivpjLEiBl7uiTXrO1xqTcbm4fwSRVPM=
 github.com/apparentlymart/go-dump v0.0.0-20180507223929-23540a00eaa3/go.mod h1:oL81AME2rN47vu18xqj1S1jPIPuN7afo62yKTNn3XMM=
@@ -36,8 +34,6 @@ github.com/golang/protobuf v1.1.0/go.mod h1:6lQm79b+lXiMfvg/cZm0SGofjICqVBUtrP5y
 github.com/google/go-cmp v0.3.1 h1:Xye71clBPdm5HgqGwUkwhbynsUJZhDbS20FvLhQ2izg=
 github.com/google/go-cmp v0.3.1/go.mod h1:8QqcDgzrUqlUb/G2PQTWiueGozuR1884gddMywk6iLU=
 github.com/google/pprof v0.0.0-20181127221834-b4f47329b966/go.mod h1:zfwlbNMJ+OItoe0UupaVj+oy1omPYYDuagoSzA8v9mc=
-github.com/google/uuid v1.1.4 h1:0ecGp3skIrHWPNGPJDaBIghfA6Sp7Ruo2Io8eLKzWm0=
-github.com/google/uuid v1.1.4/go.mod h1:TIyPZe4MgqvfeYDBFedMoGGpEw/LqOeaOT+nhxU+yHo=
 github.com/google/uuid v1.1.5 h1:kxhtnfFVi+rYdOALN0B3k9UT86zVJKfBimRaciULW4I=
 github.com/google/uuid v1.1.5/go.mod h1:TIyPZe4MgqvfeYDBFedMoGGpEw/LqOeaOT+nhxU+yHo=
 github.com/gopherjs/gopherjs v0.0.0-20181017120253-0766667cb4d1 h1:EGx4pi6eqNxGaHF6qqu48+N2wcFQ5qg5FXgOdqsJ5d8=
@@ -75,8 +71,6 @@ github.com/stretchr/objx v0.1.0/go.mod h1:HFkY916IF+rwdDfMAkV7OtwuqBVzrE8GR6GFx+
 github.com/stretchr/testify v1.2.2/go.mod h1:a8OnRcib4nhh0OaRAV+Yts87kKdq0PP7pXfy6kDkUVs=
 github.com/stretchr/testify v1.3.1-0.20190311161405-34c6fa2dc709/go.mod h1:M5WIy9Dh21IEIfnGCwXGc5bZfKNJtfHm1UVUgZn+9EI=
 github.com/stretchr/testify v1.4.0/go.mod h1:j7eGeouHqKxXV5pUuKE4zz7dFj8WfuZ+81PSLYec5m4=
-github.com/stretchr/testify v1.6.1 h1:hDPOHmpOpP40lSULcqw7IrRb/u7w6RpDC9399XyoNd0=
-github.com/stretchr/testify v1.6.1/go.mod h1:6Fq8oRcR53rry900zMqJjRRixrwX3KX962/h/Wwjteg=
 github.com/stretchr/testify v1.7.0 h1:nwc3DEeHmmLAfoZucVR881uASk0Mfjw8xYJ99tb5CcY=
 github.com/stretchr/testify v1.7.0/go.mod h1:6Fq8oRcR53rry900zMqJjRRixrwX3KX962/h/Wwjteg=
 github.com/vmihailenco/msgpack v3.3.3+incompatible/go.mod h1:fy3FlTQTDXWkZ7Bh6AcGMlsjHatGryHQYUTf1ShIgkk=
