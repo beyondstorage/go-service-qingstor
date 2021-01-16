@@ -5,15 +5,15 @@ import (
 	"context"
 	"io"
 
-	"github.com/aos-dev/go-storage/v2/pkg/credential"
-	"github.com/aos-dev/go-storage/v2/pkg/endpoint"
-	"github.com/aos-dev/go-storage/v2/pkg/httpclient"
-	"github.com/aos-dev/go-storage/v2/services"
-	. "github.com/aos-dev/go-storage/v2/types"
+	"github.com/aos-dev/go-storage/v3/pkg/credential"
+	"github.com/aos-dev/go-storage/v3/pkg/endpoint"
+	"github.com/aos-dev/go-storage/v3/pkg/httpclient"
+	"github.com/aos-dev/go-storage/v3/services"
+	. "github.com/aos-dev/go-storage/v3/types"
 )
 
 var _ credential.Provider
-var _ endpoint.Provider
+var _ endpoint.Value
 var _ Storager
 var _ services.ServiceError
 var _ httpclient.Options
@@ -56,10 +56,10 @@ type pairServiceNew struct {
 
 	// Required pairs
 	HasCredential bool
-	Credential    *credential.Provider
+	Credential    string
 	// Optional pairs
 	HasEndpoint          bool
-	Endpoint             endpoint.Provider
+	Endpoint             string
 	HasHTTPClientOptions bool
 	HTTPClientOptions    *httpclient.Options
 	HasPairPolicy        bool
@@ -78,11 +78,11 @@ func parsePairServiceNew(opts []Pair) (*pairServiceNew, error) {
 		// Required pairs
 		case "credential":
 			result.HasCredential = true
-			result.Credential = v.Value.(*credential.Provider)
+			result.Credential = v.Value.(string)
 		// Optional pairs
 		case "endpoint":
 			result.HasEndpoint = true
-			result.Endpoint = v.Value.(endpoint.Provider)
+			result.Endpoint = v.Value.(string)
 		case "http_client_options":
 			result.HasHTTPClientOptions = true
 			result.HTTPClientOptions = v.Value.(*httpclient.Options)
@@ -492,8 +492,8 @@ type pairStorageDelete struct {
 
 	// Required pairs
 	// Optional pairs
-	HasPartID bool
-	PartID    string
+	HasMultipartID bool
+	MultipartID    string
 	// Generated pairs
 }
 
@@ -507,9 +507,9 @@ func (s *Storage) parsePairStorageDelete(opts []Pair) (*pairStorageDelete, error
 		switch v.Key {
 		// Required pairs
 		// Optional pairs
-		case "part_id":
-			result.HasPartID = true
-			result.PartID = v.Value.(string)
+		case "multipart_id":
+			result.HasMultipartID = true
+			result.MultipartID = v.Value.(string)
 		// Generated pairs
 		default:
 
@@ -734,12 +734,12 @@ type pairStorageRead struct {
 
 	// Required pairs
 	// Optional pairs
-	HasOffset           bool
-	Offset              int64
-	HasReadCallbackFunc bool
-	ReadCallbackFunc    func([]byte)
-	HasSize             bool
-	Size                int64
+	HasIoCallback bool
+	IoCallback    func([]byte)
+	HasOffset     bool
+	Offset        int64
+	HasSize       bool
+	Size          int64
 	// Generated pairs
 }
 
@@ -753,12 +753,12 @@ func (s *Storage) parsePairStorageRead(opts []Pair) (*pairStorageRead, error) {
 		switch v.Key {
 		// Required pairs
 		// Optional pairs
+		case "io_callback":
+			result.HasIoCallback = true
+			result.IoCallback = v.Value.(func([]byte))
 		case "offset":
 			result.HasOffset = true
 			result.Offset = v.Value.(int64)
-		case "read_callback_func":
-			result.HasReadCallbackFunc = true
-			result.ReadCallbackFunc = v.Value.(func([]byte))
 		case "size":
 			result.HasSize = true
 			result.Size = v.Value.(int64)
@@ -807,54 +807,22 @@ func (s *Storage) parsePairStorageStat(opts []Pair) (*pairStorageStat, error) {
 	return result, nil
 }
 
-// pairStorageStatistical is the parsed struct
-type pairStorageStatistical struct {
-	pairs []Pair
-
-	// Required pairs
-	// Optional pairs
-	// Generated pairs
-}
-
-// parsePairStorageStatistical will parse Pair slice into *pairStorageStatistical
-func (s *Storage) parsePairStorageStatistical(opts []Pair) (*pairStorageStatistical, error) {
-	result := &pairStorageStatistical{
-		pairs: opts,
-	}
-
-	for _, v := range opts {
-		switch v.Key {
-		// Required pairs
-		// Optional pairs
-		// Generated pairs
-		default:
-
-			if s.pairPolicy.All || s.pairPolicy.Statistical {
-				return nil, services.NewPairUnsupportedError(v)
-			}
-
-		}
-	}
-
-	return result, nil
-}
-
 // pairStorageWrite is the parsed struct
 type pairStorageWrite struct {
 	pairs []Pair
 
 	// Required pairs
 	// Optional pairs
-	HasContentMd5       bool
-	ContentMd5          string
-	HasContentType      bool
-	ContentType         string
-	HasOffset           bool
-	Offset              int64
-	HasReadCallbackFunc bool
-	ReadCallbackFunc    func([]byte)
-	HasStorageClass     bool
-	StorageClass        string
+	HasContentMd5   bool
+	ContentMd5      string
+	HasContentType  bool
+	ContentType     string
+	HasIoCallback   bool
+	IoCallback      func([]byte)
+	HasOffset       bool
+	Offset          int64
+	HasStorageClass bool
+	StorageClass    string
 	// Generated pairs
 }
 
@@ -874,12 +842,12 @@ func (s *Storage) parsePairStorageWrite(opts []Pair) (*pairStorageWrite, error) 
 		case "content_type":
 			result.HasContentType = true
 			result.ContentType = v.Value.(string)
+		case "io_callback":
+			result.HasIoCallback = true
+			result.IoCallback = v.Value.(func([]byte))
 		case "offset":
 			result.HasOffset = true
 			result.Offset = v.Value.(int64)
-		case "read_callback_func":
-			result.HasReadCallbackFunc = true
-			result.ReadCallbackFunc = v.Value.(func([]byte))
 		case "storage_class":
 			result.HasStorageClass = true
 			result.StorageClass = v.Value.(string)
@@ -1190,28 +1158,6 @@ func (s *Storage) StatWithContext(ctx context.Context, path string, pairs ...Pai
 	}
 
 	return s.stat(ctx, path, opt)
-}
-
-// Statistical will count service's statistics, such as Size, Count.
-//
-// This function will create a context by default.
-func (s *Storage) Statistical(pairs ...Pair) (statistic *StorageStatistic, err error) {
-	ctx := context.Background()
-	return s.StatisticalWithContext(ctx, pairs...)
-}
-
-// StatisticalWithContext will count service's statistics, such as Size, Count.
-func (s *Storage) StatisticalWithContext(ctx context.Context, pairs ...Pair) (statistic *StorageStatistic, err error) {
-	defer func() {
-		err = s.formatError("statistical", err)
-	}()
-	var opt *pairStorageStatistical
-	opt, err = s.parsePairStorageStatistical(pairs)
-	if err != nil {
-		return
-	}
-
-	return s.statistical(ctx, opt)
 }
 
 // Write will write data into a file.

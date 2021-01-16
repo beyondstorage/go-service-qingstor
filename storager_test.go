@@ -14,9 +14,9 @@ import (
 	"github.com/qingstor/qingstor-sdk-go/v4/service"
 	"github.com/stretchr/testify/assert"
 
-	"github.com/aos-dev/go-storage/v2/pairs"
-	"github.com/aos-dev/go-storage/v2/services"
-	. "github.com/aos-dev/go-storage/v2/types"
+	"github.com/aos-dev/go-storage/v3/pairs"
+	"github.com/aos-dev/go-storage/v3/services"
+	. "github.com/aos-dev/go-storage/v3/types"
 )
 
 func TestStorage_String(t *testing.T) {
@@ -55,50 +55,6 @@ func TestStorage_Metadata(t *testing.T) {
 		assert.NotNil(t, m)
 		assert.Equal(t, name, m.Name)
 		assert.Equal(t, location, m.MustGetLocation())
-	}
-}
-
-func TestStorage_Statistical(t *testing.T) {
-	ctrl := gomock.NewController(t)
-	defer ctrl.Finish()
-
-	mockBucket := NewMockBucket(ctrl)
-
-	{
-		client := Storage{
-			bucket: mockBucket,
-		}
-
-		name := uuid.New().String()
-		location := uuid.New().String()
-		size := int64(1234)
-		count := int64(4321)
-
-		mockBucket.EXPECT().GetStatisticsWithContext(gomock.Eq(context.Background())).
-			DoAndReturn(func(ctx context.Context) (*service.GetBucketStatisticsOutput, error) {
-				return &service.GetBucketStatisticsOutput{
-					Name:     &name,
-					Location: &location,
-					Size:     &size,
-					Count:    &count,
-				}, nil
-			})
-		m, err := client.Statistical()
-		assert.NoError(t, err)
-		assert.NotNil(t, m)
-	}
-
-	{
-		client := Storage{
-			bucket: mockBucket,
-		}
-
-		mockBucket.EXPECT().GetStatisticsWithContext(gomock.Eq(context.Background())).
-			DoAndReturn(func(ctx context.Context) (*service.GetBucketStatisticsOutput, error) {
-				return nil, &qerror.QingStorError{}
-			})
-		_, err := client.Statistical()
-		assert.Error(t, err)
 	}
 }
 
@@ -356,7 +312,7 @@ func TestStorage_Stat(t *testing.T) {
 			contentType, ok := o.GetContentType()
 			assert.True(t, ok)
 			assert.Equal(t, "test_content_type", contentType)
-			checkSum, ok := o.GetETag()
+			checkSum, ok := o.GetEtag()
 			assert.True(t, ok)
 			assert.Equal(t, "test_etag", checkSum)
 			storageClass, ok := GetStorageClass(o)
