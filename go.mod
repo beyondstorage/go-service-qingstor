@@ -1,4 +1,4 @@
-module github.com/aos-dev/go-service-qingstor
+module github.com/aos-dev/go-service-qingstor/v2
 
 go 1.14
 
