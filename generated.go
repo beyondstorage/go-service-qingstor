@@ -25,6 +25,13 @@ const Type = "qingstor"
 const (
 	// DisableURICleaning
 	pairDisableURICleaning = "qingstor_disable_uri_cleaning"
+	// StorageClass
+	pairStorageClass = "qingstor_storage_class"
+)
+
+// Service available metadata.
+const (
+	MetadataStorageClass = "qingstor-storage-class"
 )
 
 // WithDisableURICleaning will apply disable_uri_cleaning value to Options
@@ -36,18 +43,13 @@ func WithDisableURICleaning(v bool) Pair {
 	}
 }
 
-// GetStorageClass will get storage-class value from metadata.
-func GetStorageClass(m *Object) (string, bool) {
-	v, ok := m.Get("qingstor-storage-class")
-	if !ok {
-		return "", false
+// WithStorageClass will apply storage_class value to Options
+// StorageClass
+func WithStorageClass(v string) Pair {
+	return Pair{
+		Key:   pairStorageClass,
+		Value: v,
 	}
-	return v.(string), true
-}
-
-// setstorage-class will set storage-class value into metadata.
-func setStorageClass(m *Object, v string) *Object {
-	return m.Set("qingstor-storage-class", v)
 }
 
 // pairServiceNew is the parsed struct
@@ -819,8 +821,6 @@ type pairStorageWrite struct {
 	ContentType     string
 	HasIoCallback   bool
 	IoCallback      func([]byte)
-	HasOffset       bool
-	Offset          int64
 	HasStorageClass bool
 	StorageClass    string
 	// Generated pairs
@@ -845,10 +845,7 @@ func (s *Storage) parsePairStorageWrite(opts []Pair) (*pairStorageWrite, error) 
 		case "io_callback":
 			result.HasIoCallback = true
 			result.IoCallback = v.Value.(func([]byte))
-		case "offset":
-			result.HasOffset = true
-			result.Offset = v.Value.(int64)
-		case "storage_class":
+		case pairStorageClass:
 			result.HasStorageClass = true
 			result.StorageClass = v.Value.(string)
 		// Generated pairs
