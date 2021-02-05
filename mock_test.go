@@ -477,6 +477,36 @@ func (mr *MockBucketMockRecorder) DeletePolicyWithContext(arg0 interface{}) *gom
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeletePolicyWithContext", reflect.TypeOf((*MockBucket)(nil).DeletePolicyWithContext), arg0)
 }
 
+// DeleteReplication mocks base method
+func (m *MockBucket) DeleteReplication() (*service.DeleteBucketReplicationOutput, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DeleteReplication")
+	ret0, _ := ret[0].(*service.DeleteBucketReplicationOutput)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// DeleteReplication indicates an expected call of DeleteReplication
+func (mr *MockBucketMockRecorder) DeleteReplication() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteReplication", reflect.TypeOf((*MockBucket)(nil).DeleteReplication))
+}
+
+// DeleteReplicationWithContext mocks base method
+func (m *MockBucket) DeleteReplicationWithContext(arg0 context.Context) (*service.DeleteBucketReplicationOutput, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DeleteReplicationWithContext", arg0)
+	ret0, _ := ret[0].(*service.DeleteBucketReplicationOutput)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// DeleteReplicationWithContext indicates an expected call of DeleteReplicationWithContext
+func (mr *MockBucketMockRecorder) DeleteReplicationWithContext(arg0 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteReplicationWithContext", reflect.TypeOf((*MockBucket)(nil).DeleteReplicationWithContext), arg0)
+}
+
 // DeleteWithContext mocks base method
 func (m *MockBucket) DeleteWithContext(arg0 context.Context) (*service.DeleteBucketOutput, error) {
 	m.ctrl.T.Helper()
@@ -760,6 +790,36 @@ func (m *MockBucket) GetPolicyWithContext(arg0 context.Context) (*service.GetBuc
 func (mr *MockBucketMockRecorder) GetPolicyWithContext(arg0 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetPolicyWithContext", reflect.TypeOf((*MockBucket)(nil).GetPolicyWithContext), arg0)
+}
+
+// GetReplication mocks base method
+func (m *MockBucket) GetReplication() (*service.GetBucketReplicationOutput, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetReplication")
+	ret0, _ := ret[0].(*service.GetBucketReplicationOutput)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetReplication indicates an expected call of GetReplication
+func (mr *MockBucketMockRecorder) GetReplication() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetReplication", reflect.TypeOf((*MockBucket)(nil).GetReplication))
+}
+
+// GetReplicationWithContext mocks base method
+func (m *MockBucket) GetReplicationWithContext(arg0 context.Context) (*service.GetBucketReplicationOutput, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetReplicationWithContext", arg0)
+	ret0, _ := ret[0].(*service.GetBucketReplicationOutput)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetReplicationWithContext indicates an expected call of GetReplicationWithContext
+func (mr *MockBucketMockRecorder) GetReplicationWithContext(arg0 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetReplicationWithContext", reflect.TypeOf((*MockBucket)(nil).GetReplicationWithContext), arg0)
 }
 
 // GetStatistics mocks base method
@@ -1315,6 +1375,36 @@ func (m *MockBucket) PutPolicyWithContext(arg0 context.Context, arg1 *service.Pu
 func (mr *MockBucketMockRecorder) PutPolicyWithContext(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PutPolicyWithContext", reflect.TypeOf((*MockBucket)(nil).PutPolicyWithContext), arg0, arg1)
+}
+
+// PutReplication mocks base method
+func (m *MockBucket) PutReplication(arg0 *service.PutBucketReplicationInput) (*service.PutBucketReplicationOutput, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "PutReplication", arg0)
+	ret0, _ := ret[0].(*service.PutBucketReplicationOutput)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// PutReplication indicates an expected call of PutReplication
+func (mr *MockBucketMockRecorder) PutReplication(arg0 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PutReplication", reflect.TypeOf((*MockBucket)(nil).PutReplication), arg0)
+}
+
+// PutReplicationWithContext mocks base method
+func (m *MockBucket) PutReplicationWithContext(arg0 context.Context, arg1 *service.PutBucketReplicationInput) (*service.PutBucketReplicationOutput, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "PutReplicationWithContext", arg0, arg1)
+	ret0, _ := ret[0].(*service.PutBucketReplicationOutput)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// PutReplicationWithContext indicates an expected call of PutReplicationWithContext
+func (mr *MockBucketMockRecorder) PutReplicationWithContext(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PutReplicationWithContext", reflect.TypeOf((*MockBucket)(nil).PutReplicationWithContext), arg0, arg1)
 }
 
 // PutWithContext mocks base method
