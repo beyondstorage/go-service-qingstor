@@ -326,18 +326,22 @@ func (s *Storage) formatFileObject(v *service.KeyType) (o *typ.Object, err error
 	o.Path = s.getRelPath(*v.Key)
 	o.Mode |= typ.ModeRead
 
-	o.SetSize(service.Int64Value(v.Size))
-	o.SetUpdatedAt(convertUnixTimestampToTime(service.IntValue(v.Modified)))
+	o.SetContentLength(service.Int64Value(v.Size))
+	o.SetLastModified(convertUnixTimestampToTime(service.IntValue(v.Modified)))
 
 	if v.MimeType != nil {
 		o.SetContentType(service.StringValue(v.MimeType))
 	}
-	if value := service.StringValue(v.StorageClass); value != "" {
-		setStorageClass(o, value)
-	}
 	if v.Etag != nil {
 		o.SetEtag(service.StringValue(v.Etag))
 	}
+
+	sm := make(map[string]string)
+	if value := service.StringValue(v.StorageClass); value != "" {
+		sm[MetadataStorageClass] = value
+	}
+	o.SetServiceMetadata(sm)
+
 	return o, nil
 }
 

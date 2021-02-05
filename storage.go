@@ -363,8 +363,8 @@ func (s *Storage) stat(ctx context.Context, path string, opt *pairStorageStat) (
 	o.Path = path
 	o.Mode |= ModeRead
 
-	o.SetSize(service.Int64Value(output.ContentLength))
-	o.SetUpdatedAt(service.TimeValue(output.LastModified))
+	o.SetContentLength(service.Int64Value(output.ContentLength))
+	o.SetLastModified(service.TimeValue(output.LastModified))
 
 	if output.ContentType != nil {
 		o.SetContentType(service.StringValue(output.ContentType))
@@ -373,9 +373,11 @@ func (s *Storage) stat(ctx context.Context, path string, opt *pairStorageStat) (
 		o.SetEtag(service.StringValue(output.ETag))
 	}
 
+	sm := make(map[string]string)
 	if v := service.StringValue(output.XQSStorageClass); v != "" {
-		setStorageClass(o, v)
+		sm[MetadataStorageClass] = v
 	}
+	o.SetServiceMetadata(sm)
 
 	return o, nil
 }

@@ -308,14 +308,14 @@ func TestStorage_Stat(t *testing.T) {
 			assert.NoError(t, err)
 			assert.NotNil(t, o)
 			assert.Equal(t, ModeRead, o.Mode)
-			assert.Equal(t, int64(100), o.MustGetSize())
+			assert.Equal(t, int64(100), o.MustGetContentLength())
 			contentType, ok := o.GetContentType()
 			assert.True(t, ok)
 			assert.Equal(t, "test_content_type", contentType)
 			checkSum, ok := o.GetEtag()
 			assert.True(t, ok)
 			assert.Equal(t, "test_etag", checkSum)
-			storageClass, ok := GetStorageClass(o)
+			storageClass, ok := o.MustGetServiceMetadata()[MetadataStorageClass]
 			assert.True(t, ok)
 			assert.Equal(t, StorageClassStandard, storageClass)
 		}
