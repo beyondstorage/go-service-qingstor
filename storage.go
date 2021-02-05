@@ -191,7 +191,7 @@ func (s *Storage) nextObjectPageByDir(ctx context.Context, page *ObjectPage) err
 	if service.StringValue(output.NextMarker) == "" {
 		return IterateDone
 	}
-	if output.HasMore != nil && !*output.HasMore {
+	if !service.BoolValue(output.HasMore) {
 		return IterateDone
 	}
 	if len(output.Keys) == 0 {
@@ -226,7 +226,7 @@ func (s *Storage) nextObjectPageByPrefix(ctx context.Context, page *ObjectPage) 
 	if service.StringValue(output.NextMarker) == "" {
 		return IterateDone
 	}
-	if output.HasMore != nil && !*output.HasMore {
+	if !service.BoolValue(output.HasMore) {
 		return IterateDone
 	}
 	if len(output.Keys) == 0 {
@@ -260,15 +260,18 @@ func (s *Storage) nextPartObjectPageByPrefix(ctx context.Context, page *ObjectPa
 		page.Data = append(page.Data, o)
 	}
 
-	input.marker = service.StringValue(output.NextKeyMarker)
-	input.partIdMarker = service.StringValue(output.NextUploadIDMarker)
+	nextKeyMarker := service.StringValue(output.NextKeyMarker)
+	nextUploadIDMarker := service.StringValue(output.NextUploadIDMarker)
 
-	if input.marker == "" && input.partIdMarker == "" {
+	if nextKeyMarker == "" && nextUploadIDMarker == "" {
 		return IterateDone
 	}
-	if output.HasMore != nil && !*output.HasMore {
+	if !service.BoolValue(output.HasMore) {
 		return IterateDone
 	}
+
+	input.marker = nextKeyMarker
+	input.partIdMarker = nextUploadIDMarker
 	return nil
 }
 
@@ -295,11 +298,12 @@ func (s *Storage) nextPartPage(ctx context.Context, page *PartPage) error {
 	}
 
 	// FIXME: QingStor ListMulitpart API looks like buggy.
-	input.partNumberMarker += len(output.ObjectParts)
-	if input.partNumberMarker >= service.IntValue(output.Count) {
+	offset := input.partNumberMarker + len(output.ObjectParts)
+	if offset >= service.IntValue(output.Count) {
 		return IterateDone
 	}
 
+	input.partNumberMarker = offset
 	return nil
 }
 
