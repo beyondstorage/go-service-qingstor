@@ -105,12 +105,12 @@ func (s *Storage) list(ctx context.Context, path string, opt *pairStorageList) (
 
 	switch {
 	case opt.ListMode.IsPart():
-		nextFn = s.listNextPrefixPartObjects
+		nextFn = s.nextPartObjectPageByPrefix
 	case opt.ListMode.IsDir():
 		input.delimiter = "/"
-		nextFn = s.nextDirPage
+		nextFn = s.nextObjectPageByDir
 	case opt.ListMode.IsPrefix():
-		nextFn = s.nextPrefixPage
+		nextFn = s.nextObjectPageByPrefix
 	default:
 		return nil, fmt.Errorf("invalid list mode")
 	}
@@ -130,41 +130,6 @@ func (s *Storage) listMultipart(ctx context.Context, o *Object, opt *pairStorage
 	}
 
 	return NewPartIterator(ctx, s.nextPartPage, input), nil
-}
-
-func (s *Storage) listNextPrefixPartObjects(ctx context.Context, page *ObjectPage) error {
-	input := page.Status.(*objectPageStatus)
-
-	output, err := s.bucket.ListMultipartUploadsWithContext(ctx, &service.ListMultipartUploadsInput{
-		KeyMarker:      &input.marker,
-		Limit:          &input.limit,
-		Prefix:         &input.prefix,
-		UploadIDMarker: &input.partIdMarker,
-	})
-	if err != nil {
-		return err
-	}
-
-	for _, v := range output.Uploads {
-		o := s.newObject(true)
-		o.ID = *v.Key
-		o.Path = s.getRelPath(*v.Key)
-		o.Mode |= ModePart
-		o.SetMultipartID(*v.UploadID)
-
-		page.Data = append(page.Data, o)
-	}
-
-	input.marker = service.StringValue(output.NextKeyMarker)
-	input.partIdMarker = service.StringValue(output.NextUploadIDMarker)
-
-	if input.marker == "" && input.partIdMarker == "" {
-		return IterateDone
-	}
-	if output.HasMore != nil && !*output.HasMore {
-		return IterateDone
-	}
-	return nil
 }
 
 func (s *Storage) metadata(ctx context.Context, opt *pairStorageMetadata) (meta *StorageMeta, err error) {
@@ -188,7 +153,7 @@ func (s *Storage) move(ctx context.Context, src string, dst string, opt *pairSto
 	return nil
 }
 
-func (s *Storage) nextDirPage(ctx context.Context, page *ObjectPage) error {
+func (s *Storage) nextObjectPageByDir(ctx context.Context, page *ObjectPage) error {
 	input := page.Status.(*objectPageStatus)
 
 	output, err := s.bucket.ListObjectsWithContext(ctx, &service.ListObjectsInput{
@@ -237,38 +202,7 @@ func (s *Storage) nextDirPage(ctx context.Context, page *ObjectPage) error {
 	return nil
 }
 
-func (s *Storage) nextPartPage(ctx context.Context, page *PartPage) error {
-	input := page.Status.(*partPageStatus)
-
-	output, err := s.bucket.ListMultipartWithContext(ctx, input.prefix, &service.ListMultipartInput{
-		Limit:            &input.limit,
-		PartNumberMarker: &input.partNumberMarker,
-		UploadID:         &input.uploadID,
-	})
-	if err != nil {
-		return err
-	}
-
-	for _, v := range output.ObjectParts {
-		p := &Part{
-			Index: *v.PartNumber,
-			Size:  *v.Size,
-			ETag:  service.StringValue(v.Etag),
-		}
-
-		page.Data = append(page.Data, p)
-	}
-
-	// FIXME: QingStor ListMulitpart API looks like buggy.
-	input.partNumberMarker += len(output.ObjectParts)
-	if input.partNumberMarker >= service.IntValue(output.Count) {
-		return IterateDone
-	}
-
-	return nil
-}
-
-func (s *Storage) nextPrefixPage(ctx context.Context, page *ObjectPage) error {
+func (s *Storage) nextObjectPageByPrefix(ctx context.Context, page *ObjectPage) error {
 	input := page.Status.(*objectPageStatus)
 
 	output, err := s.bucket.ListObjectsWithContext(ctx, &service.ListObjectsInput{
@@ -300,6 +234,72 @@ func (s *Storage) nextPrefixPage(ctx context.Context, page *ObjectPage) error {
 	}
 
 	input.marker = *output.NextMarker
+	return nil
+}
+
+func (s *Storage) nextPartObjectPageByPrefix(ctx context.Context, page *ObjectPage) error {
+	input := page.Status.(*objectPageStatus)
+
+	output, err := s.bucket.ListMultipartUploadsWithContext(ctx, &service.ListMultipartUploadsInput{
+		KeyMarker:      &input.marker,
+		Limit:          &input.limit,
+		Prefix:         &input.prefix,
+		UploadIDMarker: &input.partIdMarker,
+	})
+	if err != nil {
+		return err
+	}
+
+	for _, v := range output.Uploads {
+		o := s.newObject(true)
+		o.ID = *v.Key
+		o.Path = s.getRelPath(*v.Key)
+		o.Mode |= ModePart
+		o.SetMultipartID(*v.UploadID)
+
+		page.Data = append(page.Data, o)
+	}
+
+	input.marker = service.StringValue(output.NextKeyMarker)
+	input.partIdMarker = service.StringValue(output.NextUploadIDMarker)
+
+	if input.marker == "" && input.partIdMarker == "" {
+		return IterateDone
+	}
+	if output.HasMore != nil && !*output.HasMore {
+		return IterateDone
+	}
+	return nil
+}
+
+func (s *Storage) nextPartPage(ctx context.Context, page *PartPage) error {
+	input := page.Status.(*partPageStatus)
+
+	output, err := s.bucket.ListMultipartWithContext(ctx, input.prefix, &service.ListMultipartInput{
+		Limit:            &input.limit,
+		PartNumberMarker: &input.partNumberMarker,
+		UploadID:         &input.uploadID,
+	})
+	if err != nil {
+		return err
+	}
+
+	for _, v := range output.ObjectParts {
+		p := &Part{
+			Index: *v.PartNumber,
+			Size:  *v.Size,
+			ETag:  service.StringValue(v.Etag),
+		}
+
+		page.Data = append(page.Data, p)
+	}
+
+	// FIXME: QingStor ListMulitpart API looks like buggy.
+	input.partNumberMarker += len(output.ObjectParts)
+	if input.partNumberMarker >= service.IntValue(output.Count) {
+		return IterateDone
+	}
+
 	return nil
 }
 
