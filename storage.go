@@ -13,7 +13,7 @@ import (
 	. "github.com/aos-dev/go-storage/v3/types"
 )
 
-func (s *Storage) completeMultipart(ctx context.Context, o *Object, parts []*Part, opt *pairStorageCompleteMultipart) (err error) {
+func (s *Storage) completeMultipart(ctx context.Context, o *Object, parts []*Part, opt pairStorageCompleteMultipart) (err error) {
 	if o.Mode&ModePart == 0 {
 		return fmt.Errorf("object is not a part object")
 	}
@@ -36,7 +36,7 @@ func (s *Storage) completeMultipart(ctx context.Context, o *Object, parts []*Par
 	return
 }
 
-func (s *Storage) copy(ctx context.Context, src string, dst string, opt *pairStorageCopy) (err error) {
+func (s *Storage) copy(ctx context.Context, src string, dst string, opt pairStorageCopy) (err error) {
 	rs := s.getAbsPath(src)
 	rd := s.getAbsPath(dst)
 
@@ -49,7 +49,7 @@ func (s *Storage) copy(ctx context.Context, src string, dst string, opt *pairSto
 	return nil
 }
 
-func (s *Storage) createMultipart(ctx context.Context, path string, opt *pairStorageCreateMultipart) (o *Object, err error) {
+func (s *Storage) createMultipart(ctx context.Context, path string, opt pairStorageCreateMultipart) (o *Object, err error) {
 	input := &service.InitiateMultipartUploadInput{}
 
 	rp := s.getAbsPath(path)
@@ -68,7 +68,7 @@ func (s *Storage) createMultipart(ctx context.Context, path string, opt *pairSto
 	return o, nil
 }
 
-func (s *Storage) delete(ctx context.Context, path string, opt *pairStorageDelete) (err error) {
+func (s *Storage) delete(ctx context.Context, path string, opt pairStorageDelete) (err error) {
 	rp := s.getAbsPath(path)
 
 	if opt.HasMultipartID {
@@ -88,14 +88,14 @@ func (s *Storage) delete(ctx context.Context, path string, opt *pairStorageDelet
 	return nil
 }
 
-func (s *Storage) fetch(ctx context.Context, path string, url string, opt *pairStorageFetch) (err error) {
+func (s *Storage) fetch(ctx context.Context, path string, url string, opt pairStorageFetch) (err error) {
 	_, err = s.bucket.PutObjectWithContext(ctx, path, &service.PutObjectInput{
 		XQSFetchSource: service.String(url),
 	})
 	return err
 }
 
-func (s *Storage) list(ctx context.Context, path string, opt *pairStorageList) (oi *ObjectIterator, err error) {
+func (s *Storage) list(ctx context.Context, path string, opt pairStorageList) (oi *ObjectIterator, err error) {
 	input := &objectPageStatus{
 		limit:  200,
 		prefix: s.getAbsPath(path),
@@ -118,7 +118,7 @@ func (s *Storage) list(ctx context.Context, path string, opt *pairStorageList) (
 	return NewObjectIterator(ctx, nextFn, input), nil
 }
 
-func (s *Storage) listMultipart(ctx context.Context, o *Object, opt *pairStorageListMultipart) (pi *PartIterator, err error) {
+func (s *Storage) listMultipart(ctx context.Context, o *Object, opt pairStorageListMultipart) (pi *PartIterator, err error) {
 	if o.Mode&ModePart == 0 {
 		return nil, fmt.Errorf("object is not a part object")
 	}
@@ -132,7 +132,7 @@ func (s *Storage) listMultipart(ctx context.Context, o *Object, opt *pairStorage
 	return NewPartIterator(ctx, s.nextPartPage, input), nil
 }
 
-func (s *Storage) metadata(ctx context.Context, opt *pairStorageMetadata) (meta *StorageMeta, err error) {
+func (s *Storage) metadata(ctx context.Context, opt pairStorageMetadata) (meta *StorageMeta, err error) {
 	meta = NewStorageMeta()
 	meta.Name = *s.properties.BucketName
 	meta.WorkDir = s.workDir
@@ -140,7 +140,7 @@ func (s *Storage) metadata(ctx context.Context, opt *pairStorageMetadata) (meta 
 	return meta, nil
 }
 
-func (s *Storage) move(ctx context.Context, src string, dst string, opt *pairStorageMove) (err error) {
+func (s *Storage) move(ctx context.Context, src string, dst string, opt pairStorageMove) (err error) {
 	rs := s.getAbsPath(src)
 	rd := s.getAbsPath(dst)
 
@@ -307,7 +307,7 @@ func (s *Storage) nextPartPage(ctx context.Context, page *PartPage) error {
 	return nil
 }
 
-func (s *Storage) reach(ctx context.Context, path string, opt *pairStorageReach) (url string, err error) {
+func (s *Storage) reach(ctx context.Context, path string, opt pairStorageReach) (url string, err error) {
 	// FIXME: sdk should export GetObjectRequest as interface too?
 	bucket := s.bucket.(*service.Bucket)
 
@@ -328,7 +328,7 @@ func (s *Storage) reach(ctx context.Context, path string, opt *pairStorageReach)
 	return r.HTTPRequest.URL.String(), nil
 }
 
-func (s *Storage) read(ctx context.Context, path string, w io.Writer, opt *pairStorageRead) (n int64, err error) {
+func (s *Storage) read(ctx context.Context, path string, w io.Writer, opt pairStorageRead) (n int64, err error) {
 	input := &service.GetObjectInput{}
 
 	if opt.HasOffset || opt.HasSize {
@@ -352,7 +352,7 @@ func (s *Storage) read(ctx context.Context, path string, w io.Writer, opt *pairS
 	return io.Copy(w, rc)
 }
 
-func (s *Storage) stat(ctx context.Context, path string, opt *pairStorageStat) (o *Object, err error) {
+func (s *Storage) stat(ctx context.Context, path string, opt pairStorageStat) (o *Object, err error) {
 	input := &service.HeadObjectInput{}
 
 	rp := s.getAbsPath(path)
@@ -386,7 +386,7 @@ func (s *Storage) stat(ctx context.Context, path string, opt *pairStorageStat) (
 	return o, nil
 }
 
-func (s *Storage) write(ctx context.Context, path string, r io.Reader, size int64, opt *pairStorageWrite) (n int64, err error) {
+func (s *Storage) write(ctx context.Context, path string, r io.Reader, size int64, opt pairStorageWrite) (n int64, err error) {
 	if opt.HasIoCallback {
 		r = iowrap.CallbackReader(r, opt.IoCallback)
 	}
@@ -411,7 +411,7 @@ func (s *Storage) write(ctx context.Context, path string, r io.Reader, size int6
 	return size, nil
 }
 
-func (s *Storage) writeMultipart(ctx context.Context, o *Object, r io.Reader, size int64, index int, opt *pairStorageWriteMultipart) (n int64, err error) {
+func (s *Storage) writeMultipart(ctx context.Context, o *Object, r io.Reader, size int64, index int, opt pairStorageWriteMultipart) (n int64, err error) {
 	if o.Mode&ModePart == 0 {
 		return 0, fmt.Errorf("object is not a part object")
 	}
