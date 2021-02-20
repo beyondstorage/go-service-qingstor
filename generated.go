@@ -23,10 +23,11 @@ const Type = "qingstor"
 
 // Service available pairs.
 const (
-	// DefaultServicePair set default pairs for service actions
-	pairDefaultServicePair = "qingstor_default_service_pair"
-	// DefaultStoragePair set default pairs for storager actions
-	pairDefaultStoragePair = "qingstor_default_storage_pair"
+	// default pairs
+	// pairDefaultServicePairs set default pairs for service actions
+	pairDefaultServicePairs = "default_service_pair"
+	// pairDefaultStoragePairs set default pairs for storage actions
+	pairDefaultStoragePairs = "default_storage_pair"
 	// DisableURICleaning
 	pairDisableURICleaning = "qingstor_disable_uri_cleaning"
 	// StorageClass
@@ -38,20 +39,18 @@ const (
 	MetadataStorageClass = "qingstor-storage-class"
 )
 
-// WithDefaultServicePair will apply default_service_pair value to Options
-// DefaultServicePair set default pairs for service actions
-func WithDefaultServicePair(v DefaultServicePairs) Pair {
+// WithDefaultServicePairs will apply default service paris to Options
+func WithDefaultServicePairs(v DefaultServicePairs) Pair {
 	return Pair{
-		Key:   pairDefaultServicePair,
+		Key:   pairDefaultServicePairs,
 		Value: v,
 	}
 }
 
-// WithDefaultStoragePair will apply default_storage_pair value to Options
-// DefaultStoragePair set default pairs for storager actions
-func WithDefaultStoragePair(v DefaultStoragePairs) Pair {
+// WithDefaultStoragePairs will apply default storage paris to Options
+func WithDefaultStoragePairs(v DefaultStoragePairs) Pair {
 	return Pair{
-		Key:   pairDefaultStoragePair,
+		Key:   pairDefaultStoragePairs,
 		Value: v,
 	}
 }
@@ -81,15 +80,16 @@ type pairServiceNew struct {
 	// Required pairs
 	HasCredential bool
 	Credential    string
+	// Default pairs
+	HasDefaultServicePairs bool
+	DefaultServicePairs    DefaultServicePairs
 	// Optional pairs
-	HasDefaultServicePair bool
-	DefaultServicePair    DefaultServicePairs
-	HasEndpoint           bool
-	Endpoint              string
-	HasHTTPClientOptions  bool
-	HTTPClientOptions     *httpclient.Options
-	HasPairPolicy         bool
-	PairPolicy            PairPolicy
+	HasEndpoint          bool
+	Endpoint             string
+	HasHTTPClientOptions bool
+	HTTPClientOptions    *httpclient.Options
+	HasPairPolicy        bool
+	PairPolicy           PairPolicy
 	// Generated pairs
 }
 
@@ -108,13 +108,11 @@ func parsePairServiceNew(opts []Pair) (pairServiceNew, error) {
 			}
 			result.HasCredential = true
 			result.Credential = v.Value.(string)
+		// Default pairs
+		case pairDefaultServicePairs:
+			result.HasDefaultServicePairs = true
+			result.DefaultServicePairs = v.Value.(DefaultServicePairs)
 		// Optional pairs
-		case pairDefaultServicePair:
-			if result.HasDefaultServicePair {
-				continue
-			}
-			result.HasDefaultServicePair = true
-			result.DefaultServicePair = v.Value.(DefaultServicePairs)
 		case "endpoint":
 			if result.HasEndpoint {
 				continue
@@ -394,9 +392,10 @@ type pairStorageNew struct {
 	// Required pairs
 	HasName bool
 	Name    string
+	// Default pairs
+	HasDefaultStoragePairs bool
+	DefaultStoragePairs    DefaultStoragePairs
 	// Optional pairs
-	HasDefaultStoragePair bool
-	DefaultStoragePair    DefaultStoragePairs
 	HasDisableURICleaning bool
 	DisableURICleaning    bool
 	HasHTTPClientOptions  bool
@@ -425,13 +424,11 @@ func parsePairStorageNew(opts []Pair) (pairStorageNew, error) {
 			}
 			result.HasName = true
 			result.Name = v.Value.(string)
+		// Default pairs
+		case pairDefaultStoragePairs:
+			result.HasDefaultStoragePairs = true
+			result.DefaultStoragePairs = v.Value.(DefaultStoragePairs)
 		// Optional pairs
-		case pairDefaultStoragePair:
-			if result.HasDefaultStoragePair {
-				continue
-			}
-			result.HasDefaultStoragePair = true
-			result.DefaultStoragePair = v.Value.(DefaultStoragePairs)
 		case pairDisableURICleaning:
 			if result.HasDisableURICleaning {
 				continue
