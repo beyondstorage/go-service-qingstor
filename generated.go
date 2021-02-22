@@ -23,11 +23,10 @@ const Type = "qingstor"
 
 // Service available pairs.
 const (
-	// default pairs
-	// pairDefaultServicePairs set default pairs for service actions
-	pairDefaultServicePairs = "qingstor_default_service_pair"
-	// pairDefaultStoragePairs set default pairs for storage actions
-	pairDefaultStoragePairs = "qingstor_default_storage_pair"
+	// DefaultServicePairs set default pairs for service actions
+	pairDefaultServicePairs = "qingstor_default_service_pairs"
+	// DefaultStoragePairs set default pairs for storager actions
+	pairDefaultStoragePairs = "qingstor_default_storage_pairs"
 	// DisableURICleaning
 	pairDisableURICleaning = "qingstor_disable_uri_cleaning"
 	// StorageClass
@@ -39,7 +38,8 @@ const (
 	MetadataStorageClass = "qingstor-storage-class"
 )
 
-// WithDefaultServicePairs will apply default service paris to Options
+// WithDefaultServicePairs will apply default_service_pairs value to Options
+// DefaultServicePairs set default pairs for service actions
 func WithDefaultServicePairs(v DefaultServicePairs) Pair {
 	return Pair{
 		Key:   pairDefaultServicePairs,
@@ -47,7 +47,8 @@ func WithDefaultServicePairs(v DefaultServicePairs) Pair {
 	}
 }
 
-// WithDefaultStoragePairs will apply default storage paris to Options
+// WithDefaultStoragePairs will apply default_storage_pairs value to Options
+// DefaultStoragePairs set default pairs for storager actions
 func WithDefaultStoragePairs(v DefaultStoragePairs) Pair {
 	return Pair{
 		Key:   pairDefaultStoragePairs,
@@ -80,16 +81,15 @@ type pairServiceNew struct {
 	// Required pairs
 	HasCredential bool
 	Credential    string
-	// Generated pairs
+	// Optional pairs
 	HasDefaultServicePairs bool
 	DefaultServicePairs    DefaultServicePairs
-	// Optional pairs
-	HasEndpoint          bool
-	Endpoint             string
-	HasHTTPClientOptions bool
-	HTTPClientOptions    *httpclient.Options
-	HasPairPolicy        bool
-	PairPolicy           PairPolicy
+	HasEndpoint            bool
+	Endpoint               string
+	HasHTTPClientOptions   bool
+	HTTPClientOptions      *httpclient.Options
+	HasPairPolicy          bool
+	PairPolicy             PairPolicy
 	// Generated pairs
 }
 
@@ -108,11 +108,13 @@ func parsePairServiceNew(opts []Pair) (pairServiceNew, error) {
 			}
 			result.HasCredential = true
 			result.Credential = v.Value.(string)
-		// Default pairs
+		// Optional pairs
 		case pairDefaultServicePairs:
+			if result.HasDefaultServicePairs {
+				continue
+			}
 			result.HasDefaultServicePairs = true
 			result.DefaultServicePairs = v.Value.(DefaultServicePairs)
-		// Optional pairs
 		case "endpoint":
 			if result.HasEndpoint {
 				continue
@@ -139,6 +141,14 @@ func parsePairServiceNew(opts []Pair) (pairServiceNew, error) {
 	}
 
 	return result, nil
+}
+
+// DefaultServicePairs is default pairs for specific action
+type DefaultServicePairs struct {
+	Create []Pair
+	Delete []Pair
+	Get    []Pair
+	List   []Pair
 }
 
 // pairServiceCreate is the parsed struct
@@ -284,14 +294,6 @@ func (s *Service) parsePairServiceList(opts []Pair) (pairServiceList, error) {
 	return result, nil
 }
 
-// DefaultServicePairs is default pairs for specific action
-type DefaultServicePairs struct {
-	Create []Pair
-	Delete []Pair
-	Get    []Pair
-	List   []Pair
-}
-
 // Create will create a new storager instance.
 //
 // This function will create a context by default.
@@ -392,20 +394,19 @@ type pairStorageNew struct {
 	// Required pairs
 	HasName bool
 	Name    string
-	// Generated pairs
+	// Optional pairs
 	HasDefaultStoragePairs bool
 	DefaultStoragePairs    DefaultStoragePairs
-	// Optional pairs
-	HasDisableURICleaning bool
-	DisableURICleaning    bool
-	HasHTTPClientOptions  bool
-	HTTPClientOptions     *httpclient.Options
-	HasLocation           bool
-	Location              string
-	HasPairPolicy         bool
-	PairPolicy            PairPolicy
-	HasWorkDir            bool
-	WorkDir               string
+	HasDisableURICleaning  bool
+	DisableURICleaning     bool
+	HasHTTPClientOptions   bool
+	HTTPClientOptions      *httpclient.Options
+	HasLocation            bool
+	Location               string
+	HasPairPolicy          bool
+	PairPolicy             PairPolicy
+	HasWorkDir             bool
+	WorkDir                string
 	// Generated pairs
 }
 
@@ -424,11 +425,13 @@ func parsePairStorageNew(opts []Pair) (pairStorageNew, error) {
 			}
 			result.HasName = true
 			result.Name = v.Value.(string)
-		// Default pairs
+		// Optional pairs
 		case pairDefaultStoragePairs:
+			if result.HasDefaultStoragePairs {
+				continue
+			}
 			result.HasDefaultStoragePairs = true
 			result.DefaultStoragePairs = v.Value.(DefaultStoragePairs)
-		// Optional pairs
 		case pairDisableURICleaning:
 			if result.HasDisableURICleaning {
 				continue
@@ -467,6 +470,24 @@ func parsePairStorageNew(opts []Pair) (pairStorageNew, error) {
 	}
 
 	return result, nil
+}
+
+// DefaultStoragePairs is default pairs for specific action
+type DefaultStoragePairs struct {
+	CompleteMultipart []Pair
+	Copy              []Pair
+	CreateMultipart   []Pair
+	Delete            []Pair
+	Fetch             []Pair
+	List              []Pair
+	ListMultipart     []Pair
+	Metadata          []Pair
+	Move              []Pair
+	Reach             []Pair
+	Read              []Pair
+	Stat              []Pair
+	Write             []Pair
+	WriteMultipart    []Pair
 }
 
 // pairStorageCompleteMultipart is the parsed struct
@@ -968,24 +989,6 @@ func (s *Storage) parsePairStorageWriteMultipart(opts []Pair) (pairStorageWriteM
 	}
 
 	return result, nil
-}
-
-// DefaultStoragePairs is default pairs for specific action
-type DefaultStoragePairs struct {
-	CompleteMultipart []Pair
-	Copy              []Pair
-	CreateMultipart   []Pair
-	Delete            []Pair
-	Fetch             []Pair
-	List              []Pair
-	ListMultipart     []Pair
-	Metadata          []Pair
-	Move              []Pair
-	Reach             []Pair
-	Read              []Pair
-	Stat              []Pair
-	Write             []Pair
-	WriteMultipart    []Pair
 }
 
 // CompleteMultipart will complete a multipart upload and construct an Object.
