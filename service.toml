@@ -2,7 +2,7 @@ name = "qingstor"
 
 [namespace.service.new]
 required = ["credential"]
-optional = ["default_service_pairs", "endpoint", "http_client_options", "pair_policy"]
+optional = ["default_service_pairs", "endpoint", "http_client_options"]
 
 [namespace.service.op.create]
 required = ["location"]
