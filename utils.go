@@ -29,6 +29,8 @@ type Service struct {
 	service iface.Service
 
 	client *http.Client
+
+	defaultPairs DefaultServicePairs
 }
 
 // String implements Service.String.
@@ -45,7 +47,8 @@ type Storage struct {
 	config     *qsconfig.Config
 	properties *service.Properties
 
-	pairPolicy typ.PairPolicy
+	pairPolicy   typ.PairPolicy
+	defaultPairs DefaultStoragePairs
 
 	// options for this storager.
 	workDir string // workDir dir for all operation.
