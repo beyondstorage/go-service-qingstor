@@ -25,9 +25,9 @@ const Type = "qingstor"
 const (
 	// default pairs
 	// pairDefaultServicePairs set default pairs for service actions
-	pairDefaultServicePairs = "default_service_pair"
+	pairDefaultServicePairs = "qingstor_default_service_pair"
 	// pairDefaultStoragePairs set default pairs for storage actions
-	pairDefaultStoragePairs = "default_storage_pair"
+	pairDefaultStoragePairs = "qingstor_default_storage_pair"
 	// DisableURICleaning
 	pairDisableURICleaning = "qingstor_disable_uri_cleaning"
 	// StorageClass
@@ -80,7 +80,7 @@ type pairServiceNew struct {
 	// Required pairs
 	HasCredential bool
 	Credential    string
-	// Default pairs
+	// Generated pairs
 	HasDefaultServicePairs bool
 	DefaultServicePairs    DefaultServicePairs
 	// Optional pairs
@@ -392,7 +392,7 @@ type pairStorageNew struct {
 	// Required pairs
 	HasName bool
 	Name    string
-	// Default pairs
+	// Generated pairs
 	HasDefaultStoragePairs bool
 	DefaultStoragePairs    DefaultStoragePairs
 	// Optional pairs
