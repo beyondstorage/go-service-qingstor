@@ -127,6 +127,10 @@ func newServicer(pairs ...typ.Pair) (srv *Service, err error) {
 
 	srv.config = cfg
 	srv.service, _ = service.Init(cfg)
+
+	if opt.HasDefaultServicePairs {
+		srv.defaultPairs = opt.DefaultServicePairs
+	}
 	return
 }
 
@@ -241,11 +245,17 @@ func (s *Service) newStorage(pairs ...typ.Pair) (store *Storage, err error) {
 		workDir: "/",
 	}
 
-	if opt.HasWorkDir {
-		st.workDir = opt.WorkDir
-	}
 	if opt.HasDisableURICleaning {
 		st.config.DisableURICleaning = opt.DisableURICleaning
+	}
+	if opt.HasDefaultStoragePairs {
+		st.defaultPairs = opt.DefaultStoragePairs
+	}
+	if opt.HasPairPolicy {
+		st.pairPolicy = opt.PairPolicy
+	}
+	if opt.HasWorkDir {
+		st.workDir = opt.WorkDir
 	}
 	return st, nil
 }

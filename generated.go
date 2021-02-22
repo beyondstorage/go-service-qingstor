@@ -88,8 +88,6 @@ type pairServiceNew struct {
 	Endpoint               string
 	HasHTTPClientOptions   bool
 	HTTPClientOptions      *httpclient.Options
-	HasPairPolicy          bool
-	PairPolicy             PairPolicy
 	// Generated pairs
 }
 
@@ -127,12 +125,6 @@ func parsePairServiceNew(opts []Pair) (pairServiceNew, error) {
 			}
 			result.HasHTTPClientOptions = true
 			result.HTTPClientOptions = v.Value.(*httpclient.Options)
-		case "pair_policy":
-			if result.HasPairPolicy {
-				continue
-			}
-			result.HasPairPolicy = true
-			result.PairPolicy = v.Value.(PairPolicy)
 			// Generated pairs
 		}
 	}
