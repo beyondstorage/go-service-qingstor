@@ -5,6 +5,7 @@ import (
 	"context"
 	"errors"
 	"io/ioutil"
+	"path/filepath"
 	"testing"
 
 	"github.com/golang/mock/gomock"
@@ -486,5 +487,59 @@ func TestStorage_Fetch(t *testing.T) {
 			})
 		err := client.Fetch(name, url)
 		assert.Error(t, err)
+	}
+}
+
+func TestStorage_Create(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockBucket := NewMockBucket(ctrl)
+
+	wd := "/test"
+	c := Storage{
+		workDir: wd,
+		bucket:  mockBucket,
+	}
+
+	cases := []struct {
+		name        string
+		path        string
+		multipartID string
+	}{
+		{
+			name:        "normal object",
+			path:        uuid.NewString(),
+			multipartID: "",
+		},
+		{
+			name:        "multipart object",
+			path:        uuid.NewString(),
+			multipartID: uuid.NewString(),
+		},
+	}
+
+	mockBucket.EXPECT().HeadObjectWithContext(gomock.Eq(context.Background()), gomock.Any(), gomock.Any()).
+		DoAndReturn(func(ctx context.Context, objectKey string, input *service.HeadObjectInput) (*service.HeadObjectOutput, error) {
+			return &service.HeadObjectOutput{}, nil
+		}).AnyTimes()
+
+	for _, tt := range cases {
+		ps := make([]Pair, 0)
+		if tt.multipartID != "" {
+			ps = append(ps, pairs.WithMultipartID(tt.multipartID))
+		}
+		obj := c.Create(tt.path, ps...)
+		assert.NotNil(t, obj)
+		assert.Equal(t, filepath.Join(wd, tt.path), obj.ID)
+		assert.Equal(t, tt.path, obj.Path)
+		assert.Equal(t, ModeRead, obj.Mode)
+		if tt.multipartID != "" {
+			assert.Equal(t, tt.multipartID, obj.MustGetMultipartID())
+		} else {
+			assert.Panics(t, func() {
+				obj.MustGetMultipartID()
+			})
+		}
 	}
 }

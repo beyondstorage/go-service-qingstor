@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"path/filepath"
 
 	"github.com/pengsrc/go-shared/convert"
 	"github.com/qingstor/qingstor-sdk-go/v4/service"
@@ -47,6 +48,19 @@ func (s *Storage) copy(ctx context.Context, src string, dst string, opt pairStor
 		return
 	}
 	return nil
+}
+
+func (s *Storage) create(path string, opt pairStorageCreate) (o *Object) {
+	// FIXME: should set false or true here?
+	o = s.newObject(true)
+	o.ID = filepath.Join(s.workDir, path)
+	o.Path = path
+	o.Mode = ModeRead
+	// set multipart ID if available
+	if opt.HasMultipartID {
+		o.SetMultipartID(opt.MultipartID)
+	}
+	return o
 }
 
 func (s *Storage) createMultipart(ctx context.Context, path string, opt pairStorageCreateMultipart) (o *Object, err error) {
