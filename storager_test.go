@@ -5,7 +5,6 @@ import (
 	"context"
 	"errors"
 	"io/ioutil"
-	"path/filepath"
 	"testing"
 
 	"github.com/golang/mock/gomock"
@@ -496,7 +495,7 @@ func TestStorage_Create(t *testing.T) {
 
 	mockBucket := NewMockBucket(ctrl)
 
-	wd := "/test"
+	wd := "/test/"
 	c := Storage{
 		workDir: wd,
 		bucket:  mockBucket,
@@ -531,12 +530,13 @@ func TestStorage_Create(t *testing.T) {
 		}
 		obj := c.Create(tt.path, ps...)
 		assert.NotNil(t, obj)
-		assert.Equal(t, filepath.Join(wd, tt.path), obj.ID)
+		assert.Equal(t, c.getAbsPath(tt.path), obj.ID)
 		assert.Equal(t, tt.path, obj.Path)
-		assert.Equal(t, ModeRead, obj.Mode)
 		if tt.multipartID != "" {
 			assert.Equal(t, tt.multipartID, obj.MustGetMultipartID())
+			assert.Equal(t, ModePart, obj.Mode)
 		} else {
+			assert.Equal(t, ModeRead, obj.Mode)
 			assert.Panics(t, func() {
 				obj.MustGetMultipartID()
 			})
