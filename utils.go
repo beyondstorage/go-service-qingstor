@@ -3,11 +3,12 @@ package qingstor
 import (
 	"errors"
 	"fmt"
-	"github.com/aos-dev/go-storage/v3/pkg/endpoint"
 	"net/http"
 	"regexp"
 	"strings"
 	"time"
+
+	"github.com/aos-dev/go-storage/v3/pkg/endpoint"
 
 	"github.com/pengsrc/go-shared/convert"
 	qsconfig "github.com/qingstor/qingstor-sdk-go/v4/config"
@@ -153,6 +154,17 @@ func newServicerAndStorager(pairs ...typ.Pair) (srv *Service, store *Storage, er
 	}
 	return
 }
+
+// multipartXXX are multipart upload restriction in QingStor, see more detail at:
+// https://docs.qingcloud.com/qingstor/api/object/multipart/index.html#%E5%88%86%E6%AE%B5%E4%B8%8A%E4%BC%A0%E9%99%90%E5%88%B6
+const (
+	// multipartNumberMaximum is the max part count supported
+	multipartNumberMaximum = 10000
+	// multipartSizeMaximum is the maximum size for each part, 5GB
+	multipartSizeMaximum = 5 * 1024 * 1024 * 1024
+	// multipartSizeMinimum is the minimum size for each part, except the last part, 4MB
+	multipartSizeMinimum = 4 * 1024 * 1024
+)
 
 // bucketNameRegexp is the bucket name regexp, which indicates:
 // 1. length: 6-63;
