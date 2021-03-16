@@ -521,7 +521,7 @@ func TestStorage_Create(t *testing.T) {
 	mockBucket.EXPECT().HeadObjectWithContext(gomock.Eq(context.Background()), gomock.Any(), gomock.Any()).
 		DoAndReturn(func(ctx context.Context, objectKey string, input *service.HeadObjectInput) (*service.HeadObjectOutput, error) {
 			return &service.HeadObjectOutput{}, nil
-		}).AnyTimes()
+		}).Times(1)
 
 	for _, tt := range cases {
 		ps := make([]Pair, 0)

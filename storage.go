@@ -50,16 +50,18 @@ func (s *Storage) copy(ctx context.Context, src string, dst string, opt pairStor
 }
 
 func (s *Storage) create(path string, opt pairStorageCreate) (o *Object) {
-	// FIXME: should set false or true here?
-	o = s.newObject(true)
-	o.ID = s.getAbsPath(path)
-	o.Path = path
-	o.Mode = ModeRead
-	// set multipart ID if available
+	// handle create multipart object separately
+	// if opt has multipartID, set object done, because we can't stat multipart object in QingStor
 	if opt.HasMultipartID {
+		o = s.newObject(true)
 		o.Mode = ModePart
 		o.SetMultipartID(opt.MultipartID)
+	} else {
+		o = s.newObject(false)
+		o.Mode = ModeRead
 	}
+	o.ID = s.getAbsPath(path)
+	o.Path = path
 	return o
 }
 
