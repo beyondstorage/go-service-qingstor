@@ -81,9 +81,9 @@ func (s *Storage) createMultipart(ctx context.Context, path string, opt pairStor
 	o.Mode |= ModePart
 	o.SetMultipartID(*output.UploadID)
 	// set multipart restriction
-	o.SetMultipartNumberMaximum(MultipartNumMax)
-	o.SetMultipartSizeMaximum(MultipartPartSizeMax)
-	o.SetMultipartSizeMinimum(MultipartPartSizeMin)
+	o.SetMultipartNumberMaximum(multipartNumberMaximum)
+	o.SetMultipartSizeMaximum(multipartSizeMaximum)
+	o.SetMultipartSizeMinimum(multipartSizeMinimum)
 
 	return o, nil
 }
