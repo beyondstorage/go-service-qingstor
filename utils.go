@@ -3,11 +3,12 @@ package qingstor
 import (
 	"errors"
 	"fmt"
-	"github.com/aos-dev/go-storage/v3/pkg/endpoint"
 	"net/http"
 	"regexp"
 	"strings"
 	"time"
+
+	"github.com/aos-dev/go-storage/v3/pkg/endpoint"
 
 	"github.com/pengsrc/go-shared/convert"
 	qsconfig "github.com/qingstor/qingstor-sdk-go/v4/config"
@@ -153,6 +154,15 @@ func newServicerAndStorager(pairs ...typ.Pair) (srv *Service, store *Storage, er
 	}
 	return
 }
+
+const (
+	// MultipartNumMax is the max part count supported
+	MultipartNumMax = 10000
+	// MultipartPartSizeMax is the maximum size for each part, 5GB
+	MultipartPartSizeMax = 5 * 1024 * 1024 * 1024
+	// MultipartPartSizeMin is the minimum size for each part, except the last part, 4MB
+	MultipartPartSizeMin = 4 * 1024 * 1024
+)
 
 // bucketNameRegexp is the bucket name regexp, which indicates:
 // 1. length: 6-63;
