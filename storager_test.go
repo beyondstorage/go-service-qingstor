@@ -488,3 +488,58 @@ func TestStorage_Fetch(t *testing.T) {
 		assert.Error(t, err)
 	}
 }
+
+func TestStorage_Create(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockBucket := NewMockBucket(ctrl)
+
+	wd := "/test/"
+	c := Storage{
+		workDir: wd,
+		bucket:  mockBucket,
+	}
+
+	cases := []struct {
+		name        string
+		path        string
+		multipartID string
+	}{
+		{
+			name:        "normal object",
+			path:        uuid.NewString(),
+			multipartID: "",
+		},
+		{
+			name:        "multipart object",
+			path:        uuid.NewString(),
+			multipartID: uuid.NewString(),
+		},
+	}
+
+	mockBucket.EXPECT().HeadObjectWithContext(gomock.Eq(context.Background()), gomock.Any(), gomock.Any()).
+		DoAndReturn(func(ctx context.Context, objectKey string, input *service.HeadObjectInput) (*service.HeadObjectOutput, error) {
+			return &service.HeadObjectOutput{}, nil
+		}).Times(1)
+
+	for _, tt := range cases {
+		ps := make([]Pair, 0)
+		if tt.multipartID != "" {
+			ps = append(ps, pairs.WithMultipartID(tt.multipartID))
+		}
+		obj := c.Create(tt.path, ps...)
+		assert.NotNil(t, obj)
+		assert.Equal(t, c.getAbsPath(tt.path), obj.ID)
+		assert.Equal(t, tt.path, obj.Path)
+		if tt.multipartID != "" {
+			assert.Equal(t, tt.multipartID, obj.MustGetMultipartID())
+			assert.Equal(t, ModePart, obj.Mode)
+		} else {
+			assert.Equal(t, ModeRead, obj.Mode)
+			assert.Panics(t, func() {
+				obj.MustGetMultipartID()
+			})
+		}
+	}
+}

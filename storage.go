@@ -49,6 +49,22 @@ func (s *Storage) copy(ctx context.Context, src string, dst string, opt pairStor
 	return nil
 }
 
+func (s *Storage) create(path string, opt pairStorageCreate) (o *Object) {
+	// handle create multipart object separately
+	// if opt has multipartID, set object done, because we can't stat multipart object in QingStor
+	if opt.HasMultipartID {
+		o = s.newObject(true)
+		o.Mode = ModePart
+		o.SetMultipartID(opt.MultipartID)
+	} else {
+		o = s.newObject(false)
+		o.Mode = ModeRead
+	}
+	o.ID = s.getAbsPath(path)
+	o.Path = path
+	return o
+}
+
 func (s *Storage) createMultipart(ctx context.Context, path string, opt pairStorageCreateMultipart) (o *Object, err error) {
 	input := &service.InitiateMultipartUploadInput{}
 

@@ -23,6 +23,9 @@ implement = ["copier", "fetcher", "mover", "multiparter", "reacher"]
 required = ["name"]
 optional = ["default_storage_pairs", "disable_uri_cleaning", "http_client_options", "location", "pair_policy", "work_dir"]
 
+[namespace.storage.op.create]
+optional = ["multipart_id"]
+
 [namespace.storage.op.delete]
 optional = ["multipart_id"]
 
