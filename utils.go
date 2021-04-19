@@ -32,6 +32,8 @@ type Service struct {
 	client *http.Client
 
 	defaultPairs DefaultServicePairs
+
+	typ.UnimplementedServicer
 }
 
 // String implements Service.String.
@@ -53,6 +55,13 @@ type Storage struct {
 
 	// options for this storager.
 	workDir string // workDir dir for all operation.
+
+	typ.UnimplementedStorager
+	typ.UnimplementedCopier
+	typ.UnimplementedFetcher
+	typ.UnimplementedMover
+	typ.UnimplementedMultiparter
+	typ.UnimplementedReacher
 }
 
 // String implements Storager.String
