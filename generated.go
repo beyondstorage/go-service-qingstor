@@ -919,6 +919,8 @@ type pairStorageStat struct {
 
 	// Required pairs
 	// Optional pairs
+	HasMultipartID bool
+	MultipartID    string
 	// Generated pairs
 }
 
@@ -932,6 +934,9 @@ func (s *Storage) parsePairStorageStat(opts []Pair) (pairStorageStat, error) {
 		switch v.Key {
 		// Required pairs
 		// Optional pairs
+		case "multipart_id":
+			result.HasMultipartID = true
+			result.MultipartID = v.Value.(string)
 		// Generated pairs
 		default:
 
