@@ -41,7 +41,13 @@ func (s *Storage) copy(ctx context.Context, src string, dst string, opt pairStor
 	rd := s.getAbsPath(dst)
 
 	_, err = s.bucket.PutObjectWithContext(ctx, rd, &service.PutObjectInput{
-		XQSCopySource: &rs,
+		XQSCopySource:                            &rs,
+		XQSCopySourceEncryptionCustomerAlgorithm: &opt.SseCopySourceCustomerAlgorithm,
+		XQSCopySourceEncryptionCustomerKey:       &opt.SseCopySourceCustomerKey,
+		XQSCopySourceEncryptionCustomerKeyMD5:    &opt.SseCopySourceCustomerKeyMd5,
+		XQSEncryptionCustomerAlgorithm:           &opt.SseCustomerAlgorithm,
+		XQSEncryptionCustomerKey:                 &opt.SseCustomerKey,
+		XQSEncryptionCustomerKeyMD5:              &opt.SseCustomerKeyMd5,
 	})
 	if err != nil {
 		return
@@ -349,7 +355,11 @@ func (s *Storage) reach(ctx context.Context, path string, opt pairStorageReach) 
 }
 
 func (s *Storage) read(ctx context.Context, path string, w io.Writer, opt pairStorageRead) (n int64, err error) {
-	input := &service.GetObjectInput{}
+	input := &service.GetObjectInput{
+		XQSEncryptionCustomerAlgorithm: &opt.SseCustomerAlgorithm,
+		XQSEncryptionCustomerKey:       &opt.SseCustomerKey,
+		XQSEncryptionCustomerKeyMD5:    &opt.SseCustomerKeyMd5,
+	}
 
 	if opt.HasOffset || opt.HasSize {
 		rs := headers.FormatRange(opt.Offset, opt.Size)
@@ -412,8 +422,11 @@ func (s *Storage) write(ctx context.Context, path string, r io.Reader, size int6
 	}
 
 	input := &service.PutObjectInput{
-		ContentLength: &size,
-		Body:          io.LimitReader(r, size),
+		ContentLength:                  &size,
+		Body:                           io.LimitReader(r, size),
+		XQSEncryptionCustomerAlgorithm: &opt.SseCustomerAlgorithm,
+		XQSEncryptionCustomerKey:       &opt.SseCustomerKey,
+		XQSEncryptionCustomerKeyMD5:    &opt.SseCustomerKeyMd5,
 	}
 	if opt.HasContentMd5 {
 		input.ContentMD5 = &opt.ContentMd5

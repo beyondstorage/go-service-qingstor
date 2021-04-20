@@ -29,6 +29,18 @@ const (
 	pairDefaultStoragePairs = "qingstor_default_storage_pairs"
 	// DisableURICleaning
 	pairDisableURICleaning = "qingstor_disable_uri_cleaning"
+	// SseCopySourceCustomerAlgorithm
+	pairSseCopySourceCustomerAlgorithm = "qingstor_sse_copy_source_customer_algorithm"
+	// SseCopySourceCustomerKey
+	pairSseCopySourceCustomerKey = "qingstor_sse_copy_source_customer_key"
+	// SseCopySourceCustomerKeyMd5
+	pairSseCopySourceCustomerKeyMd5 = "qingstor_sse_copy_source_customer_key_md5"
+	// SseCustomerAlgorithm
+	pairSseCustomerAlgorithm = "qingstor_sse_customer_algorithm"
+	// SseCustomerKey
+	pairSseCustomerKey = "qingstor_sse_customer_key"
+	// SseCustomerKeyMd5
+	pairSseCustomerKeyMd5 = "qingstor_sse_customer_key_md5"
 	// StorageClass
 	pairStorageClass = "qingstor_storage_class"
 )
@@ -61,6 +73,60 @@ func WithDefaultStoragePairs(v DefaultStoragePairs) Pair {
 func WithDisableURICleaning(v bool) Pair {
 	return Pair{
 		Key:   pairDisableURICleaning,
+		Value: v,
+	}
+}
+
+// WithSseCopySourceCustomerAlgorithm will apply sse_copy_source_customer_algorithm value to Options
+// SseCopySourceCustomerAlgorithm
+func WithSseCopySourceCustomerAlgorithm(v string) Pair {
+	return Pair{
+		Key:   pairSseCopySourceCustomerAlgorithm,
+		Value: v,
+	}
+}
+
+// WithSseCopySourceCustomerKey will apply sse_copy_source_customer_key value to Options
+// SseCopySourceCustomerKey
+func WithSseCopySourceCustomerKey(v string) Pair {
+	return Pair{
+		Key:   pairSseCopySourceCustomerKey,
+		Value: v,
+	}
+}
+
+// WithSseCopySourceCustomerKeyMd5 will apply sse_copy_source_customer_key_md5 value to Options
+// SseCopySourceCustomerKeyMd5
+func WithSseCopySourceCustomerKeyMd5(v string) Pair {
+	return Pair{
+		Key:   pairSseCopySourceCustomerKeyMd5,
+		Value: v,
+	}
+}
+
+// WithSseCustomerAlgorithm will apply sse_customer_algorithm value to Options
+// SseCustomerAlgorithm
+func WithSseCustomerAlgorithm(v string) Pair {
+	return Pair{
+		Key:   pairSseCustomerAlgorithm,
+		Value: v,
+	}
+}
+
+// WithSseCustomerKey will apply sse_customer_key value to Options
+// SseCustomerKey
+func WithSseCustomerKey(v string) Pair {
+	return Pair{
+		Key:   pairSseCustomerKey,
+		Value: v,
+	}
+}
+
+// WithSseCustomerKeyMd5 will apply sse_customer_key_md5 value to Options
+// SseCustomerKeyMd5
+func WithSseCustomerKeyMd5(v string) Pair {
+	return Pair{
+		Key:   pairSseCustomerKeyMd5,
 		Value: v,
 	}
 }
@@ -529,6 +595,18 @@ type pairStorageCopy struct {
 
 	// Required pairs
 	// Optional pairs
+	HasSseCopySourceCustomerAlgorithm bool
+	SseCopySourceCustomerAlgorithm    string
+	HasSseCopySourceCustomerKey       bool
+	SseCopySourceCustomerKey          string
+	HasSseCopySourceCustomerKeyMd5    bool
+	SseCopySourceCustomerKeyMd5       string
+	HasSseCustomerAlgorithm           bool
+	SseCustomerAlgorithm              string
+	HasSseCustomerKey                 bool
+	SseCustomerKey                    string
+	HasSseCustomerKeyMd5              bool
+	SseCustomerKeyMd5                 string
 	// Generated pairs
 }
 
@@ -542,6 +620,24 @@ func (s *Storage) parsePairStorageCopy(opts []Pair) (pairStorageCopy, error) {
 		switch v.Key {
 		// Required pairs
 		// Optional pairs
+		case pairSseCopySourceCustomerAlgorithm:
+			result.HasSseCopySourceCustomerAlgorithm = true
+			result.SseCopySourceCustomerAlgorithm = v.Value.(string)
+		case pairSseCopySourceCustomerKey:
+			result.HasSseCopySourceCustomerKey = true
+			result.SseCopySourceCustomerKey = v.Value.(string)
+		case pairSseCopySourceCustomerKeyMd5:
+			result.HasSseCopySourceCustomerKeyMd5 = true
+			result.SseCopySourceCustomerKeyMd5 = v.Value.(string)
+		case pairSseCustomerAlgorithm:
+			result.HasSseCustomerAlgorithm = true
+			result.SseCustomerAlgorithm = v.Value.(string)
+		case pairSseCustomerKey:
+			result.HasSseCustomerKey = true
+			result.SseCustomerKey = v.Value.(string)
+		case pairSseCustomerKeyMd5:
+			result.HasSseCustomerKeyMd5 = true
+			result.SseCustomerKeyMd5 = v.Value.(string)
 		// Generated pairs
 		default:
 
@@ -872,12 +968,18 @@ type pairStorageRead struct {
 
 	// Required pairs
 	// Optional pairs
-	HasIoCallback bool
-	IoCallback    func([]byte)
-	HasOffset     bool
-	Offset        int64
-	HasSize       bool
-	Size          int64
+	HasIoCallback           bool
+	IoCallback              func([]byte)
+	HasOffset               bool
+	Offset                  int64
+	HasSize                 bool
+	Size                    int64
+	HasSseCustomerAlgorithm bool
+	SseCustomerAlgorithm    string
+	HasSseCustomerKey       bool
+	SseCustomerKey          string
+	HasSseCustomerKeyMd5    bool
+	SseCustomerKeyMd5       string
 	// Generated pairs
 }
 
@@ -900,6 +1002,15 @@ func (s *Storage) parsePairStorageRead(opts []Pair) (pairStorageRead, error) {
 		case "size":
 			result.HasSize = true
 			result.Size = v.Value.(int64)
+		case pairSseCustomerAlgorithm:
+			result.HasSseCustomerAlgorithm = true
+			result.SseCustomerAlgorithm = v.Value.(string)
+		case pairSseCustomerKey:
+			result.HasSseCustomerKey = true
+			result.SseCustomerKey = v.Value.(string)
+		case pairSseCustomerKeyMd5:
+			result.HasSseCustomerKeyMd5 = true
+			result.SseCustomerKeyMd5 = v.Value.(string)
 		// Generated pairs
 		default:
 
@@ -951,14 +1062,20 @@ type pairStorageWrite struct {
 
 	// Required pairs
 	// Optional pairs
-	HasContentMd5   bool
-	ContentMd5      string
-	HasContentType  bool
-	ContentType     string
-	HasIoCallback   bool
-	IoCallback      func([]byte)
-	HasStorageClass bool
-	StorageClass    string
+	HasContentMd5           bool
+	ContentMd5              string
+	HasContentType          bool
+	ContentType             string
+	HasIoCallback           bool
+	IoCallback              func([]byte)
+	HasSseCustomerAlgorithm bool
+	SseCustomerAlgorithm    string
+	HasSseCustomerKey       bool
+	SseCustomerKey          string
+	HasSseCustomerKeyMd5    bool
+	SseCustomerKeyMd5       string
+	HasStorageClass         bool
+	StorageClass            string
 	// Generated pairs
 }
 
@@ -981,6 +1098,15 @@ func (s *Storage) parsePairStorageWrite(opts []Pair) (pairStorageWrite, error) {
 		case "io_callback":
 			result.HasIoCallback = true
 			result.IoCallback = v.Value.(func([]byte))
+		case pairSseCustomerAlgorithm:
+			result.HasSseCustomerAlgorithm = true
+			result.SseCustomerAlgorithm = v.Value.(string)
+		case pairSseCustomerKey:
+			result.HasSseCustomerKey = true
+			result.SseCustomerKey = v.Value.(string)
+		case pairSseCustomerKeyMd5:
+			result.HasSseCustomerKeyMd5 = true
+			result.SseCustomerKeyMd5 = v.Value.(string)
 		case pairStorageClass:
 			result.HasStorageClass = true
 			result.StorageClass = v.Value.(string)
