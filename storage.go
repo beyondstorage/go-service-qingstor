@@ -373,10 +373,28 @@ func (s *Storage) read(ctx context.Context, path string, w io.Writer, opt pairSt
 }
 
 func (s *Storage) stat(ctx context.Context, path string, opt pairStorageStat) (o *Object, err error) {
-	input := &service.HeadObjectInput{}
 
 	rp := s.getAbsPath(path)
 
+	if opt.HasMultipartID {
+		input := &service.ListMultipartInput{
+			UploadID: service.String(opt.MultipartID),
+			Limit:    service.Int(0),
+		}
+		_, err := s.bucket.ListMultipartWithContext(ctx, rp, input)
+		if err != nil {
+			return nil, err
+		}
+
+		o = s.newObject(true)
+		o.ID = rp
+		o.Path = path
+		o.Mode |= ModePart
+		o.SetMultipartID(opt.MultipartID)
+		return o, nil
+	}
+
+	input := &service.HeadObjectInput{}
 	output, err := s.bucket.HeadObjectWithContext(ctx, rp, input)
 	if err != nil {
 		return

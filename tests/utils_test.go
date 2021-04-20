@@ -1,11 +1,8 @@
-// +build integration_test
-
 package tests
 
 import (
 	"os"
 	"testing"
-
 
 	ps "github.com/aos-dev/go-storage/v3/pairs"
 	"github.com/aos-dev/go-storage/v3/types"
