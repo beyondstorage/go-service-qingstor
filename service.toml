@@ -84,3 +84,6 @@ description = "set default pairs for storager actions"
 
 [infos.object.meta.storage-class]
 type = "string"
+
+[infos.object.meta.sse_customer_algorithm]
+type = "string"

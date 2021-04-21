@@ -47,6 +47,8 @@ const (
 
 // Service available metadata.
 const (
+	MetadataSseCustomerAlgorithm = "qingstor-sse_customer_algorithm"
+
 	MetadataStorageClass = "qingstor-storage-class"
 )
 

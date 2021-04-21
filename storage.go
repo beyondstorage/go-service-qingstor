@@ -418,6 +418,9 @@ func (s *Storage) stat(ctx context.Context, path string, opt pairStorageStat) (o
 	if v := service.StringValue(output.XQSStorageClass); v != "" {
 		sm[MetadataStorageClass] = v
 	}
+	if v := service.StringValue(output.XQSEncryptionCustomerAlgorithm); v != "" {
+		sm[MetadataSseCustomerAlgorithm] = v
+	}
 	o.SetServiceMetadata(sm)
 
 	return o, nil
