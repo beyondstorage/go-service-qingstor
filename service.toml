@@ -46,22 +46,27 @@ optional = ["sse_customer_algorithm", "sse_customer_key", "sse_customer_key_md5"
 
 [pairs.sse_customer_algorithm]
 type = "string"
+description = "specifies the encryption algorithm. Only AES256 is supported now."
 
 [pairs.sse_customer_key]
 type = "string"
+description = "is the customer-provided encryption key. For AES256 keys, the plaintext must be 32 bytes long. The key must be Base64 encoded."
 
 [pairs.sse_customer_key_md5]
 type = "string"
+description = "is the MD5 of the customer-provided key. The key MD5 must be Base64 encoded."
 
 [pairs.sse_copy_source_customer_algorithm]
 type = "string"
+description = "is the encryption algorithm for the source object. Only AES256 is supported now."
 
 [pairs.sse_copy_source_customer_key]
 type = "string"
+description = "is the customer-provided encryption key for the source object. For AES256 keys, the plaintext must be 32 bytes long. The key must be Base64 encoded."
 
 [pairs.sse_copy_source_customer_key_md5]
 type = "string"
-
+description = "is the MD5 of the customer-provided key for the source object. The key MD5 must be Base64 encoded."
 
 [pairs.disable_uri_cleaning]
 type = "bool"

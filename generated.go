@@ -29,17 +29,17 @@ const (
 	pairDefaultStoragePairs = "qingstor_default_storage_pairs"
 	// DisableURICleaning
 	pairDisableURICleaning = "qingstor_disable_uri_cleaning"
-	// SseCopySourceCustomerAlgorithm
+	// SseCopySourceCustomerAlgorithm is the encryption algorithm for the source object. Only AES256 is supported now.
 	pairSseCopySourceCustomerAlgorithm = "qingstor_sse_copy_source_customer_algorithm"
-	// SseCopySourceCustomerKey
+	// SseCopySourceCustomerKey is the customer-provided encryption key for the source object. For AES256 keys, the plaintext must be 32 bytes long. The key must be Base64 encoded.
 	pairSseCopySourceCustomerKey = "qingstor_sse_copy_source_customer_key"
-	// SseCopySourceCustomerKeyMd5
+	// SseCopySourceCustomerKeyMd5 is the MD5 of the customer-provided key for the source object. The key MD5 must be Base64 encoded.
 	pairSseCopySourceCustomerKeyMd5 = "qingstor_sse_copy_source_customer_key_md5"
-	// SseCustomerAlgorithm
+	// SseCustomerAlgorithm specifies the encryption algorithm. Only AES256 is supported now.
 	pairSseCustomerAlgorithm = "qingstor_sse_customer_algorithm"
-	// SseCustomerKey
+	// SseCustomerKey is the customer-provided encryption key. For AES256 keys, the plaintext must be 32 bytes long. The key must be Base64 encoded.
 	pairSseCustomerKey = "qingstor_sse_customer_key"
-	// SseCustomerKeyMd5
+	// SseCustomerKeyMd5 is the MD5 of the customer-provided key. The key MD5 must be Base64 encoded.
 	pairSseCustomerKeyMd5 = "qingstor_sse_customer_key_md5"
 	// StorageClass
 	pairStorageClass = "qingstor_storage_class"
@@ -78,7 +78,7 @@ func WithDisableURICleaning(v bool) Pair {
 }
 
 // WithSseCopySourceCustomerAlgorithm will apply sse_copy_source_customer_algorithm value to Options
-// SseCopySourceCustomerAlgorithm
+// SseCopySourceCustomerAlgorithm is the encryption algorithm for the source object. Only AES256 is supported now.
 func WithSseCopySourceCustomerAlgorithm(v string) Pair {
 	return Pair{
 		Key:   pairSseCopySourceCustomerAlgorithm,
@@ -87,7 +87,7 @@ func WithSseCopySourceCustomerAlgorithm(v string) Pair {
 }
 
 // WithSseCopySourceCustomerKey will apply sse_copy_source_customer_key value to Options
-// SseCopySourceCustomerKey
+// SseCopySourceCustomerKey is the customer-provided encryption key for the source object. For AES256 keys, the plaintext must be 32 bytes long. The key must be Base64 encoded.
 func WithSseCopySourceCustomerKey(v string) Pair {
 	return Pair{
 		Key:   pairSseCopySourceCustomerKey,
@@ -96,7 +96,7 @@ func WithSseCopySourceCustomerKey(v string) Pair {
 }
 
 // WithSseCopySourceCustomerKeyMd5 will apply sse_copy_source_customer_key_md5 value to Options
-// SseCopySourceCustomerKeyMd5
+// SseCopySourceCustomerKeyMd5 is the MD5 of the customer-provided key for the source object. The key MD5 must be Base64 encoded.
 func WithSseCopySourceCustomerKeyMd5(v string) Pair {
 	return Pair{
 		Key:   pairSseCopySourceCustomerKeyMd5,
@@ -105,7 +105,7 @@ func WithSseCopySourceCustomerKeyMd5(v string) Pair {
 }
 
 // WithSseCustomerAlgorithm will apply sse_customer_algorithm value to Options
-// SseCustomerAlgorithm
+// SseCustomerAlgorithm specifies the encryption algorithm. Only AES256 is supported now.
 func WithSseCustomerAlgorithm(v string) Pair {
 	return Pair{
 		Key:   pairSseCustomerAlgorithm,
@@ -114,7 +114,7 @@ func WithSseCustomerAlgorithm(v string) Pair {
 }
 
 // WithSseCustomerKey will apply sse_customer_key value to Options
-// SseCustomerKey
+// SseCustomerKey is the customer-provided encryption key. For AES256 keys, the plaintext must be 32 bytes long. The key must be Base64 encoded.
 func WithSseCustomerKey(v string) Pair {
 	return Pair{
 		Key:   pairSseCustomerKey,
@@ -123,7 +123,7 @@ func WithSseCustomerKey(v string) Pair {
 }
 
 // WithSseCustomerKeyMd5 will apply sse_customer_key_md5 value to Options
-// SseCustomerKeyMd5
+// SseCustomerKeyMd5 is the MD5 of the customer-provided key. The key MD5 must be Base64 encoded.
 func WithSseCustomerKeyMd5(v string) Pair {
 	return Pair{
 		Key:   pairSseCustomerKeyMd5,
