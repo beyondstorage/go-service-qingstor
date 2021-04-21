@@ -40,15 +40,21 @@ func (s *Storage) copy(ctx context.Context, src string, dst string, opt pairStor
 	rs := s.getAbsPath(src)
 	rd := s.getAbsPath(dst)
 
-	_, err = s.bucket.PutObjectWithContext(ctx, rd, &service.PutObjectInput{
-		XQSCopySource:                            &rs,
-		XQSCopySourceEncryptionCustomerAlgorithm: &opt.SseCopySourceCustomerAlgorithm,
-		XQSCopySourceEncryptionCustomerKey:       &opt.SseCopySourceCustomerKey,
-		XQSCopySourceEncryptionCustomerKeyMD5:    &opt.SseCopySourceCustomerKeyMd5,
-		XQSEncryptionCustomerAlgorithm:           &opt.SseCustomerAlgorithm,
-		XQSEncryptionCustomerKey:                 &opt.SseCustomerKey,
-		XQSEncryptionCustomerKeyMD5:              &opt.SseCustomerKeyMd5,
-	})
+	input := &service.PutObjectInput{
+		XQSCopySource: &rs,
+	}
+	if opt.HasSseCustomerAlgorithm {
+		input.XQSEncryptionCustomerAlgorithm = &opt.SseCustomerAlgorithm
+		input.XQSEncryptionCustomerKey = &opt.SseCustomerKey
+		input.XQSEncryptionCustomerKeyMD5 = &opt.SseCustomerKeyMd5
+	}
+	if opt.HasSseCopySourceCustomerAlgorithm {
+		input.XQSCopySourceEncryptionCustomerAlgorithm = &opt.SseCopySourceCustomerAlgorithm
+		input.XQSCopySourceEncryptionCustomerKey = &opt.SseCopySourceCustomerKey
+		input.XQSCopySourceEncryptionCustomerKeyMD5 = &opt.SseCopySourceCustomerKeyMd5
+	}
+
+	_, err = s.bucket.PutObjectWithContext(ctx, rd, input)
 	if err != nil {
 		return
 	}
@@ -355,10 +361,11 @@ func (s *Storage) reach(ctx context.Context, path string, opt pairStorageReach) 
 }
 
 func (s *Storage) read(ctx context.Context, path string, w io.Writer, opt pairStorageRead) (n int64, err error) {
-	input := &service.GetObjectInput{
-		XQSEncryptionCustomerAlgorithm: &opt.SseCustomerAlgorithm,
-		XQSEncryptionCustomerKey:       &opt.SseCustomerKey,
-		XQSEncryptionCustomerKeyMD5:    &opt.SseCustomerKeyMd5,
+	input := &service.GetObjectInput{}
+	if opt.HasSseCustomerAlgorithm {
+		input.XQSEncryptionCustomerAlgorithm = &opt.SseCustomerAlgorithm
+		input.XQSEncryptionCustomerKey = &opt.SseCustomerKey
+		input.XQSEncryptionCustomerKeyMD5 = &opt.SseCustomerKeyMd5
 	}
 
 	if opt.HasOffset || opt.HasSize {
@@ -422,17 +429,19 @@ func (s *Storage) write(ctx context.Context, path string, r io.Reader, size int6
 	}
 
 	input := &service.PutObjectInput{
-		ContentLength:                  &size,
-		Body:                           io.LimitReader(r, size),
-		XQSEncryptionCustomerAlgorithm: &opt.SseCustomerAlgorithm,
-		XQSEncryptionCustomerKey:       &opt.SseCustomerKey,
-		XQSEncryptionCustomerKeyMD5:    &opt.SseCustomerKeyMd5,
+		ContentLength: &size,
+		Body:          io.LimitReader(r, size),
 	}
 	if opt.HasContentMd5 {
 		input.ContentMD5 = &opt.ContentMd5
 	}
 	if opt.HasStorageClass {
 		input.XQSStorageClass = service.String(opt.StorageClass)
+	}
+	if opt.HasSseCustomerAlgorithm {
+		input.XQSEncryptionCustomerAlgorithm = &opt.SseCustomerAlgorithm
+		input.XQSEncryptionCustomerKey = &opt.SseCustomerKey
+		input.XQSEncryptionCustomerKeyMD5 = &opt.SseCustomerKeyMd5
 	}
 
 	rp := s.getAbsPath(path)
