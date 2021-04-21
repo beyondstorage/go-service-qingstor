@@ -79,6 +79,11 @@ func (s *Storage) create(path string, opt pairStorageCreate) (o *Object) {
 
 func (s *Storage) createMultipart(ctx context.Context, path string, opt pairStorageCreateMultipart) (o *Object, err error) {
 	input := &service.InitiateMultipartUploadInput{}
+	if opt.HasSseCustomerAlgorithm {
+		input.XQSEncryptionCustomerAlgorithm = &opt.SseCustomerAlgorithm
+		input.XQSEncryptionCustomerKey = &opt.SseCustomerKey
+		input.XQSEncryptionCustomerKeyMD5 = &opt.SseCustomerKeyMd5
+	}
 
 	rp := s.getAbsPath(path)
 
@@ -461,12 +466,19 @@ func (s *Storage) writeMultipart(ctx context.Context, o *Object, r io.Reader, si
 		return 0, fmt.Errorf("object is not a part object")
 	}
 
-	_, err = s.bucket.UploadMultipartWithContext(ctx, o.ID, &service.UploadMultipartInput{
+	input := &service.UploadMultipartInput{
 		PartNumber:    service.Int(index),
 		UploadID:      service.String(o.MustGetMultipartID()),
 		ContentLength: &size,
 		Body:          io.LimitReader(r, size),
-	})
+	}
+	if opt.HasSseCustomerAlgorithm {
+		input.XQSEncryptionCustomerAlgorithm = &opt.SseCustomerAlgorithm
+		input.XQSEncryptionCustomerKey = &opt.SseCustomerKey
+		input.XQSEncryptionCustomerKeyMD5 = &opt.SseCustomerKeyMd5
+	}
+
+	_, err = s.bucket.UploadMultipartWithContext(ctx, o.ID, input)
 	if err != nil {
 		return
 	}

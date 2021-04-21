@@ -44,6 +44,12 @@ optional = ["content_md5", "content_type", "io_callback", "storage_class", "sse_
 [namespace.storage.op.copy]
 optional = ["sse_customer_algorithm", "sse_customer_key", "sse_customer_key_md5", "sse_copy_source_customer_algorithm", "sse_copy_source_customer_key", "sse_copy_source_customer_key_md5"]
 
+[namespace.storage.op.create_multipart]
+optional = ["sse_customer_algorithm", "sse_customer_key", "sse_customer_key_md5"]
+
+[namespace.storage.op.write_multipart]
+optional = ["sse_customer_algorithm", "sse_customer_key", "sse_customer_key_md5"]
+
 [pairs.sse_customer_algorithm]
 type = "string"
 description = "specifies the encryption algorithm. Only AES256 is supported now."

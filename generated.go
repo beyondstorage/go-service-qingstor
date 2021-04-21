@@ -696,6 +696,12 @@ type pairStorageCreateMultipart struct {
 
 	// Required pairs
 	// Optional pairs
+	HasSseCustomerAlgorithm bool
+	SseCustomerAlgorithm    string
+	HasSseCustomerKey       bool
+	SseCustomerKey          string
+	HasSseCustomerKeyMd5    bool
+	SseCustomerKeyMd5       string
 	// Generated pairs
 }
 
@@ -709,6 +715,15 @@ func (s *Storage) parsePairStorageCreateMultipart(opts []Pair) (pairStorageCreat
 		switch v.Key {
 		// Required pairs
 		// Optional pairs
+		case pairSseCustomerAlgorithm:
+			result.HasSseCustomerAlgorithm = true
+			result.SseCustomerAlgorithm = v.Value.(string)
+		case pairSseCustomerKey:
+			result.HasSseCustomerKey = true
+			result.SseCustomerKey = v.Value.(string)
+		case pairSseCustomerKeyMd5:
+			result.HasSseCustomerKeyMd5 = true
+			result.SseCustomerKeyMd5 = v.Value.(string)
 		// Generated pairs
 		default:
 
@@ -1131,6 +1146,12 @@ type pairStorageWriteMultipart struct {
 
 	// Required pairs
 	// Optional pairs
+	HasSseCustomerAlgorithm bool
+	SseCustomerAlgorithm    string
+	HasSseCustomerKey       bool
+	SseCustomerKey          string
+	HasSseCustomerKeyMd5    bool
+	SseCustomerKeyMd5       string
 	// Generated pairs
 }
 
@@ -1144,6 +1165,15 @@ func (s *Storage) parsePairStorageWriteMultipart(opts []Pair) (pairStorageWriteM
 		switch v.Key {
 		// Required pairs
 		// Optional pairs
+		case pairSseCustomerAlgorithm:
+			result.HasSseCustomerAlgorithm = true
+			result.SseCustomerAlgorithm = v.Value.(string)
+		case pairSseCustomerKey:
+			result.HasSseCustomerKey = true
+			result.SseCustomerKey = v.Value.(string)
+		case pairSseCustomerKeyMd5:
+			result.HasSseCustomerKeyMd5 = true
+			result.SseCustomerKeyMd5 = v.Value.(string)
 		// Generated pairs
 		default:
 
