@@ -29,12 +29,26 @@ const (
 	pairDefaultStoragePairs = "qingstor_default_storage_pairs"
 	// DisableURICleaning
 	pairDisableURICleaning = "qingstor_disable_uri_cleaning"
+	// SseCopySourceCustomerAlgorithm is the encryption algorithm for the source object. Only AES256 is supported now.
+	pairSseCopySourceCustomerAlgorithm = "qingstor_sse_copy_source_customer_algorithm"
+	// SseCopySourceCustomerKey is the customer-provided encryption key for the source object. For AES256 keys, the plaintext must be 32 bytes long. The key must be Base64 encoded.
+	pairSseCopySourceCustomerKey = "qingstor_sse_copy_source_customer_key"
+	// SseCopySourceCustomerKeyMd5 is the MD5 of the customer-provided key for the source object. The key MD5 must be Base64 encoded.
+	pairSseCopySourceCustomerKeyMd5 = "qingstor_sse_copy_source_customer_key_md5"
+	// SseCustomerAlgorithm specifies the encryption algorithm. Only AES256 is supported now.
+	pairSseCustomerAlgorithm = "qingstor_sse_customer_algorithm"
+	// SseCustomerKey is the customer-provided encryption key. For AES256 keys, the plaintext must be 32 bytes long. The key must be Base64 encoded.
+	pairSseCustomerKey = "qingstor_sse_customer_key"
+	// SseCustomerKeyMd5 is the MD5 of the customer-provided key. The key MD5 must be Base64 encoded.
+	pairSseCustomerKeyMd5 = "qingstor_sse_customer_key_md5"
 	// StorageClass
 	pairStorageClass = "qingstor_storage_class"
 )
 
 // Service available metadata.
 const (
+	MetadataSseCustomerAlgorithm = "qingstor-sse_customer_algorithm"
+
 	MetadataStorageClass = "qingstor-storage-class"
 )
 
@@ -61,6 +75,60 @@ func WithDefaultStoragePairs(v DefaultStoragePairs) Pair {
 func WithDisableURICleaning(v bool) Pair {
 	return Pair{
 		Key:   pairDisableURICleaning,
+		Value: v,
+	}
+}
+
+// WithSseCopySourceCustomerAlgorithm will apply sse_copy_source_customer_algorithm value to Options
+// SseCopySourceCustomerAlgorithm is the encryption algorithm for the source object. Only AES256 is supported now.
+func WithSseCopySourceCustomerAlgorithm(v string) Pair {
+	return Pair{
+		Key:   pairSseCopySourceCustomerAlgorithm,
+		Value: v,
+	}
+}
+
+// WithSseCopySourceCustomerKey will apply sse_copy_source_customer_key value to Options
+// SseCopySourceCustomerKey is the customer-provided encryption key for the source object. For AES256 keys, the plaintext must be 32 bytes long. The key must be Base64 encoded.
+func WithSseCopySourceCustomerKey(v string) Pair {
+	return Pair{
+		Key:   pairSseCopySourceCustomerKey,
+		Value: v,
+	}
+}
+
+// WithSseCopySourceCustomerKeyMd5 will apply sse_copy_source_customer_key_md5 value to Options
+// SseCopySourceCustomerKeyMd5 is the MD5 of the customer-provided key for the source object. The key MD5 must be Base64 encoded.
+func WithSseCopySourceCustomerKeyMd5(v string) Pair {
+	return Pair{
+		Key:   pairSseCopySourceCustomerKeyMd5,
+		Value: v,
+	}
+}
+
+// WithSseCustomerAlgorithm will apply sse_customer_algorithm value to Options
+// SseCustomerAlgorithm specifies the encryption algorithm. Only AES256 is supported now.
+func WithSseCustomerAlgorithm(v string) Pair {
+	return Pair{
+		Key:   pairSseCustomerAlgorithm,
+		Value: v,
+	}
+}
+
+// WithSseCustomerKey will apply sse_customer_key value to Options
+// SseCustomerKey is the customer-provided encryption key. For AES256 keys, the plaintext must be 32 bytes long. The key must be Base64 encoded.
+func WithSseCustomerKey(v string) Pair {
+	return Pair{
+		Key:   pairSseCustomerKey,
+		Value: v,
+	}
+}
+
+// WithSseCustomerKeyMd5 will apply sse_customer_key_md5 value to Options
+// SseCustomerKeyMd5 is the MD5 of the customer-provided key. The key MD5 must be Base64 encoded.
+func WithSseCustomerKeyMd5(v string) Pair {
+	return Pair{
+		Key:   pairSseCustomerKeyMd5,
 		Value: v,
 	}
 }
@@ -529,6 +597,18 @@ type pairStorageCopy struct {
 
 	// Required pairs
 	// Optional pairs
+	HasSseCopySourceCustomerAlgorithm bool
+	SseCopySourceCustomerAlgorithm    string
+	HasSseCopySourceCustomerKey       bool
+	SseCopySourceCustomerKey          string
+	HasSseCopySourceCustomerKeyMd5    bool
+	SseCopySourceCustomerKeyMd5       string
+	HasSseCustomerAlgorithm           bool
+	SseCustomerAlgorithm              string
+	HasSseCustomerKey                 bool
+	SseCustomerKey                    string
+	HasSseCustomerKeyMd5              bool
+	SseCustomerKeyMd5                 string
 	// Generated pairs
 }
 
@@ -542,6 +622,24 @@ func (s *Storage) parsePairStorageCopy(opts []Pair) (pairStorageCopy, error) {
 		switch v.Key {
 		// Required pairs
 		// Optional pairs
+		case pairSseCopySourceCustomerAlgorithm:
+			result.HasSseCopySourceCustomerAlgorithm = true
+			result.SseCopySourceCustomerAlgorithm = v.Value.(string)
+		case pairSseCopySourceCustomerKey:
+			result.HasSseCopySourceCustomerKey = true
+			result.SseCopySourceCustomerKey = v.Value.(string)
+		case pairSseCopySourceCustomerKeyMd5:
+			result.HasSseCopySourceCustomerKeyMd5 = true
+			result.SseCopySourceCustomerKeyMd5 = v.Value.(string)
+		case pairSseCustomerAlgorithm:
+			result.HasSseCustomerAlgorithm = true
+			result.SseCustomerAlgorithm = v.Value.(string)
+		case pairSseCustomerKey:
+			result.HasSseCustomerKey = true
+			result.SseCustomerKey = v.Value.(string)
+		case pairSseCustomerKeyMd5:
+			result.HasSseCustomerKeyMd5 = true
+			result.SseCustomerKeyMd5 = v.Value.(string)
 		// Generated pairs
 		default:
 
@@ -598,6 +696,12 @@ type pairStorageCreateMultipart struct {
 
 	// Required pairs
 	// Optional pairs
+	HasSseCustomerAlgorithm bool
+	SseCustomerAlgorithm    string
+	HasSseCustomerKey       bool
+	SseCustomerKey          string
+	HasSseCustomerKeyMd5    bool
+	SseCustomerKeyMd5       string
 	// Generated pairs
 }
 
@@ -611,6 +715,15 @@ func (s *Storage) parsePairStorageCreateMultipart(opts []Pair) (pairStorageCreat
 		switch v.Key {
 		// Required pairs
 		// Optional pairs
+		case pairSseCustomerAlgorithm:
+			result.HasSseCustomerAlgorithm = true
+			result.SseCustomerAlgorithm = v.Value.(string)
+		case pairSseCustomerKey:
+			result.HasSseCustomerKey = true
+			result.SseCustomerKey = v.Value.(string)
+		case pairSseCustomerKeyMd5:
+			result.HasSseCustomerKeyMd5 = true
+			result.SseCustomerKeyMd5 = v.Value.(string)
 		// Generated pairs
 		default:
 
@@ -872,12 +985,18 @@ type pairStorageRead struct {
 
 	// Required pairs
 	// Optional pairs
-	HasIoCallback bool
-	IoCallback    func([]byte)
-	HasOffset     bool
-	Offset        int64
-	HasSize       bool
-	Size          int64
+	HasIoCallback           bool
+	IoCallback              func([]byte)
+	HasOffset               bool
+	Offset                  int64
+	HasSize                 bool
+	Size                    int64
+	HasSseCustomerAlgorithm bool
+	SseCustomerAlgorithm    string
+	HasSseCustomerKey       bool
+	SseCustomerKey          string
+	HasSseCustomerKeyMd5    bool
+	SseCustomerKeyMd5       string
 	// Generated pairs
 }
 
@@ -900,6 +1019,15 @@ func (s *Storage) parsePairStorageRead(opts []Pair) (pairStorageRead, error) {
 		case "size":
 			result.HasSize = true
 			result.Size = v.Value.(int64)
+		case pairSseCustomerAlgorithm:
+			result.HasSseCustomerAlgorithm = true
+			result.SseCustomerAlgorithm = v.Value.(string)
+		case pairSseCustomerKey:
+			result.HasSseCustomerKey = true
+			result.SseCustomerKey = v.Value.(string)
+		case pairSseCustomerKeyMd5:
+			result.HasSseCustomerKeyMd5 = true
+			result.SseCustomerKeyMd5 = v.Value.(string)
 		// Generated pairs
 		default:
 
@@ -956,14 +1084,20 @@ type pairStorageWrite struct {
 
 	// Required pairs
 	// Optional pairs
-	HasContentMd5   bool
-	ContentMd5      string
-	HasContentType  bool
-	ContentType     string
-	HasIoCallback   bool
-	IoCallback      func([]byte)
-	HasStorageClass bool
-	StorageClass    string
+	HasContentMd5           bool
+	ContentMd5              string
+	HasContentType          bool
+	ContentType             string
+	HasIoCallback           bool
+	IoCallback              func([]byte)
+	HasSseCustomerAlgorithm bool
+	SseCustomerAlgorithm    string
+	HasSseCustomerKey       bool
+	SseCustomerKey          string
+	HasSseCustomerKeyMd5    bool
+	SseCustomerKeyMd5       string
+	HasStorageClass         bool
+	StorageClass            string
 	// Generated pairs
 }
 
@@ -986,6 +1120,15 @@ func (s *Storage) parsePairStorageWrite(opts []Pair) (pairStorageWrite, error) {
 		case "io_callback":
 			result.HasIoCallback = true
 			result.IoCallback = v.Value.(func([]byte))
+		case pairSseCustomerAlgorithm:
+			result.HasSseCustomerAlgorithm = true
+			result.SseCustomerAlgorithm = v.Value.(string)
+		case pairSseCustomerKey:
+			result.HasSseCustomerKey = true
+			result.SseCustomerKey = v.Value.(string)
+		case pairSseCustomerKeyMd5:
+			result.HasSseCustomerKeyMd5 = true
+			result.SseCustomerKeyMd5 = v.Value.(string)
 		case pairStorageClass:
 			result.HasStorageClass = true
 			result.StorageClass = v.Value.(string)
@@ -1008,6 +1151,12 @@ type pairStorageWriteMultipart struct {
 
 	// Required pairs
 	// Optional pairs
+	HasSseCustomerAlgorithm bool
+	SseCustomerAlgorithm    string
+	HasSseCustomerKey       bool
+	SseCustomerKey          string
+	HasSseCustomerKeyMd5    bool
+	SseCustomerKeyMd5       string
 	// Generated pairs
 }
 
@@ -1021,6 +1170,15 @@ func (s *Storage) parsePairStorageWriteMultipart(opts []Pair) (pairStorageWriteM
 		switch v.Key {
 		// Required pairs
 		// Optional pairs
+		case pairSseCustomerAlgorithm:
+			result.HasSseCustomerAlgorithm = true
+			result.SseCustomerAlgorithm = v.Value.(string)
+		case pairSseCustomerKey:
+			result.HasSseCustomerKey = true
+			result.SseCustomerKey = v.Value.(string)
+		case pairSseCustomerKeyMd5:
+			result.HasSseCustomerKeyMd5 = true
+			result.SseCustomerKeyMd5 = v.Value.(string)
 		// Generated pairs
 		default:
 

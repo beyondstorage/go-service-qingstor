@@ -382,3 +382,8 @@ func (s *Storage) formatFileObject(v *service.KeyType) (o *typ.Object, err error
 func isObjectDirectory(o *service.KeyType) bool {
 	return convert.StringValue(o.MimeType) == "application/x-directory"
 }
+
+// All available SSE customer algorithms are listed here.
+const (
+	SseCustomerAlgorithmAes256 = "AES256"
+)
