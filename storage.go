@@ -2,6 +2,8 @@ package qingstor
 
 import (
 	"context"
+	"crypto/md5"
+	"encoding/base64"
 	"fmt"
 	"io"
 
@@ -43,15 +45,29 @@ func (s *Storage) copy(ctx context.Context, src string, dst string, opt pairStor
 	input := &service.PutObjectInput{
 		XQSCopySource: &rs,
 	}
-	if opt.HasSseCustomerAlgorithm {
-		input.XQSEncryptionCustomerAlgorithm = &opt.SseCustomerAlgorithm
-		input.XQSEncryptionCustomerKey = &opt.SseCustomerKey
-		input.XQSEncryptionCustomerKeyMD5 = &opt.SseCustomerKeyMd5
+	if opt.HasEncryptionCustomerAlgorithm {
+		key := opt.EncryptionCustomerKey
+		if len(key) != 32 {
+			return ErrInvalidEncryptionCustomerKey
+		}
+		keyBase64 := base64.StdEncoding.EncodeToString(key)
+		keyMD5 := md5.Sum(key)
+		keyMD5Base64 := base64.StdEncoding.EncodeToString(keyMD5[:])
+		input.XQSEncryptionCustomerAlgorithm = &opt.EncryptionCustomerAlgorithm
+		input.XQSEncryptionCustomerKey = &keyBase64
+		input.XQSEncryptionCustomerKeyMD5 = &keyMD5Base64
 	}
-	if opt.HasSseCopySourceCustomerAlgorithm {
-		input.XQSCopySourceEncryptionCustomerAlgorithm = &opt.SseCopySourceCustomerAlgorithm
-		input.XQSCopySourceEncryptionCustomerKey = &opt.SseCopySourceCustomerKey
-		input.XQSCopySourceEncryptionCustomerKeyMD5 = &opt.SseCopySourceCustomerKeyMd5
+	if opt.HasCopySourceEncryptionCustomerAlgorithm {
+		key := opt.CopySourceEncryptionCustomerKey
+		if len(key) != 32 {
+			return ErrInvalidEncryptionCustomerKey
+		}
+		keyBase64 := base64.StdEncoding.EncodeToString(key)
+		keyMD5 := md5.Sum(key)
+		keyMD5Base64 := base64.StdEncoding.EncodeToString(keyMD5[:])
+		input.XQSCopySourceEncryptionCustomerAlgorithm = &opt.CopySourceEncryptionCustomerAlgorithm
+		input.XQSCopySourceEncryptionCustomerKey = &keyBase64
+		input.XQSCopySourceEncryptionCustomerKeyMD5 = &keyMD5Base64
 	}
 
 	_, err = s.bucket.PutObjectWithContext(ctx, rd, input)
@@ -79,10 +95,18 @@ func (s *Storage) create(path string, opt pairStorageCreate) (o *Object) {
 
 func (s *Storage) createMultipart(ctx context.Context, path string, opt pairStorageCreateMultipart) (o *Object, err error) {
 	input := &service.InitiateMultipartUploadInput{}
-	if opt.HasSseCustomerAlgorithm {
-		input.XQSEncryptionCustomerAlgorithm = &opt.SseCustomerAlgorithm
-		input.XQSEncryptionCustomerKey = &opt.SseCustomerKey
-		input.XQSEncryptionCustomerKeyMD5 = &opt.SseCustomerKeyMd5
+	if opt.HasEncryptionCustomerAlgorithm {
+		key := opt.EncryptionCustomerKey
+		if len(key) != 32 {
+			err = ErrInvalidEncryptionCustomerKey
+			return
+		}
+		keyBase64 := base64.StdEncoding.EncodeToString(key)
+		keyMD5 := md5.Sum(key)
+		keyMD5Base64 := base64.StdEncoding.EncodeToString(keyMD5[:])
+		input.XQSEncryptionCustomerAlgorithm = &opt.EncryptionCustomerAlgorithm
+		input.XQSEncryptionCustomerKey = &keyBase64
+		input.XQSEncryptionCustomerKeyMD5 = &keyMD5Base64
 	}
 
 	rp := s.getAbsPath(path)
@@ -367,10 +391,18 @@ func (s *Storage) reach(ctx context.Context, path string, opt pairStorageReach) 
 
 func (s *Storage) read(ctx context.Context, path string, w io.Writer, opt pairStorageRead) (n int64, err error) {
 	input := &service.GetObjectInput{}
-	if opt.HasSseCustomerAlgorithm {
-		input.XQSEncryptionCustomerAlgorithm = &opt.SseCustomerAlgorithm
-		input.XQSEncryptionCustomerKey = &opt.SseCustomerKey
-		input.XQSEncryptionCustomerKeyMD5 = &opt.SseCustomerKeyMd5
+	if opt.HasEncryptionCustomerAlgorithm {
+		key := opt.EncryptionCustomerKey
+		if len(key) != 32 {
+			err = ErrInvalidEncryptionCustomerKey
+			return
+		}
+		keyBase64 := base64.StdEncoding.EncodeToString(key)
+		keyMD5 := md5.Sum(key)
+		keyMD5Base64 := base64.StdEncoding.EncodeToString(keyMD5[:])
+		input.XQSEncryptionCustomerAlgorithm = &opt.EncryptionCustomerAlgorithm
+		input.XQSEncryptionCustomerKey = &keyBase64
+		input.XQSEncryptionCustomerKeyMD5 = &keyMD5Base64
 	}
 
 	if opt.HasOffset || opt.HasSize {
@@ -442,7 +474,7 @@ func (s *Storage) stat(ctx context.Context, path string, opt pairStorageStat) (o
 		sm[MetadataStorageClass] = v
 	}
 	if v := service.StringValue(output.XQSEncryptionCustomerAlgorithm); v != "" {
-		sm[MetadataSseCustomerAlgorithm] = v
+		sm[MetadataEncryptionCustomerAlgorithm] = v
 	}
 	o.SetServiceMetadata(sm)
 
@@ -464,10 +496,18 @@ func (s *Storage) write(ctx context.Context, path string, r io.Reader, size int6
 	if opt.HasStorageClass {
 		input.XQSStorageClass = service.String(opt.StorageClass)
 	}
-	if opt.HasSseCustomerAlgorithm {
-		input.XQSEncryptionCustomerAlgorithm = &opt.SseCustomerAlgorithm
-		input.XQSEncryptionCustomerKey = &opt.SseCustomerKey
-		input.XQSEncryptionCustomerKeyMD5 = &opt.SseCustomerKeyMd5
+	if opt.HasEncryptionCustomerAlgorithm {
+		key := opt.EncryptionCustomerKey
+		if len(key) != 32 {
+			err = ErrInvalidEncryptionCustomerKey
+			return
+		}
+		keyBase64 := base64.StdEncoding.EncodeToString(key)
+		keyMD5 := md5.Sum(key)
+		keyMD5Base64 := base64.StdEncoding.EncodeToString(keyMD5[:])
+		input.XQSEncryptionCustomerAlgorithm = &opt.EncryptionCustomerAlgorithm
+		input.XQSEncryptionCustomerKey = &keyBase64
+		input.XQSEncryptionCustomerKeyMD5 = &keyMD5Base64
 	}
 
 	rp := s.getAbsPath(path)
@@ -490,10 +530,18 @@ func (s *Storage) writeMultipart(ctx context.Context, o *Object, r io.Reader, si
 		ContentLength: &size,
 		Body:          io.LimitReader(r, size),
 	}
-	if opt.HasSseCustomerAlgorithm {
-		input.XQSEncryptionCustomerAlgorithm = &opt.SseCustomerAlgorithm
-		input.XQSEncryptionCustomerKey = &opt.SseCustomerKey
-		input.XQSEncryptionCustomerKeyMD5 = &opt.SseCustomerKeyMd5
+	if opt.HasEncryptionCustomerAlgorithm {
+		key := opt.EncryptionCustomerKey
+		if len(key) != 32 {
+			err = ErrInvalidEncryptionCustomerKey
+			return
+		}
+		keyBase64 := base64.StdEncoding.EncodeToString(key)
+		keyMD5 := md5.Sum(key)
+		keyMD5Base64 := base64.StdEncoding.EncodeToString(keyMD5[:])
+		input.XQSEncryptionCustomerAlgorithm = &opt.EncryptionCustomerAlgorithm
+		input.XQSEncryptionCustomerKey = &keyBase64
+		input.XQSEncryptionCustomerKeyMD5 = &keyMD5Base64
 	}
 
 	_, err = s.bucket.UploadMultipartWithContext(ctx, o.ID, input)
