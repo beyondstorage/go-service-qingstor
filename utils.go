@@ -1,6 +1,8 @@
 package qingstor
 
 import (
+	"crypto/md5"
+	"encoding/base64"
 	"errors"
 	"fmt"
 	"net/http"
@@ -387,3 +389,14 @@ func isObjectDirectory(o *service.KeyType) bool {
 const (
 	SseCustomerAlgorithmAes256 = "AES256"
 )
+
+func calculateEncryptionHeaders(algo string, key []byte) (algorithm, keyBase64, keyMD5Base64 *string, err error) {
+	if len(key) != 32 {
+		err = ErrInvalidEncryptionCustomerKey
+		return
+	}
+	kB64 := base64.StdEncoding.EncodeToString(key)
+	kMD5 := md5.Sum(key)
+	kMD5B64 := base64.StdEncoding.EncodeToString(kMD5[:])
+	return &algo, &kB64, &kMD5B64, nil
+}
