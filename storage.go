@@ -43,15 +43,17 @@ func (s *Storage) copy(ctx context.Context, src string, dst string, opt pairStor
 	input := &service.PutObjectInput{
 		XQSCopySource: &rs,
 	}
-	if opt.HasSseCustomerAlgorithm {
-		input.XQSEncryptionCustomerAlgorithm = &opt.SseCustomerAlgorithm
-		input.XQSEncryptionCustomerKey = &opt.SseCustomerKey
-		input.XQSEncryptionCustomerKeyMD5 = &opt.SseCustomerKeyMd5
+	if opt.HasEncryptionCustomerAlgorithm {
+		input.XQSEncryptionCustomerAlgorithm, input.XQSEncryptionCustomerKey, input.XQSEncryptionCustomerKeyMD5, err = calculateEncryptionHeaders(opt.EncryptionCustomerAlgorithm, opt.EncryptionCustomerKey)
+		if err != nil {
+			return
+		}
 	}
-	if opt.HasSseCopySourceCustomerAlgorithm {
-		input.XQSCopySourceEncryptionCustomerAlgorithm = &opt.SseCopySourceCustomerAlgorithm
-		input.XQSCopySourceEncryptionCustomerKey = &opt.SseCopySourceCustomerKey
-		input.XQSCopySourceEncryptionCustomerKeyMD5 = &opt.SseCopySourceCustomerKeyMd5
+	if opt.HasCopySourceEncryptionCustomerAlgorithm {
+		input.XQSCopySourceEncryptionCustomerAlgorithm, input.XQSCopySourceEncryptionCustomerKey, input.XQSCopySourceEncryptionCustomerKeyMD5, err = calculateEncryptionHeaders(opt.CopySourceEncryptionCustomerAlgorithm, opt.CopySourceEncryptionCustomerKey)
+		if err != nil {
+			return
+		}
 	}
 
 	_, err = s.bucket.PutObjectWithContext(ctx, rd, input)
@@ -79,10 +81,11 @@ func (s *Storage) create(path string, opt pairStorageCreate) (o *Object) {
 
 func (s *Storage) createMultipart(ctx context.Context, path string, opt pairStorageCreateMultipart) (o *Object, err error) {
 	input := &service.InitiateMultipartUploadInput{}
-	if opt.HasSseCustomerAlgorithm {
-		input.XQSEncryptionCustomerAlgorithm = &opt.SseCustomerAlgorithm
-		input.XQSEncryptionCustomerKey = &opt.SseCustomerKey
-		input.XQSEncryptionCustomerKeyMD5 = &opt.SseCustomerKeyMd5
+	if opt.HasEncryptionCustomerAlgorithm {
+		input.XQSEncryptionCustomerAlgorithm, input.XQSEncryptionCustomerKey, input.XQSEncryptionCustomerKeyMD5, err = calculateEncryptionHeaders(opt.EncryptionCustomerAlgorithm, opt.EncryptionCustomerKey)
+		if err != nil {
+			return
+		}
 	}
 
 	rp := s.getAbsPath(path)
@@ -367,10 +370,11 @@ func (s *Storage) reach(ctx context.Context, path string, opt pairStorageReach) 
 
 func (s *Storage) read(ctx context.Context, path string, w io.Writer, opt pairStorageRead) (n int64, err error) {
 	input := &service.GetObjectInput{}
-	if opt.HasSseCustomerAlgorithm {
-		input.XQSEncryptionCustomerAlgorithm = &opt.SseCustomerAlgorithm
-		input.XQSEncryptionCustomerKey = &opt.SseCustomerKey
-		input.XQSEncryptionCustomerKeyMD5 = &opt.SseCustomerKeyMd5
+	if opt.HasEncryptionCustomerAlgorithm {
+		input.XQSEncryptionCustomerAlgorithm, input.XQSEncryptionCustomerKey, input.XQSEncryptionCustomerKeyMD5, err = calculateEncryptionHeaders(opt.EncryptionCustomerAlgorithm, opt.EncryptionCustomerKey)
+		if err != nil {
+			return
+		}
 	}
 
 	if opt.HasOffset || opt.HasSize {
@@ -442,7 +446,7 @@ func (s *Storage) stat(ctx context.Context, path string, opt pairStorageStat) (o
 		sm[MetadataStorageClass] = v
 	}
 	if v := service.StringValue(output.XQSEncryptionCustomerAlgorithm); v != "" {
-		sm[MetadataSseCustomerAlgorithm] = v
+		sm[MetadataEncryptionCustomerAlgorithm] = v
 	}
 	o.SetServiceMetadata(sm)
 
@@ -464,10 +468,11 @@ func (s *Storage) write(ctx context.Context, path string, r io.Reader, size int6
 	if opt.HasStorageClass {
 		input.XQSStorageClass = service.String(opt.StorageClass)
 	}
-	if opt.HasSseCustomerAlgorithm {
-		input.XQSEncryptionCustomerAlgorithm = &opt.SseCustomerAlgorithm
-		input.XQSEncryptionCustomerKey = &opt.SseCustomerKey
-		input.XQSEncryptionCustomerKeyMD5 = &opt.SseCustomerKeyMd5
+	if opt.HasEncryptionCustomerAlgorithm {
+		input.XQSEncryptionCustomerAlgorithm, input.XQSEncryptionCustomerKey, input.XQSEncryptionCustomerKeyMD5, err = calculateEncryptionHeaders(opt.EncryptionCustomerAlgorithm, opt.EncryptionCustomerKey)
+		if err != nil {
+			return
+		}
 	}
 
 	rp := s.getAbsPath(path)
@@ -490,10 +495,11 @@ func (s *Storage) writeMultipart(ctx context.Context, o *Object, r io.Reader, si
 		ContentLength: &size,
 		Body:          io.LimitReader(r, size),
 	}
-	if opt.HasSseCustomerAlgorithm {
-		input.XQSEncryptionCustomerAlgorithm = &opt.SseCustomerAlgorithm
-		input.XQSEncryptionCustomerKey = &opt.SseCustomerKey
-		input.XQSEncryptionCustomerKeyMD5 = &opt.SseCustomerKeyMd5
+	if opt.HasEncryptionCustomerAlgorithm {
+		input.XQSEncryptionCustomerAlgorithm, input.XQSEncryptionCustomerKey, input.XQSEncryptionCustomerKeyMD5, err = calculateEncryptionHeaders(opt.EncryptionCustomerAlgorithm, opt.EncryptionCustomerKey)
+		if err != nil {
+			return
+		}
 	}
 
 	_, err = s.bucket.UploadMultipartWithContext(ctx, o.ID, input)

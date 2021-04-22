@@ -39,43 +39,35 @@ optional = ["list_mode"]
 required = ["expire"]
 
 [namespace.storage.op.read]
-optional = ["offset", "io_callback", "size", "sse_customer_algorithm", "sse_customer_key", "sse_customer_key_md5"]
+optional = ["offset", "io_callback", "size", "encryption_customer_algorithm", "encryption_customer_key"]
 
 [namespace.storage.op.write]
-optional = ["content_md5", "content_type", "io_callback", "storage_class", "sse_customer_algorithm", "sse_customer_key", "sse_customer_key_md5"]
+optional = ["content_md5", "content_type", "io_callback", "storage_class", "encryption_customer_algorithm", "encryption_customer_key"]
 
 [namespace.storage.op.copy]
-optional = ["sse_customer_algorithm", "sse_customer_key", "sse_customer_key_md5", "sse_copy_source_customer_algorithm", "sse_copy_source_customer_key", "sse_copy_source_customer_key_md5"]
+optional = ["encryption_customer_algorithm", "encryption_customer_key", "copy_source_encryption_customer_algorithm", "copy_source_encryption_customer_key"]
 
 [namespace.storage.op.create_multipart]
-optional = ["sse_customer_algorithm", "sse_customer_key", "sse_customer_key_md5"]
+optional = ["encryption_customer_algorithm", "encryption_customer_key"]
 
 [namespace.storage.op.write_multipart]
-optional = ["sse_customer_algorithm", "sse_customer_key", "sse_customer_key_md5"]
+optional = ["encryption_customer_algorithm", "encryption_customer_key"]
 
-[pairs.sse_customer_algorithm]
+[pairs.encryption_customer_algorithm]
 type = "string"
 description = "specifies the encryption algorithm. Only AES256 is supported now."
 
-[pairs.sse_customer_key]
-type = "string"
-description = "is the customer-provided encryption key. For AES256 keys, the plaintext must be 32 bytes long. The key must be Base64 encoded."
+[pairs.encryption_customer_key]
+type = "byte_array"
+description = "is the customer-provided encryption key. For AES256 keys, the plaintext must be 32 bytes long."
 
-[pairs.sse_customer_key_md5]
-type = "string"
-description = "is the MD5 of the customer-provided key. The key MD5 must be Base64 encoded."
-
-[pairs.sse_copy_source_customer_algorithm]
+[pairs.copy_source_encryption_customer_algorithm]
 type = "string"
 description = "is the encryption algorithm for the source object. Only AES256 is supported now."
 
-[pairs.sse_copy_source_customer_key]
-type = "string"
-description = "is the customer-provided encryption key for the source object. For AES256 keys, the plaintext must be 32 bytes long. The key must be Base64 encoded."
-
-[pairs.sse_copy_source_customer_key_md5]
-type = "string"
-description = "is the MD5 of the customer-provided key for the source object. The key MD5 must be Base64 encoded."
+[pairs.copy_source_encryption_customer_key]
+type = "byte_array"
+description = "is the customer-provided encryption key for the source object. For AES256 keys, the plaintext must be 32 bytes long."
 
 [pairs.disable_uri_cleaning]
 type = "bool"
@@ -94,5 +86,5 @@ description = "set default pairs for storager actions"
 [infos.object.meta.storage-class]
 type = "string"
 
-[infos.object.meta.sse_customer_algorithm]
+[infos.object.meta.encryption_customer_algorithm]
 type = "string"
