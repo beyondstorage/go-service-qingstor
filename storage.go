@@ -79,6 +79,15 @@ func (s *Storage) create(path string, opt pairStorageCreate) (o *Object) {
 	return o
 }
 
+func (s *Storage) createAppend(ctx context.Context, path string, opt pairStorageCreateAppend) (o *Object, err error) {
+	o = s.newObject(false)
+	o.Mode = ModeRead | ModeAppend
+	o.ID = s.getAbsPath(path)
+	o.Path = path
+	o.SetAppendOffset(0)
+	return o, nil
+}
+
 func (s *Storage) createMultipart(ctx context.Context, path string, opt pairStorageCreateMultipart) (o *Object, err error) {
 	input := &service.InitiateMultipartUploadInput{}
 	if opt.HasEncryptionCustomerAlgorithm {
@@ -482,6 +491,31 @@ func (s *Storage) write(ctx context.Context, path string, r io.Reader, size int6
 		return
 	}
 	return size, nil
+}
+
+func (s *Storage) writeAppend(ctx context.Context, o *Object, r io.Reader, size int64, opt pairStorageWriteAppend) (n int64, err error) {
+	rp := o.GetID()
+
+	offset, ok := o.GetAppendOffset()
+	if !ok {
+		err = fmt.Errorf("append offset is not set")
+		return
+	}
+
+	output, err := s.bucket.AppendObjectWithContext(ctx, rp, &service.AppendObjectInput{
+		Position:      &offset,
+		ContentLength: &size,
+		Body:          io.LimitReader(r, size),
+	})
+	if err != nil {
+		return
+	}
+
+	offset = *output.XQSNextAppendPosition
+	o.SetAppendOffset(offset)
+
+	return offset, nil
+
 }
 
 func (s *Storage) writeMultipart(ctx context.Context, o *Object, r io.Reader, size int64, index int, opt pairStorageWriteMultipart) (n int64, err error) {

@@ -64,6 +64,7 @@ type Storage struct {
 	typ.UnimplementedMover
 	typ.UnimplementedMultiparter
 	typ.UnimplementedReacher
+	typ.UnimplementedAppender
 }
 
 // String implements Storager.String
