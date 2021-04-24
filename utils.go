@@ -372,9 +372,9 @@ func (s *Storage) formatFileObject(v *service.KeyType) (o *typ.Object, err error
 		o.SetEtag(service.StringValue(v.Etag))
 	}
 
-	sm := make(map[string]string)
+	var sm ObjectMetadata
 	if value := service.StringValue(v.StorageClass); value != "" {
-		sm[MetadataStorageClass] = value
+		sm.StorageClass = value
 	}
 	o.SetServiceMetadata(sm)
 
