@@ -5,11 +5,11 @@ github.com/Xuanwo/go-bufferpool v0.0.0-20200622083641-bc954721ce54/go.mod h1:Mle
 github.com/Xuanwo/templateutils v0.0.0-20201216100309-46f73cd4e4b1/go.mod h1:x0qS7gfgEm24b8V9U+0zBEBAu/VpxZhO/+EWtpgEgDw=
 github.com/Xuanwo/templateutils v0.1.0 h1:WpkWOqQtIQ2vAIpJLa727DdN8WtxhUkkbDGa6UhntJY=
 github.com/Xuanwo/templateutils v0.1.0/go.mod h1:OdE0DJ+CJxDBq6psX5DPV+gOZi8bhuHuVUpPCG++Wb8=
-github.com/aos-dev/go-integration-test/v3 v3.0.0-20210420062414-e972ad8801cc h1:ha0GpuSyD/R19if+4D6QCKF6j7UvajiL2LF17xpqKTs=
-github.com/aos-dev/go-integration-test/v3 v3.0.0-20210420062414-e972ad8801cc/go.mod h1:2i6Itxp4ScMeZbaJetPPo+b283GYExF9i9Dlcr8E9Y0=
-github.com/aos-dev/go-storage/v3 v3.4.2/go.mod h1:PZJT0Ta7YxVM5QoYoh8Q/X4I6e/z/7gOJqm85Aib4nY=
-github.com/aos-dev/go-storage/v3 v3.5.1-0.20210423112617-6847a93345fd h1:FEBrz+fo4V+6jMxnbmkI0M+3m5MYriF5SijFF/Sz5cM=
-github.com/aos-dev/go-storage/v3 v3.5.1-0.20210423112617-6847a93345fd/go.mod h1:ZQwybmoCcTWUOWg+G15gT/NQJoI8G8KH1pF41TuJqYk=
+github.com/aos-dev/go-integration-test/v3 v3.0.0 h1:rxIc7YBfiw9JS5JiVU4BZAqQqoKJemIftFaeJpYCb5M=
+github.com/aos-dev/go-integration-test/v3 v3.0.0/go.mod h1:woC3E9Ld1G/Cpo2tSEQ+iwIr4MMdgf+L/8UuyJOE11Q=
+github.com/aos-dev/go-storage/v3 v3.5.0/go.mod h1:PZJT0Ta7YxVM5QoYoh8Q/X4I6e/z/7gOJqm85Aib4nY=
+github.com/aos-dev/go-storage/v3 v3.6.0 h1:ywjMvh320+esJH81MqB9nyuMNLW97Krujz2UiprC2ZM=
+github.com/aos-dev/go-storage/v3 v3.6.0/go.mod h1:ZQwybmoCcTWUOWg+G15gT/NQJoI8G8KH1pF41TuJqYk=
 github.com/aos-dev/specs/go v0.0.0-20210312090615-23109627848b/go.mod h1:XTNlLZtPA1inITyDH5hNnQXVjvvKUvo+lurs5GYB8NA=
 github.com/aos-dev/specs/go v0.0.0-20210423110314-8361397c2bf3 h1:e65ozDhdfHfhnDpZF9SLcY5mwtAg/sAvNIUAkFd+4D0=
 github.com/aos-dev/specs/go v0.0.0-20210423110314-8361397c2bf3/go.mod h1:gNah3KaPJEfysh7uCCX+sYjQC3g2yx2VgBkFlT945Ws=
