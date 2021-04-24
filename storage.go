@@ -441,12 +441,12 @@ func (s *Storage) stat(ctx context.Context, path string, opt pairStorageStat) (o
 		o.SetEtag(service.StringValue(output.ETag))
 	}
 
-	sm := make(map[string]string)
+	var sm ObjectMetadata
 	if v := service.StringValue(output.XQSStorageClass); v != "" {
-		sm[MetadataStorageClass] = v
+		sm.StorageClass = v
 	}
 	if v := service.StringValue(output.XQSEncryptionCustomerAlgorithm); v != "" {
-		sm[MetadataEncryptionCustomerAlgorithm] = v
+		sm.EncryptionCustomerAlgorithm = v
 	}
 	o.SetServiceMetadata(sm)
 
