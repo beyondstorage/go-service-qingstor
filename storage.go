@@ -522,11 +522,15 @@ func (s *Storage) writeAppend(ctx context.Context, o *Object, r io.Reader, size 
 		return
 	}
 
-	offset = *output.XQSNextAppendPosition
-	o.SetAppendOffset(offset)
+	if output.XQSNextAppendPosition != nil {
+		offset = *output.XQSNextAppendPosition
+		o.SetAppendOffset(offset)
+	} else {
+		err = fmt.Errorf("next append position is empty")
+		return
+	}
 
 	return offset, nil
-
 }
 
 func (s *Storage) writeMultipart(ctx context.Context, o *Object, r io.Reader, size int64, index int, opt pairStorageWriteMultipart) (n int64, err error) {
