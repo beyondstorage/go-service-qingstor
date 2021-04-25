@@ -315,10 +315,8 @@ func TestStorage_Stat(t *testing.T) {
 			checkSum, ok := o.GetEtag()
 			assert.True(t, ok)
 			assert.Equal(t, "test_etag", checkSum)
-			sm := o.MustGetServiceMetadata()
-			serviceMetadata, ok := sm.(ObjectMetadata)
-			assert.True(t, ok)
-			assert.Equal(t, StorageClassStandard, serviceMetadata.StorageClass)
+			storageClass := GetObjectMetadata(o).StorageClass
+			assert.Equal(t, StorageClassStandard, storageClass)
 		}
 	}
 }
