@@ -80,7 +80,7 @@ func (s *Storage) create(path string, opt pairStorageCreate) (o *Object) {
 }
 
 func (s *Storage) createAppend(ctx context.Context, path string, opt pairStorageCreateAppend) (o *Object, err error) {
-	o = s.newObject(false)
+	o = s.newObject(true)
 	o.Mode = ModeRead | ModeAppend
 	o.ID = s.getAbsPath(path)
 	o.Path = path
@@ -450,12 +450,12 @@ func (s *Storage) stat(ctx context.Context, path string, opt pairStorageStat) (o
 		o.SetEtag(service.StringValue(output.ETag))
 	}
 
-	sm := make(map[string]string)
+	var sm ObjectMetadata
 	if v := service.StringValue(output.XQSStorageClass); v != "" {
-		sm[MetadataStorageClass] = v
+		sm.StorageClass = v
 	}
 	if v := service.StringValue(output.XQSEncryptionCustomerAlgorithm); v != "" {
-		sm[MetadataEncryptionCustomerAlgorithm] = v
+		sm.EncryptionCustomerAlgorithm = v
 	}
 	o.SetServiceMetadata(sm)
 
@@ -502,11 +502,22 @@ func (s *Storage) writeAppend(ctx context.Context, o *Object, r io.Reader, size 
 		return
 	}
 
-	output, err := s.bucket.AppendObjectWithContext(ctx, rp, &service.AppendObjectInput{
+	input := &service.AppendObjectInput{
 		Position:      &offset,
 		ContentLength: &size,
 		Body:          io.LimitReader(r, size),
-	})
+	}
+	if opt.HasContentMd5 {
+		input.ContentMD5 = &opt.ContentMd5
+	}
+	if opt.HasContentType {
+		input.ContentType = &opt.ContentType
+	}
+	if opt.HasStorageClass {
+		input.XQSStorageClass = &opt.StorageClass
+	}
+
+	output, err := s.bucket.AppendObjectWithContext(ctx, rp, input)
 	if err != nil {
 		return
 	}

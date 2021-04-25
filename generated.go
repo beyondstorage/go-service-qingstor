@@ -41,12 +41,32 @@ const (
 	pairStorageClass = "qingstor_storage_class"
 )
 
-// Service available metadata.
-const (
-	MetadataEncryptionCustomerAlgorithm = "qingstor-encryption_customer_algorithm"
+// ObjectMetadata stores service metadata for object.
+type ObjectMetadata struct {
+	// EncryptionCustomerAlgorithm
+	EncryptionCustomerAlgorithm string
+	// StorageClass
+	StorageClass string
+}
 
-	MetadataStorageClass = "qingstor-storage-class"
-)
+// GetObjectMetadata will get ObjectMetadata from Object.
+//
+// - This function should not be called by service implementer.
+// - The returning ObjectMetadata is read only and should not be modified.
+func GetObjectMetadata(o *Object) ObjectMetadata {
+	om, ok := o.GetServiceMetadata()
+	if ok {
+		return om.(ObjectMetadata)
+	}
+	return ObjectMetadata{}
+}
+
+// setObjectMetadata will set ObjectMetadata into Object.
+//
+// - This function should only be called once, please make sure all data has been written before set.
+func setObjectMetadata(o *Object, om ObjectMetadata) {
+	o.SetServiceMetadata(om)
+}
 
 // WithCopySourceEncryptionCustomerAlgorithm will apply copy_source_encryption_customer_algorithm value to Options
 // CopySourceEncryptionCustomerAlgorithm is the encryption algorithm for the source object. Only AES256 is supported now.
@@ -1138,6 +1158,12 @@ type pairStorageWriteAppend struct {
 
 	// Required pairs
 	// Optional pairs
+	HasContentMd5   bool
+	ContentMd5      string
+	HasContentType  bool
+	ContentType     string
+	HasStorageClass bool
+	StorageClass    string
 	// Generated pairs
 }
 
@@ -1151,6 +1177,15 @@ func (s *Storage) parsePairStorageWriteAppend(opts []Pair) (pairStorageWriteAppe
 		switch v.Key {
 		// Required pairs
 		// Optional pairs
+		case "content_md5":
+			result.HasContentMd5 = true
+			result.ContentMd5 = v.Value.(string)
+		case "content_type":
+			result.HasContentType = true
+			result.ContentType = v.Value.(string)
+		case pairStorageClass:
+			result.HasStorageClass = true
+			result.StorageClass = v.Value.(string)
 		// Generated pairs
 		default:
 
