@@ -5,3 +5,9 @@
 [![go-service-qingstor](https://img.shields.io/matrix/go-service-qingstor:aos.dev.svg?server_fqdn=chat.aos.dev&label=%23go-service-qingstor%3Aaos.dev&logo=matrix)](https://matrix.to/#/#go-service-qingstor:aos.dev)
 
 [QingStor Object Storage](https://www.qingcloud.com/products/objectstorage/) services support for [go-storage](https://github.com/aos-dev/go-storage)
+
+## Install
+
+```go
+go get github.com/aos-dev/go-service-qingstor/v2
+```

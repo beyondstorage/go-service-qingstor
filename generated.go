@@ -68,7 +68,8 @@ func setObjectMetadata(o *Object, om ObjectMetadata) {
 	o.SetServiceMetadata(om)
 }
 
-// WithCopySourceEncryptionCustomerAlgorithm will apply copy_source_encryption_customer_algorithm value to Options
+// WithCopySourceEncryptionCustomerAlgorithm will apply copy_source_encryption_customer_algorithm value to Options.
+//
 // CopySourceEncryptionCustomerAlgorithm is the encryption algorithm for the source object. Only AES256 is supported now.
 func WithCopySourceEncryptionCustomerAlgorithm(v string) Pair {
 	return Pair{
@@ -77,7 +78,8 @@ func WithCopySourceEncryptionCustomerAlgorithm(v string) Pair {
 	}
 }
 
-// WithCopySourceEncryptionCustomerKey will apply copy_source_encryption_customer_key value to Options
+// WithCopySourceEncryptionCustomerKey will apply copy_source_encryption_customer_key value to Options.
+//
 // CopySourceEncryptionCustomerKey is the customer-provided encryption key for the source object. For AES256 keys, the plaintext must be 32 bytes long.
 func WithCopySourceEncryptionCustomerKey(v []byte) Pair {
 	return Pair{
@@ -86,7 +88,8 @@ func WithCopySourceEncryptionCustomerKey(v []byte) Pair {
 	}
 }
 
-// WithDefaultServicePairs will apply default_service_pairs value to Options
+// WithDefaultServicePairs will apply default_service_pairs value to Options.
+//
 // DefaultServicePairs set default pairs for service actions
 func WithDefaultServicePairs(v DefaultServicePairs) Pair {
 	return Pair{
@@ -95,7 +98,8 @@ func WithDefaultServicePairs(v DefaultServicePairs) Pair {
 	}
 }
 
-// WithDefaultStoragePairs will apply default_storage_pairs value to Options
+// WithDefaultStoragePairs will apply default_storage_pairs value to Options.
+//
 // DefaultStoragePairs set default pairs for storager actions
 func WithDefaultStoragePairs(v DefaultStoragePairs) Pair {
 	return Pair{
@@ -104,7 +108,8 @@ func WithDefaultStoragePairs(v DefaultStoragePairs) Pair {
 	}
 }
 
-// WithDisableURICleaning will apply disable_uri_cleaning value to Options
+// WithDisableURICleaning will apply disable_uri_cleaning value to Options.
+//
 // DisableURICleaning
 func WithDisableURICleaning(v bool) Pair {
 	return Pair{
@@ -113,7 +118,8 @@ func WithDisableURICleaning(v bool) Pair {
 	}
 }
 
-// WithEncryptionCustomerAlgorithm will apply encryption_customer_algorithm value to Options
+// WithEncryptionCustomerAlgorithm will apply encryption_customer_algorithm value to Options.
+//
 // EncryptionCustomerAlgorithm specifies the encryption algorithm. Only AES256 is supported now.
 func WithEncryptionCustomerAlgorithm(v string) Pair {
 	return Pair{
@@ -122,7 +128,8 @@ func WithEncryptionCustomerAlgorithm(v string) Pair {
 	}
 }
 
-// WithEncryptionCustomerKey will apply encryption_customer_key value to Options
+// WithEncryptionCustomerKey will apply encryption_customer_key value to Options.
+//
 // EncryptionCustomerKey is the customer-provided encryption key. For AES256 keys, the plaintext must be 32 bytes long.
 func WithEncryptionCustomerKey(v []byte) Pair {
 	return Pair{
@@ -131,7 +138,8 @@ func WithEncryptionCustomerKey(v []byte) Pair {
 	}
 }
 
-// WithStorageClass will apply storage_class value to Options
+// WithStorageClass will apply storage_class value to Options.
+//
 // StorageClass
 func WithStorageClass(v string) Pair {
 	return Pair{
@@ -540,6 +548,7 @@ func parsePairStorageNew(opts []Pair) (pairStorageNew, error) {
 
 // DefaultStoragePairs is default pairs for specific action
 type DefaultStoragePairs struct {
+	CommitAppend      []Pair
 	CompleteMultipart []Pair
 	Copy              []Pair
 	Create            []Pair
@@ -557,6 +566,38 @@ type DefaultStoragePairs struct {
 	Write             []Pair
 	WriteAppend       []Pair
 	WriteMultipart    []Pair
+}
+
+// pairStorageCommitAppend is the parsed struct
+type pairStorageCommitAppend struct {
+	pairs []Pair
+
+	// Required pairs
+	// Optional pairs
+	// Generated pairs
+}
+
+// parsePairStorageCommitAppend will parse Pair slice into *pairStorageCommitAppend
+func (s *Storage) parsePairStorageCommitAppend(opts []Pair) (pairStorageCommitAppend, error) {
+	result := pairStorageCommitAppend{
+		pairs: opts,
+	}
+
+	for _, v := range opts {
+		switch v.Key {
+		// Required pairs
+		// Optional pairs
+		// Generated pairs
+		default:
+
+			if s.pairPolicy.All || s.pairPolicy.CommitAppend {
+				return pairStorageCommitAppend{}, services.NewPairUnsupportedError(v)
+			}
+
+		}
+	}
+
+	return result, nil
 }
 
 // pairStorageCompleteMultipart is the parsed struct
@@ -1239,6 +1280,31 @@ func (s *Storage) parsePairStorageWriteMultipart(opts []Pair) (pairStorageWriteM
 	}
 
 	return result, nil
+}
+
+// CommitAppend will commit and finish an append process.
+//
+// This function will create a context by default.
+func (s *Storage) CommitAppend(o *Object, pairs ...Pair) (err error) {
+	ctx := context.Background()
+	return s.CommitAppendWithContext(ctx, o, pairs...)
+}
+
+// CommitAppendWithContext will commit and finish an append process.
+func (s *Storage) CommitAppendWithContext(ctx context.Context, o *Object, pairs ...Pair) (err error) {
+	pairs = append(pairs, s.defaultPairs.CommitAppend...)
+	var opt pairStorageCommitAppend
+
+	defer func() {
+		err = s.formatError("commit_append", err)
+	}()
+
+	opt, err = s.parsePairStorageCommitAppend(pairs)
+	if err != nil {
+		return
+	}
+
+	return s.commitAppend(ctx, o, opt)
 }
 
 // CompleteMultipart will complete a multipart upload and construct an Object.

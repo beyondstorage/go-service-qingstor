@@ -13,6 +13,10 @@ import (
 	. "github.com/aos-dev/go-storage/v3/types"
 )
 
+func (s *Storage) commitAppend(ctx context.Context, o *Object, opt pairStorageCommitAppend) (err error) {
+	return
+}
+
 func (s *Storage) completeMultipart(ctx context.Context, o *Object, parts []*Part, opt pairStorageCompleteMultipart) (err error) {
 	if o.Mode&ModePart == 0 {
 		return fmt.Errorf("object is not a part object")
