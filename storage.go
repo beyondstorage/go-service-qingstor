@@ -13,6 +13,10 @@ import (
 	. "github.com/aos-dev/go-storage/v3/types"
 )
 
+func (s *Storage) commitAppend(ctx context.Context, o *Object, opt pairStorageCommitAppend) (err error) {
+	return
+}
+
 func (s *Storage) completeMultipart(ctx context.Context, o *Object, parts []*Part, opt pairStorageCompleteMultipart) (err error) {
 	if o.Mode&ModePart == 0 {
 		return fmt.Errorf("object is not a part object")
@@ -77,6 +81,40 @@ func (s *Storage) create(path string, opt pairStorageCreate) (o *Object) {
 	o.ID = s.getAbsPath(path)
 	o.Path = path
 	return o
+}
+
+func (s *Storage) createAppend(ctx context.Context, path string, opt pairStorageCreateAppend) (o *Object, err error) {
+	rp := s.getAbsPath(path)
+
+	var offset int64 = 0
+	input := &service.AppendObjectInput{
+		Position: &offset,
+	}
+	if opt.HasContentType {
+		input.ContentType = &opt.ContentType
+	}
+	if opt.HasStorageClass {
+		input.XQSStorageClass = &opt.StorageClass
+	}
+
+	output, err := s.bucket.AppendObjectWithContext(ctx, rp, input)
+	if err != nil {
+		return
+	}
+
+	if output == nil || output.XQSNextAppendPosition == nil {
+		err = fmt.Errorf("next append position is empty")
+		return
+	} else {
+		offset = *output.XQSNextAppendPosition
+	}
+
+	o = s.newObject(true)
+	o.Mode = ModeRead | ModeAppend
+	o.ID = rp
+	o.Path = path
+	o.SetAppendOffset(offset)
+	return o, nil
 }
 
 func (s *Storage) createMultipart(ctx context.Context, path string, opt pairStorageCreateMultipart) (o *Object, err error) {
@@ -482,6 +520,44 @@ func (s *Storage) write(ctx context.Context, path string, r io.Reader, size int6
 		return
 	}
 	return size, nil
+}
+
+func (s *Storage) writeAppend(ctx context.Context, o *Object, r io.Reader, size int64, opt pairStorageWriteAppend) (n int64, err error) {
+	if !o.Mode.IsAppend() {
+		err = fmt.Errorf("object not appendable")
+		return
+	}
+
+	rp := o.GetID()
+
+	offset, ok := o.GetAppendOffset()
+	if !ok {
+		err = fmt.Errorf("append offset is not set")
+		return
+	}
+
+	input := &service.AppendObjectInput{
+		Position:      &offset,
+		ContentLength: &size,
+		Body:          io.LimitReader(r, size),
+	}
+	if opt.HasContentMd5 {
+		input.ContentMD5 = &opt.ContentMd5
+	}
+
+	output, err := s.bucket.AppendObjectWithContext(ctx, rp, input)
+	if err != nil {
+		return
+	}
+
+	if output == nil || output.XQSNextAppendPosition == nil {
+		err = fmt.Errorf("next append position is empty")
+		return
+	} else {
+		offset = *output.XQSNextAppendPosition
+	}
+
+	return offset, nil
 }
 
 func (s *Storage) writeMultipart(ctx context.Context, o *Object, r io.Reader, size int64, index int, opt pairStorageWriteMultipart) (n int64, err error) {

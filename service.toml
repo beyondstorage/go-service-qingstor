@@ -17,7 +17,7 @@ optional = ["location"]
 optional = ["location"]
 
 [namespace.storage]
-implement = ["copier", "fetcher", "mover", "multiparter", "reacher"]
+implement = ["appender", "copier", "fetcher", "mover", "multiparter", "reacher"]
 
 [namespace.storage.new]
 required = ["name"]
@@ -43,6 +43,12 @@ optional = ["offset", "io_callback", "size", "encryption_customer_algorithm", "e
 
 [namespace.storage.op.write]
 optional = ["content_md5", "content_type", "io_callback", "storage_class", "encryption_customer_algorithm", "encryption_customer_key"]
+
+[namespace.storage.op.create_append]
+optional = ["content_type", "storage_class"]
+
+[namespace.storage.op.write_append]
+optional = ["content_md5"]
 
 [namespace.storage.op.copy]
 optional = ["encryption_customer_algorithm", "encryption_customer_key", "copy_source_encryption_customer_algorithm", "copy_source_encryption_customer_key"]
