@@ -86,7 +86,10 @@ func (s *Storage) create(path string, opt pairStorageCreate) (o *Object) {
 func (s *Storage) createAppend(ctx context.Context, path string, opt pairStorageCreateAppend) (o *Object, err error) {
 	rp := s.getAbsPath(path)
 
-	input := &service.AppendObjectInput{}
+	var offset int64 = 0
+	input := &service.AppendObjectInput{
+		Position: &offset,
+	}
 	if opt.HasContentType {
 		input.ContentType = &opt.ContentType
 	}
@@ -99,7 +102,6 @@ func (s *Storage) createAppend(ctx context.Context, path string, opt pairStorage
 		return
 	}
 
-	var offset int64 = 0
 	if output == nil || output.XQSNextAppendPosition == nil {
 		err = fmt.Errorf("next append position is empty")
 		return
