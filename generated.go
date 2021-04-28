@@ -727,6 +727,10 @@ type pairStorageCreateAppend struct {
 
 	// Required pairs
 	// Optional pairs
+	HasContentType  bool
+	ContentType     string
+	HasStorageClass bool
+	StorageClass    string
 	// Generated pairs
 }
 
@@ -740,6 +744,12 @@ func (s *Storage) parsePairStorageCreateAppend(opts []Pair) (pairStorageCreateAp
 		switch v.Key {
 		// Required pairs
 		// Optional pairs
+		case "content_type":
+			result.HasContentType = true
+			result.ContentType = v.Value.(string)
+		case pairStorageClass:
+			result.HasStorageClass = true
+			result.StorageClass = v.Value.(string)
 		// Generated pairs
 		default:
 
@@ -1199,12 +1209,8 @@ type pairStorageWriteAppend struct {
 
 	// Required pairs
 	// Optional pairs
-	HasContentMd5   bool
-	ContentMd5      string
-	HasContentType  bool
-	ContentType     string
-	HasStorageClass bool
-	StorageClass    string
+	HasContentMd5 bool
+	ContentMd5    string
 	// Generated pairs
 }
 
@@ -1221,12 +1227,6 @@ func (s *Storage) parsePairStorageWriteAppend(opts []Pair) (pairStorageWriteAppe
 		case "content_md5":
 			result.HasContentMd5 = true
 			result.ContentMd5 = v.Value.(string)
-		case "content_type":
-			result.HasContentType = true
-			result.ContentType = v.Value.(string)
-		case pairStorageClass:
-			result.HasStorageClass = true
-			result.StorageClass = v.Value.(string)
 		// Generated pairs
 		default:
 

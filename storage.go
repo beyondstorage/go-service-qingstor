@@ -84,11 +84,34 @@ func (s *Storage) create(path string, opt pairStorageCreate) (o *Object) {
 }
 
 func (s *Storage) createAppend(ctx context.Context, path string, opt pairStorageCreateAppend) (o *Object, err error) {
+	rp := s.getAbsPath(path)
+
+	input := &service.AppendObjectInput{}
+	if opt.HasContentType {
+		input.ContentType = &opt.ContentType
+	}
+	if opt.HasStorageClass {
+		input.XQSStorageClass = &opt.StorageClass
+	}
+
+	output, err := s.bucket.AppendObjectWithContext(ctx, rp, input)
+	if err != nil {
+		return
+	}
+
+	var offset int64 = 0
+	if output == nil || output.XQSNextAppendPosition == nil {
+		err = fmt.Errorf("next append position is empty")
+		return
+	} else {
+		offset = *output.XQSNextAppendPosition
+	}
+
 	o = s.newObject(true)
 	o.Mode = ModeRead | ModeAppend
-	o.ID = s.getAbsPath(path)
+	o.ID = rp
 	o.Path = path
-	o.SetAppendOffset(0)
+	o.SetAppendOffset(offset)
 	return o, nil
 }
 
@@ -498,6 +521,11 @@ func (s *Storage) write(ctx context.Context, path string, r io.Reader, size int6
 }
 
 func (s *Storage) writeAppend(ctx context.Context, o *Object, r io.Reader, size int64, opt pairStorageWriteAppend) (n int64, err error) {
+	if !o.Mode.IsAppend() {
+		err = fmt.Errorf("object not appendable")
+		return
+	}
+
 	rp := o.GetID()
 
 	offset, ok := o.GetAppendOffset()
@@ -514,24 +542,17 @@ func (s *Storage) writeAppend(ctx context.Context, o *Object, r io.Reader, size 
 	if opt.HasContentMd5 {
 		input.ContentMD5 = &opt.ContentMd5
 	}
-	if opt.HasContentType {
-		input.ContentType = &opt.ContentType
-	}
-	if opt.HasStorageClass {
-		input.XQSStorageClass = &opt.StorageClass
-	}
 
 	output, err := s.bucket.AppendObjectWithContext(ctx, rp, input)
 	if err != nil {
 		return
 	}
 
-	if output.XQSNextAppendPosition != nil {
-		offset = *output.XQSNextAppendPosition
-		o.SetAppendOffset(offset)
-	} else {
+	if output == nil || output.XQSNextAppendPosition == nil {
 		err = fmt.Errorf("next append position is empty")
 		return
+	} else {
+		offset = *output.XQSNextAppendPosition
 	}
 
 	return offset, nil
