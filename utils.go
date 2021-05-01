@@ -289,14 +289,14 @@ func (s *Service) detectLocation(name string) (location string, err error) {
 		err = s.formatError("detect_location", err, "")
 	}()
 	
-	url := fmt.Sprintf("%s://%s/%s", s.config.Protocol, "qingstor.com" , name )
+	url := fmt.Sprintf("%s://%s:%d/%s", s.config.Protocol, s.config.Host , s.config.Port , name )
 
 	r, err := s.client.Head(url)
 	if err != nil {
 		return
 	}
 	if r.StatusCode != http.StatusMovedPermanently {
-		err = fmt.Errorf("head status is %d instead of %d", r.StatusCode, http.StatusNotFound)
+		err = fmt.Errorf("head status is %d instead of %d", r.StatusCode, http.StatusMovedPermanently)
 		return
 	}
 
