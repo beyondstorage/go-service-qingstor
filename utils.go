@@ -288,8 +288,7 @@ func (s *Service) detectLocation(name string) (location string, err error) {
 	defer func() {
 		err = s.formatError("detect_location", err, "")
 	}()
-
-	//url := fmt.Sprintf("%s://%s/%s:%d", s.config.Protocol , name , s.config.Host , s.config.Port)
+	
 	url := fmt.Sprintf("%s://%s:%d/%s", s.config.Protocol, s.config.Host, s.config.Port, name)
 
 	r, err := s.client.Head(url)
