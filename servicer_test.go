@@ -89,7 +89,7 @@ func TestService_Get(t *testing.T) {
 					srv.config.Protocol, name, location, srv.config.Host),
 			)
 			return &http.Response{
-				StatusCode: http.StatusTemporaryRedirect,
+				StatusCode: http.StatusMovedPermanently,
 				Header:     header,
 			}, nil
 		}
