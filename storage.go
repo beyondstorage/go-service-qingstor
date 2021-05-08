@@ -2,7 +2,6 @@ package qingstor
 
 import (
 	"context"
-	"fmt"
 	"io"
 
 	"github.com/pengsrc/go-shared/convert"
@@ -10,6 +9,7 @@ import (
 
 	"github.com/aos-dev/go-storage/v3/pkg/headers"
 	"github.com/aos-dev/go-storage/v3/pkg/iowrap"
+	"github.com/aos-dev/go-storage/v3/services"
 	. "github.com/aos-dev/go-storage/v3/types"
 )
 
@@ -19,7 +19,7 @@ func (s *Storage) commitAppend(ctx context.Context, o *Object, opt pairStorageCo
 
 func (s *Storage) completeMultipart(ctx context.Context, o *Object, parts []*Part, opt pairStorageCompleteMultipart) (err error) {
 	if o.Mode&ModePart == 0 {
-		return fmt.Errorf("object is not a part object")
+		return services.ObjectModeInvalidError{Expected: ModePart, Actual: o.Mode}
 	}
 
 	objectParts := make([]*service.ObjectPartType, 0, len(parts))
@@ -103,7 +103,7 @@ func (s *Storage) createAppend(ctx context.Context, path string, opt pairStorage
 	}
 
 	if output == nil || output.XQSNextAppendPosition == nil {
-		err = fmt.Errorf("next append position is empty")
+		err = ErrAppendNextPositionEmpty
 		return
 	} else {
 		offset = *output.XQSNextAppendPosition
@@ -190,7 +190,7 @@ func (s *Storage) list(ctx context.Context, path string, opt pairStorageList) (o
 	case opt.ListMode.IsPrefix():
 		nextFn = s.nextObjectPageByPrefix
 	default:
-		return nil, fmt.Errorf("invalid list mode")
+		return nil, services.ListModeInvalidError{Actual: opt.ListMode}
 	}
 
 	return NewObjectIterator(ctx, nextFn, input), nil
@@ -198,7 +198,7 @@ func (s *Storage) list(ctx context.Context, path string, opt pairStorageList) (o
 
 func (s *Storage) listMultipart(ctx context.Context, o *Object, opt pairStorageListMultipart) (pi *PartIterator, err error) {
 	if o.Mode&ModePart == 0 {
-		return nil, fmt.Errorf("object is not a part object")
+		return nil, services.ObjectModeInvalidError{Expected: ModePart, Actual: o.Mode}
 	}
 
 	input := &partPageStatus{
@@ -524,7 +524,7 @@ func (s *Storage) write(ctx context.Context, path string, r io.Reader, size int6
 
 func (s *Storage) writeAppend(ctx context.Context, o *Object, r io.Reader, size int64, opt pairStorageWriteAppend) (n int64, err error) {
 	if !o.Mode.IsAppend() {
-		err = fmt.Errorf("object not appendable")
+		err = services.ObjectModeInvalidError{Expected: ModeAppend, Actual: o.Mode}
 		return
 	}
 
@@ -532,7 +532,7 @@ func (s *Storage) writeAppend(ctx context.Context, o *Object, r io.Reader, size 
 
 	offset, ok := o.GetAppendOffset()
 	if !ok {
-		err = fmt.Errorf("append offset is not set")
+		err = ErrAppendOffsetNotSet
 		return
 	}
 
@@ -551,7 +551,7 @@ func (s *Storage) writeAppend(ctx context.Context, o *Object, r io.Reader, size 
 	}
 
 	if output == nil || output.XQSNextAppendPosition == nil {
-		err = fmt.Errorf("next append position is empty")
+		err = ErrAppendNextPositionEmpty
 		return
 	} else {
 		offset = *output.XQSNextAppendPosition
@@ -562,7 +562,7 @@ func (s *Storage) writeAppend(ctx context.Context, o *Object, r io.Reader, size 
 
 func (s *Storage) writeMultipart(ctx context.Context, o *Object, r io.Reader, size int64, index int, opt pairStorageWriteMultipart) (n int64, err error) {
 	if o.Mode&ModePart == 0 {
-		return 0, fmt.Errorf("object is not a part object")
+		return 0, services.ObjectModeInvalidError{Expected: ModePart, Actual: o.Mode}
 	}
 
 	input := &service.UploadMultipartInput{

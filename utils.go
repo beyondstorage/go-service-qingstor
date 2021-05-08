@@ -122,7 +122,7 @@ func newServicer(pairs ...typ.Pair) (srv *Service, err error) {
 			return nil, err
 		}
 	default:
-		return nil, services.NewPairUnsupportedError(ps.WithCredential(opt.Credential))
+		return nil, services.PairUnsupportedError{Pair: ps.WithCredential(opt.Credential)}
 	}
 
 	// Set config's endpoint
@@ -193,7 +193,7 @@ func formatError(err error) error {
 	// Handle errors returned by qingstor.
 	var e *qserror.QingStorError
 	if !errors.As(err, &e) {
-		return err
+		return fmt.Errorf("%w: %v", services.ErrUnexpected, err)
 	}
 
 	switch e.Code {
@@ -210,7 +210,7 @@ func formatError(err error) error {
 	case "object_not_exists":
 		return fmt.Errorf("%w: %v", services.ErrObjectNotExist, e)
 	default:
-		return e
+		return fmt.Errorf("%w: %v", services.ErrUnexpected, err)
 	}
 }
 
@@ -288,7 +288,7 @@ func (s *Service) detectLocation(name string) (location string, err error) {
 	defer func() {
 		err = s.formatError("detect_location", err, "")
 	}()
-	
+
 	url := fmt.Sprintf("%s://%s:%d/%s", s.config.Protocol, s.config.Host, s.config.Port, name)
 
 	r, err := s.client.Head(url)
@@ -296,7 +296,7 @@ func (s *Service) detectLocation(name string) (location string, err error) {
 		return
 	}
 	if r.StatusCode != http.StatusMovedPermanently {
-		err = fmt.Errorf("head status is %d instead of %d", r.StatusCode, http.StatusMovedPermanently)
+		err = fmt.Errorf("%w: head status is %d instead of %d", services.ErrUnexpected, r.StatusCode, http.StatusMovedPermanently)
 		return
 	}
 
