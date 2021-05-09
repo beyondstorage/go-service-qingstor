@@ -74,7 +74,7 @@ func TestService_Get(t *testing.T) {
 			SecretAccessKey: uuid.New().String(),
 			Host:            uuid.New().String(),
 			Port:            1234,
-			Protocol:        uuid.New().String(),
+			Protocol:        "https",
 		}
 
 		name := uuid.New().String()
