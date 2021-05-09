@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	url2 "net/url"
 	"regexp"
 	"strings"
 	"time"
@@ -300,9 +301,13 @@ func (s *Service) detectLocation(name string) (location string, err error) {
 		return
 	}
 
-	// Example URL: https://bucket.zone.qingstor.com
-	location = strings.Split(r.Header.Get(headers.Location), ".")[1]
-	return
+	// Example URL: https://zone.qingstor.com/bucket
+	base , err := url2.Parse(r.Header.Get(headers.Location))
+	if err != nil {
+		returnq
+	}
+	location = strings.Split(base.Host,".")[0]
+	return 
 }
 
 func (s *Service) formatError(op string, err error, name string) error {
