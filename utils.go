@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"net/url"
 	"regexp"
 	"strings"
 	"time"
@@ -288,10 +289,10 @@ func (s *Service) detectLocation(name string) (location string, err error) {
 	defer func() {
 		err = s.formatError("detect_location", err, "")
 	}()
-	
-	url := fmt.Sprintf("%s://%s:%d/%s", s.config.Protocol, s.config.Host, s.config.Port, name)
 
-	r, err := s.client.Head(url)
+	u := fmt.Sprintf("%s://%s:%d/%s", s.config.Protocol, s.config.Host, s.config.Port, name)
+
+	r, err := s.client.Head(u)
 	if err != nil {
 		return
 	}
@@ -300,8 +301,12 @@ func (s *Service) detectLocation(name string) (location string, err error) {
 		return
 	}
 
-	// Example URL: https://bucket.zone.qingstor.com
-	location = strings.Split(r.Header.Get(headers.Location), ".")[1]
+	// Example URL: https://zone.qingstor.com/bucket
+	locationUrl, err := url.Parse(r.Header.Get(headers.Location))
+	if err != nil {
+		return
+	}
+	location = strings.Split(locationUrl.Host, ".")[0]
 	return
 }
 
