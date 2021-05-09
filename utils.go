@@ -304,7 +304,7 @@ func (s *Service) detectLocation(name string) (location string, err error) {
 	// Example URL: https://zone.qingstor.com/bucket
 	base , err := url2.Parse(r.Header.Get(headers.Location))
 	if err != nil {
-		returnq
+		return
 	}
 	location = strings.Split(base.Host,".")[0]
 	return 
