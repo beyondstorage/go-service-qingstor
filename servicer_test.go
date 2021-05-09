@@ -86,7 +86,7 @@ func TestService_Get(t *testing.T) {
 			header.Set(
 				"location",
 				fmt.Sprintf("%s://%s.%s/%s",
-					srv.config.Protocol, location , srv.config.Host , name),
+					srv.config.Protocol, location, srv.config.Host, name),
 			)
 			return &http.Response{
 				StatusCode: http.StatusMovedPermanently,
@@ -105,7 +105,7 @@ func TestService_Get(t *testing.T) {
 					Zone:       &location,
 				},
 			}, nil
-		}).AnyTimes()
+		})
 
 		s, err := srv.Get(name)
 		assert.NoError(t, err)
