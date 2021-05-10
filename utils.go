@@ -149,12 +149,6 @@ func newServicer(pairs ...typ.Pair) (srv *Service, err error) {
 
 // New will create a new qingstor service.
 func newServicerAndStorager(pairs ...typ.Pair) (srv *Service, store *Storage, err error) {
-	defer func() {
-		if err != nil {
-			err = &services.InitError{Op: "new_storager", Type: Type, Err: formatError(err), Pairs: pairs}
-		}
-	}()
-
 	srv, err = newServicer(pairs...)
 	if err != nil {
 		return
@@ -162,6 +156,7 @@ func newServicerAndStorager(pairs ...typ.Pair) (srv *Service, store *Storage, er
 
 	store, err = srv.newStorage(pairs...)
 	if err != nil {
+		err = &services.InitError{Op: "new_storager", Type: Type, Err: formatError(err), Pairs: pairs}
 		return
 	}
 	return
