@@ -385,7 +385,7 @@ func TestStorage_formatError(t *testing.T) {
 			name:      "casual error",
 			op:        "stat",
 			err:       errCasual,
-			targetErr: errCasual,
+			targetErr: services.ErrUnexpected,
 			targetEq:  true,
 		},
 		{
