@@ -74,7 +74,7 @@ func TestService_Get(t *testing.T) {
 			SecretAccessKey: uuid.New().String(),
 			Host:            uuid.New().String(),
 			Port:            1234,
-			Protocol:        uuid.New().String(),
+			Protocol:        "https",
 		}
 
 		name := uuid.New().String()
@@ -85,8 +85,8 @@ func TestService_Get(t *testing.T) {
 			header := http.Header{}
 			header.Set(
 				"location",
-				fmt.Sprintf("%s://%s.%s.%s",
-					srv.config.Protocol, name, location, srv.config.Host),
+				fmt.Sprintf("%s://%s.%s/%s",
+					srv.config.Protocol, location, srv.config.Host, name),
 			)
 			return &http.Response{
 				StatusCode: http.StatusMovedPermanently,

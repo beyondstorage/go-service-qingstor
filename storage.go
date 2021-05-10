@@ -150,6 +150,11 @@ func (s *Storage) delete(ctx context.Context, path string, opt pairStorageDelete
 	rp := s.getAbsPath(path)
 
 	if opt.HasMultipartID {
+		// QingStor AbortMultipartUpload is idempotent, so we don't need to check upload_not_exists error.
+		//
+		// References
+		// - [AOS-46](https://github.com/aos-dev/specs/blob/master/rfcs/46-idempotent-delete.md)
+		// - https://docs.qingcloud.com/qingstor/api/object/multipart/abort_multipart_upload.html
 		_, err = s.bucket.AbortMultipartUploadWithContext(ctx, rp, &service.AbortMultipartUploadInput{
 			UploadID: service.String(opt.MultipartID),
 		})
@@ -159,6 +164,10 @@ func (s *Storage) delete(ctx context.Context, path string, opt pairStorageDelete
 		return
 	}
 
+	// QingStor DeleteObject is idempotent, so we don't need to check object_not_exists error.
+	//
+	// - [AOS-46](https://github.com/aos-dev/specs/blob/master/rfcs/46-idempotent-delete.md)
+	// - https://docs.qingcloud.com/qingstor/api/object/delete
 	_, err = s.bucket.DeleteObjectWithContext(ctx, rp)
 	if err != nil {
 		return
@@ -557,7 +566,7 @@ func (s *Storage) writeAppend(ctx context.Context, o *Object, r io.Reader, size 
 		offset = *output.XQSNextAppendPosition
 	}
 
-	return offset, nil
+	return size, nil
 }
 
 func (s *Storage) writeMultipart(ctx context.Context, o *Object, r io.Reader, size int64, index int, opt pairStorageWriteMultipart) (n int64, err error) {
