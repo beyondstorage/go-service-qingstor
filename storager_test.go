@@ -385,7 +385,7 @@ func TestStorage_formatError(t *testing.T) {
 			name:      "casual error",
 			op:        "stat",
 			err:       errCasual,
-			targetErr: errCasual,
+			targetErr: services.ErrUnexpected,
 			targetEq:  true,
 		},
 		{
@@ -440,7 +440,7 @@ func TestStorage_formatError(t *testing.T) {
 			continue
 		}
 
-		var storageErr *services.StorageError
+		var storageErr services.StorageError
 		assert.True(t, errors.As(err, &storageErr), tt.name)
 		assert.Equal(t, tt.op, storageErr.Op, tt.name)
 

@@ -96,7 +96,7 @@ func NewStorager(pairs ...typ.Pair) (typ.Storager, error) {
 func newServicer(pairs ...typ.Pair) (srv *Service, err error) {
 	defer func() {
 		if err != nil {
-			err = &services.InitError{Op: "new_servicer", Type: Type, Err: err, Pairs: pairs}
+			err = services.InitError{Op: "new_servicer", Type: Type, Err: formatError(err), Pairs: pairs}
 		}
 	}()
 
@@ -123,7 +123,7 @@ func newServicer(pairs ...typ.Pair) (srv *Service, err error) {
 			return nil, err
 		}
 	default:
-		return nil, services.NewPairUnsupportedError(ps.WithCredential(opt.Credential))
+		return nil, services.PairUnsupportedError{Pair: ps.WithCredential(opt.Credential)}
 	}
 
 	// Set config's endpoint
@@ -150,12 +150,6 @@ func newServicer(pairs ...typ.Pair) (srv *Service, err error) {
 
 // New will create a new qingstor service.
 func newServicerAndStorager(pairs ...typ.Pair) (srv *Service, store *Storage, err error) {
-	defer func() {
-		if err != nil {
-			err = &services.InitError{Op: "new_storager", Type: Type, Err: err, Pairs: pairs}
-		}
-	}()
-
 	srv, err = newServicer(pairs...)
 	if err != nil {
 		return
@@ -163,6 +157,7 @@ func newServicerAndStorager(pairs ...typ.Pair) (srv *Service, store *Storage, er
 
 	store, err = srv.newStorage(pairs...)
 	if err != nil {
+		err = services.InitError{Op: "new_storager", Type: Type, Err: formatError(err), Pairs: pairs}
 		return
 	}
 	return
@@ -191,10 +186,14 @@ func IsBucketNameValid(s string) bool {
 }
 
 func formatError(err error) error {
+	if _, ok := err.(services.AosError); ok {
+		return err
+	}
+
 	// Handle errors returned by qingstor.
 	var e *qserror.QingStorError
 	if !errors.As(err, &e) {
-		return err
+		return fmt.Errorf("%w: %v", services.ErrUnexpected, err)
 	}
 
 	switch e.Code {
@@ -211,7 +210,7 @@ func formatError(err error) error {
 	case "object_not_exists":
 		return fmt.Errorf("%w: %v", services.ErrObjectNotExist, e)
 	default:
-		return e
+		return fmt.Errorf("%w: %v", services.ErrUnexpected, err)
 	}
 }
 
@@ -236,7 +235,7 @@ func (s *Service) newStorage(pairs ...typ.Pair) (store *Storage, err error) {
 
 	// WorkDir should be an abs path, start and ends with "/"
 	if opt.HasWorkDir && !isWorkDirValid(opt.WorkDir) {
-		err = ErrInvalidWorkDir
+		err = ErrWorkDirInvalid
 		return
 	}
 	// set work dir into root path if no work dir passed
@@ -245,7 +244,7 @@ func (s *Service) newStorage(pairs ...typ.Pair) (store *Storage, err error) {
 	}
 
 	if !IsBucketNameValid(opt.Name) {
-		err = ErrInvalidBucketName
+		err = ErrBucketNameInvalid
 		return
 	}
 
@@ -297,7 +296,7 @@ func (s *Service) detectLocation(name string) (location string, err error) {
 		return
 	}
 	if r.StatusCode != http.StatusMovedPermanently {
-		err = fmt.Errorf("head status is %d instead of %d", r.StatusCode, http.StatusMovedPermanently)
+		err = fmt.Errorf("%w: head status is %d instead of %d", services.ErrUnexpected, r.StatusCode, http.StatusMovedPermanently)
 		return
 	}
 
@@ -315,7 +314,7 @@ func (s *Service) formatError(op string, err error, name string) error {
 		return nil
 	}
 
-	return &services.ServiceError{
+	return services.ServiceError{
 		Op:       op,
 		Err:      formatError(err),
 		Servicer: s,
@@ -350,7 +349,7 @@ func (s *Storage) formatError(op string, err error, path ...string) error {
 		return nil
 	}
 
-	return &services.StorageError{
+	return services.StorageError{
 		Op:       op,
 		Err:      formatError(err),
 		Storager: s,
@@ -398,7 +397,7 @@ const (
 
 func calculateEncryptionHeaders(algo string, key []byte) (algorithm, keyBase64, keyMD5Base64 *string, err error) {
 	if len(key) != 32 {
-		err = ErrInvalidEncryptionCustomerKey
+		err = ErrEncryptionCustomerKeyInvalid
 		return
 	}
 	kB64 := base64.StdEncoding.EncodeToString(key)
