@@ -193,6 +193,9 @@ func formatError(err error) error {
 	// Handle errors returned by qingstor.
 	var e *qserror.QingStorError
 	if !errors.As(err, &e) {
+		if _, ok := err.(services.AosError); ok {
+			return e
+		}
 		return fmt.Errorf("%w: %v", services.ErrUnexpected, err)
 	}
 
