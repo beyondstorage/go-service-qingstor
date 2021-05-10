@@ -95,7 +95,7 @@ func NewStorager(pairs ...typ.Pair) (typ.Storager, error) {
 func newServicer(pairs ...typ.Pair) (srv *Service, err error) {
 	defer func() {
 		if err != nil {
-			err = &services.InitError{Op: "new_servicer", Type: Type, Err: err, Pairs: pairs}
+			err = &services.InitError{Op: "new_servicer", Type: Type, Err: formatError(err), Pairs: pairs}
 		}
 	}()
 
@@ -151,7 +151,7 @@ func newServicer(pairs ...typ.Pair) (srv *Service, err error) {
 func newServicerAndStorager(pairs ...typ.Pair) (srv *Service, store *Storage, err error) {
 	defer func() {
 		if err != nil {
-			err = &services.InitError{Op: "new_storager", Type: Type, Err: err, Pairs: pairs}
+			err = &services.InitError{Op: "new_storager", Type: Type, Err: formatError(err), Pairs: pairs}
 		}
 	}()
 
@@ -194,7 +194,7 @@ func formatError(err error) error {
 	var e *qserror.QingStorError
 	if !errors.As(err, &e) {
 		if _, ok := err.(services.AosError); ok {
-			return e
+			return err
 		}
 		return fmt.Errorf("%w: %v", services.ErrUnexpected, err)
 	}
