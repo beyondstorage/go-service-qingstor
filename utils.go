@@ -235,7 +235,7 @@ func (s *Service) newStorage(pairs ...typ.Pair) (store *Storage, err error) {
 
 	// WorkDir should be an abs path, start and ends with "/"
 	if opt.HasWorkDir && !isWorkDirValid(opt.WorkDir) {
-		err = ErrInvalidWorkDir
+		err = ErrWorkDirInvalid
 		return
 	}
 	// set work dir into root path if no work dir passed
@@ -244,7 +244,7 @@ func (s *Service) newStorage(pairs ...typ.Pair) (store *Storage, err error) {
 	}
 
 	if !IsBucketNameValid(opt.Name) {
-		err = ErrInvalidBucketName
+		err = ErrBucketNameInvalid
 		return
 	}
 
@@ -397,7 +397,7 @@ const (
 
 func calculateEncryptionHeaders(algo string, key []byte) (algorithm, keyBase64, keyMD5Base64 *string, err error) {
 	if len(key) != 32 {
-		err = ErrInvalidEncryptionCustomerKey
+		err = ErrEncryptionCustomerKeyInvalid
 		return
 	}
 	kB64 := base64.StdEncoding.EncodeToString(key)

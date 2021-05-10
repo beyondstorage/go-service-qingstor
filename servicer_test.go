@@ -381,7 +381,7 @@ func TestService_newStorage(t *testing.T) {
 				{Key: "work_dir", Value: invalidWorkDir},
 			}},
 			wantBucket: nil,
-			targetErr:  ErrInvalidWorkDir,
+			targetErr:  ErrWorkDirInvalid,
 			wantErr:    true,
 		},
 		{
@@ -404,7 +404,7 @@ func TestService_newStorage(t *testing.T) {
 				{Key: "work_dir", Value: validWorkDir},
 			}},
 			wantBucket: nil,
-			targetErr:  ErrInvalidBucketName,
+			targetErr:  ErrBucketNameInvalid,
 			wantErr:    true,
 		},
 		{
