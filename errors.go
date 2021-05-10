@@ -16,7 +16,4 @@ var (
 
 	// ErrAppendNextPositionEmpty will be returned while next append position is empty.
 	ErrAppendNextPositionEmpty = services.NewErrorCode("next append position is empty")
-
-	// ErrAppendOffsetNotSet will be returned while append offset is not set.
-	ErrAppendOffsetNotSet = services.NewErrorCode("append offset is not set")
 )

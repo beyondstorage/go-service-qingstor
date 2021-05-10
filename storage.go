@@ -539,11 +539,7 @@ func (s *Storage) writeAppend(ctx context.Context, o *Object, r io.Reader, size 
 
 	rp := o.GetID()
 
-	offset, ok := o.GetAppendOffset()
-	if !ok {
-		err = ErrAppendOffsetNotSet
-		return
-	}
+	offset, _ := o.GetAppendOffset()
 
 	input := &service.AppendObjectInput{
 		Position:      &offset,
