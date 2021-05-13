@@ -16,4 +16,7 @@ var (
 
 	// ErrAppendNextPositionEmpty will be returned while next append position is empty.
 	ErrAppendNextPositionEmpty = services.NewErrorCode("next append position is empty")
+
+	// ErrPartNumberInvalid will be returned while part number is out of range [0, 10000] when uploading multipart.
+	ErrPartNumberInvalid = services.NewErrorCode("part number is out of range [0, 10000]")
 )
