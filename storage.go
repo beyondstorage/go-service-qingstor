@@ -25,6 +25,7 @@ func (s *Storage) completeMultipart(ctx context.Context, o *Object, parts []*Par
 	objectParts := make([]*service.ObjectPartType, 0, len(parts))
 	for _, v := range parts {
 		objectParts = append(objectParts, &service.ObjectPartType{
+			Etag:       service.String(v.ETag),
 			PartNumber: service.Int(v.Index),
 			Size:       service.Int64(v.Size),
 		})
@@ -37,6 +38,8 @@ func (s *Storage) completeMultipart(ctx context.Context, o *Object, parts []*Par
 	if err != nil {
 		return
 	}
+	o.Mode.Del(ModePart)
+	o.Mode.Add(ModeRead)
 	return
 }
 
@@ -565,9 +568,9 @@ func (s *Storage) writeAppend(ctx context.Context, o *Object, r io.Reader, size 
 	return size, nil
 }
 
-func (s *Storage) writeMultipart(ctx context.Context, o *Object, r io.Reader, size int64, index int, opt pairStorageWriteMultipart) (n int64, err error) {
+func (s *Storage) writeMultipart(ctx context.Context, o *Object, r io.Reader, size int64, index int, opt pairStorageWriteMultipart) (n int64, part *Part, err error) {
 	if o.Mode&ModePart == 0 {
-		return 0, services.ObjectModeInvalidError{Expected: ModePart, Actual: o.Mode}
+		return 0, nil, services.ObjectModeInvalidError{Expected: ModePart, Actual: o.Mode}
 	}
 
 	input := &service.UploadMultipartInput{
@@ -583,9 +586,15 @@ func (s *Storage) writeMultipart(ctx context.Context, o *Object, r io.Reader, si
 		}
 	}
 
-	_, err = s.bucket.UploadMultipartWithContext(ctx, o.ID, input)
+	output, err := s.bucket.UploadMultipartWithContext(ctx, o.ID, input)
 	if err != nil {
 		return
 	}
-	return size, nil
+
+	part = &Part{
+		Index: index,
+		Size:  size,
+		ETag:  service.StringValue(output.ETag),
+	}
+	return size, part, nil
 }
