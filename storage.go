@@ -38,9 +38,8 @@ func (s *Storage) completeMultipart(ctx context.Context, o *Object, parts []*Par
 	if err != nil {
 		return
 	}
-
-	o.Mode &= ^ModePart
-	o.Mode |= ModeRead
+	o.Mode.Del(ModePart)
+	o.Mode.Add(ModeRead)
 	return
 }
 
@@ -595,7 +594,7 @@ func (s *Storage) writeMultipart(ctx context.Context, o *Object, r io.Reader, si
 	part = &Part{
 		Index: index,
 		Size:  size,
-		ETag:  *output.ETag,
+		ETag:  service.StringValue(output.ETag),
 	}
 	return size, part, nil
 }
