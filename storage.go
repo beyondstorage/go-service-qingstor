@@ -18,10 +18,6 @@ func (s *Storage) commitAppend(ctx context.Context, o *Object, opt pairStorageCo
 }
 
 func (s *Storage) completeMultipart(ctx context.Context, o *Object, parts []*Part, opt pairStorageCompleteMultipart) (err error) {
-	if o.Mode&ModePart == 0 {
-		return services.ObjectModeInvalidError{Expected: ModePart, Actual: o.Mode}
-	}
-
 	objectParts := make([]*service.ObjectPartType, 0, len(parts))
 	for _, v := range parts {
 		objectParts = append(objectParts, &service.ObjectPartType{
@@ -209,10 +205,6 @@ func (s *Storage) list(ctx context.Context, path string, opt pairStorageList) (o
 }
 
 func (s *Storage) listMultipart(ctx context.Context, o *Object, opt pairStorageListMultipart) (pi *PartIterator, err error) {
-	if o.Mode&ModePart == 0 {
-		return nil, services.ObjectModeInvalidError{Expected: ModePart, Actual: o.Mode}
-	}
-
 	input := &partPageStatus{
 		limit:    200,
 		prefix:   o.ID,
@@ -535,11 +527,6 @@ func (s *Storage) write(ctx context.Context, path string, r io.Reader, size int6
 }
 
 func (s *Storage) writeAppend(ctx context.Context, o *Object, r io.Reader, size int64, opt pairStorageWriteAppend) (n int64, err error) {
-	if !o.Mode.IsAppend() {
-		err = services.ObjectModeInvalidError{Expected: ModeAppend, Actual: o.Mode}
-		return
-	}
-
 	rp := o.GetID()
 
 	offset, _ := o.GetAppendOffset()
@@ -569,10 +556,6 @@ func (s *Storage) writeAppend(ctx context.Context, o *Object, r io.Reader, size 
 }
 
 func (s *Storage) writeMultipart(ctx context.Context, o *Object, r io.Reader, size int64, index int, opt pairStorageWriteMultipart) (n int64, part *Part, err error) {
-	if o.Mode&ModePart == 0 {
-		return 0, nil, services.ObjectModeInvalidError{Expected: ModePart, Actual: o.Mode}
-	}
-
 	input := &service.UploadMultipartInput{
 		PartNumber:    service.Int(index),
 		UploadID:      service.String(o.MustGetMultipartID()),
