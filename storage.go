@@ -556,6 +556,11 @@ func (s *Storage) writeAppend(ctx context.Context, o *Object, r io.Reader, size 
 }
 
 func (s *Storage) writeMultipart(ctx context.Context, o *Object, r io.Reader, size int64, index int, opt pairStorageWriteMultipart) (n int64, part *Part, err error) {
+	if index < multipartNumberMinimum || index > multipartNumberMaximum {
+		err = ErrPartNumberInvalid
+		return
+	}
+  
 	input := &service.UploadMultipartInput{
 		PartNumber:    service.Int(index),
 		UploadID:      service.String(o.MustGetMultipartID()),

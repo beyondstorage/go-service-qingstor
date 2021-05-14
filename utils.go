@@ -165,6 +165,8 @@ func newServicerAndStorager(pairs ...typ.Pair) (srv *Service, store *Storage, er
 // multipartXXX are multipart upload restriction in QingStor, see more detail at:
 // https://docs.qingcloud.com/qingstor/api/object/multipart/index.html#%E5%88%86%E6%AE%B5%E4%B8%8A%E4%BC%A0%E9%99%90%E5%88%B6
 const (
+	// multipartNumberMinimum is the min part count supported
+	multipartNumberMinimum = 0
 	// multipartNumberMaximum is the max part count supported
 	multipartNumberMaximum = 10000
 	// multipartSizeMaximum is the maximum size for each part, 5GB
