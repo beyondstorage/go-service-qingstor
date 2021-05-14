@@ -11,8 +11,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/aos-dev/go-storage/v3/pkg/endpoint"
-
 	"github.com/pengsrc/go-shared/convert"
 	qsconfig "github.com/qingstor/qingstor-sdk-go/v4/config"
 	iface "github.com/qingstor/qingstor-sdk-go/v4/interface"
@@ -21,6 +19,7 @@ import (
 
 	ps "github.com/aos-dev/go-storage/v3/pairs"
 	"github.com/aos-dev/go-storage/v3/pkg/credential"
+	"github.com/aos-dev/go-storage/v3/pkg/endpoint"
 	"github.com/aos-dev/go-storage/v3/pkg/headers"
 	"github.com/aos-dev/go-storage/v3/pkg/httpclient"
 	"github.com/aos-dev/go-storage/v3/services"
