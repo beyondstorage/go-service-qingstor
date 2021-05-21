@@ -1,6 +1,6 @@
 package qingstor
 
-import "github.com/aos-dev/go-storage/v3/services"
+import "github.com/beyondstorage/go-storage/v4/services"
 
 var (
 	// ErrBucketNameInvalid will be returned while bucket name is invalid.

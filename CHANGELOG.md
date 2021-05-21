@@ -18,7 +18,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 - *: Add UnimplementedStub (#35)
 - storage: Implement SSE support (#37)
 - tests: Introduce STORAGE_QINGSTOR_INTEGRATION_TEST (#39)
-- storage: Implement AOS-40 (#41)
+- storage: Implement GSP-40 (#41)
 
 ### Changed
 
@@ -27,7 +27,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 - docs: Migrate zulip to matrix
 - docs: Remove zulip
 - ci: Only run Integration Test while push to master
-- storage: Rename SSE related pairs to meet AOS-38 (#38)
+- storage: Rename SSE related pairs to meet GSP-38 (#38)
 
 ### Fixed
 
@@ -61,5 +61,5 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 - Implement qingstor services.
 
-[v2.1.0]: https://github.com/aos-dev/go-service-qingstor/compare/v2.0.0...v2.1.0
-[v2.0.0]: https://github.com/aos-dev/go-service-qingstor/compare/v1.0.0...v2.0.0
+[v2.1.0]: https://github.com/beyondstorage/go-service-qingstor/compare/v2.0.0...v2.1.0
+[v2.0.0]: https://github.com/beyondstorage/go-service-qingstor/compare/v1.0.0...v2.0.0

@@ -14,9 +14,9 @@ import (
 	"github.com/qingstor/qingstor-sdk-go/v4/service"
 	"github.com/stretchr/testify/assert"
 
-	"github.com/aos-dev/go-storage/v3/pairs"
-	"github.com/aos-dev/go-storage/v3/services"
-	. "github.com/aos-dev/go-storage/v3/types"
+	"github.com/beyondstorage/go-storage/v4/pairs"
+	"github.com/beyondstorage/go-storage/v4/services"
+	. "github.com/beyondstorage/go-storage/v4/types"
 )
 
 func TestStorage_String(t *testing.T) {
@@ -50,8 +50,7 @@ func TestStorage_Metadata(t *testing.T) {
 			},
 		}
 
-		m, err := client.Metadata()
-		assert.NoError(t, err)
+		m := client.Metadata()
 		assert.NotNil(t, m)
 		assert.Equal(t, name, m.Name)
 		assert.Equal(t, location, m.MustGetLocation())
