@@ -11,10 +11,10 @@ import (
 	"github.com/qingstor/qingstor-sdk-go/v4/service"
 	"github.com/stretchr/testify/assert"
 
-	"github.com/aos-dev/go-storage/v3/pairs"
-	"github.com/aos-dev/go-storage/v3/pkg/credential"
-	"github.com/aos-dev/go-storage/v3/pkg/endpoint"
-	"github.com/aos-dev/go-storage/v3/services"
+	"github.com/beyondstorage/go-storage/v4/pairs"
+	"github.com/beyondstorage/go-storage/v4/pkg/credential"
+	"github.com/beyondstorage/go-storage/v4/pkg/endpoint"
+	"github.com/beyondstorage/go-storage/v4/services"
 )
 
 func Test_New(t *testing.T) {

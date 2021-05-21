@@ -4,11 +4,11 @@ import (
 	"os"
 	"testing"
 
-	ps "github.com/aos-dev/go-storage/v3/pairs"
-	"github.com/aos-dev/go-storage/v3/types"
 	"github.com/google/uuid"
 
-	"github.com/aos-dev/go-service-qingstor/v2"
+	"github.com/beyondstorage/go-service-qingstor/v3"
+	ps "github.com/beyondstorage/go-storage/v4/pairs"
+	"github.com/beyondstorage/go-storage/v4/types"
 )
 
 func setupTest(t *testing.T) types.Storager {

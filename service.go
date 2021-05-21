@@ -5,8 +5,8 @@ import (
 
 	"github.com/qingstor/qingstor-sdk-go/v4/service"
 
-	ps "github.com/aos-dev/go-storage/v3/pairs"
-	. "github.com/aos-dev/go-storage/v3/types"
+	ps "github.com/beyondstorage/go-storage/v4/pairs"
+	. "github.com/beyondstorage/go-storage/v4/types"
 )
 
 func (s *Service) create(ctx context.Context, name string, opt pairServiceCreate) (store Storager, err error) {
