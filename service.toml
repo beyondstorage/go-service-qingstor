@@ -2,7 +2,7 @@ name = "qingstor"
 
 [namespace.service.new]
 required = ["credential"]
-optional = ["default_service_pairs", "endpoint", "http_client_options"]
+optional = ["service_features", "default_service_pairs", "endpoint", "http_client_options"]
 
 [namespace.service.op.create]
 required = ["location"]
@@ -21,7 +21,7 @@ implement = ["appender", "copier", "fetcher", "mover", "multiparter", "reacher"]
 
 [namespace.storage.new]
 required = ["name"]
-optional = ["default_storage_pairs", "disable_uri_cleaning", "http_client_options", "location", "pair_policy", "work_dir"]
+optional = ["storage_features", "default_storage_pairs", "disable_uri_cleaning", "http_client_options", "location", "work_dir"]
 
 [namespace.storage.op.create]
 optional = ["multipart_id"]
@@ -58,6 +58,14 @@ optional = ["encryption_customer_algorithm", "encryption_customer_key"]
 
 [namespace.storage.op.write_multipart]
 optional = ["encryption_customer_algorithm", "encryption_customer_key"]
+
+[pairs.service_features]
+type = "ServiceFeatures"
+description = "set service features"
+
+[pairs.storage_features]
+type = "StorageFeatures"
+description = "set storage features"
 
 [pairs.encryption_customer_algorithm]
 type = "string"
