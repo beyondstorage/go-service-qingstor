@@ -34,6 +34,7 @@ type Service struct {
 	client *http.Client
 
 	defaultPairs DefaultServicePairs
+	features     ServiceFeatures
 
 	typ.UnimplementedServicer
 }
@@ -52,8 +53,8 @@ type Storage struct {
 	config     *qsconfig.Config
 	properties *service.Properties
 
-	pairPolicy   typ.PairPolicy
 	defaultPairs DefaultStoragePairs
+	features     StorageFeatures
 
 	// options for this storager.
 	workDir string // workDir dir for all operation.
@@ -143,6 +144,9 @@ func newServicer(pairs ...typ.Pair) (srv *Service, err error) {
 
 	if opt.HasDefaultServicePairs {
 		srv.defaultPairs = opt.DefaultServicePairs
+	}
+	if opt.HasServiceFeatures {
+		srv.features = opt.ServiceFeatures
 	}
 	return
 }
@@ -276,8 +280,8 @@ func (s *Service) newStorage(pairs ...typ.Pair) (store *Storage, err error) {
 	if opt.HasDefaultStoragePairs {
 		st.defaultPairs = opt.DefaultStoragePairs
 	}
-	if opt.HasPairPolicy {
-		st.pairPolicy = opt.PairPolicy
+	if opt.HasStorageFeatures {
+		st.features = opt.StorageFeatures
 	}
 	if opt.HasWorkDir {
 		st.workDir = opt.WorkDir
