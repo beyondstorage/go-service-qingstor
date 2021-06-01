@@ -4,7 +4,9 @@ package qingstor
 import (
 	"context"
 	"io"
+	"reflect"
 
+	"github.com/beyondstorage/go-storage/v4/pairs"
 	"github.com/beyondstorage/go-storage/v4/pkg/credential"
 	"github.com/beyondstorage/go-storage/v4/pkg/endpoint"
 	"github.com/beyondstorage/go-storage/v4/pkg/httpclient"
@@ -169,6 +171,21 @@ func WithStorageFeatures(v StorageFeatures) Pair {
 	return Pair{
 		Key:   pairStorageFeatures,
 		Value: v,
+	}
+}
+
+func servicePairs() pairs.PairMap {
+	return pairs.PairMap{
+		"copy_source_encryption_customer_algorithm": reflect.TypeOf((*string)(nil)).Elem(),
+		"copy_source_encryption_customer_key":       reflect.TypeOf((*[]byte)(nil)).Elem(),
+		"default_service_pairs":                     reflect.TypeOf((*DefaultServicePairs)(nil)).Elem(),
+		"default_storage_pairs":                     reflect.TypeOf((*DefaultStoragePairs)(nil)).Elem(),
+		"disable_uri_cleaning":                      reflect.TypeOf((*bool)(nil)).Elem(),
+		"encryption_customer_algorithm":             reflect.TypeOf((*string)(nil)).Elem(),
+		"encryption_customer_key":                   reflect.TypeOf((*[]byte)(nil)).Elem(),
+		"service_features":                          reflect.TypeOf((*ServiceFeatures)(nil)).Elem(),
+		"storage_class":                             reflect.TypeOf((*string)(nil)).Elem(),
+		"storage_features":                          reflect.TypeOf((*StorageFeatures)(nil)).Elem(),
 	}
 }
 
@@ -2031,4 +2048,5 @@ func (s *Storage) WriteMultipartWithContext(ctx context.Context, o *Object, r io
 func init() {
 	services.RegisterServicer(Type, NewServicer)
 	services.RegisterStorager(Type, NewStorager)
+	pairs.RegisterServicePairMap(Type, servicePairs())
 }

@@ -7,8 +7,8 @@ github.com/Xuanwo/templateutils v0.1.0/go.mod h1:OdE0DJ+CJxDBq6psX5DPV+gOZi8bhuH
 github.com/beyondstorage/go-integration-test/v4 v4.0.0 h1:tdXQV9yxQ3Q6p9xfyQKzK3MEo9r9j9g3uT5+3sbVtnQ=
 github.com/beyondstorage/go-integration-test/v4 v4.0.0/go.mod h1:26/JF4b0XxRN0pL4kihpnVNhbbw+QWvmmvgxfnFJDfA=
 github.com/beyondstorage/go-storage/v4 v4.0.0/go.mod h1:oa2dYco+xplPj99WSBnYVw/xXvRkIKWSSVDQKNZ5Kz8=
-github.com/beyondstorage/go-storage/v4 v4.0.1-0.20210530044854-1c928ddbe52d h1:s9t6VNNRDqmg+PXyXtVEsxIM7xZQIJOYlma28IpkbNQ=
-github.com/beyondstorage/go-storage/v4 v4.0.1-0.20210530044854-1c928ddbe52d/go.mod h1:kXMu07IDZaKtxbqI1ufuhqo0FjYe0nH7zPCbBanln/Y=
+github.com/beyondstorage/go-storage/v4 v4.0.1-0.20210601200639-1925629f5e66 h1:j7GtoeyfVxyEKSj4nMJzARuEWm2UK/T9jyEmwxXFank=
+github.com/beyondstorage/go-storage/v4 v4.0.1-0.20210601200639-1925629f5e66/go.mod h1:DPh6xp/NK9Xir5x2i0Kc0WFvt9j/V8VY8gb3gL94jZc=
 github.com/beyondstorage/specs/go v0.0.0-20210521044836-3d41c1d9c97f/go.mod h1:f5VvmLHc/dNJwl+/yAv/TOHdev3phvuEswx8DIXiSQQ=
 github.com/beyondstorage/specs/go v0.0.0-20210530044123-3ff75e192bc9 h1:YSiF27cAHlDZk9q+oaEHQbA8dH8XTvYxeTOoPzNCwOQ=
 github.com/beyondstorage/specs/go v0.0.0-20210530044123-3ff75e192bc9/go.mod h1:f5VvmLHc/dNJwl+/yAv/TOHdev3phvuEswx8DIXiSQQ=
@@ -22,6 +22,8 @@ github.com/davecgh/go-spew v1.1.0 h1:ZDRjVQ15GmhC3fiQ8ni8+OwkZQO4DARzQgrnXU1Liz8
 github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/golang/mock v1.5.0 h1:jlYHihg//f7RRwuPfptm04yp4s7O6Kw8EZiVYIGcH0g=
 github.com/golang/mock v1.5.0/go.mod h1:CWnOUgYIOo4TcNZ0wHX3YZCqsaM1I1Jvs6v3mP3KVu8=
+github.com/google/gofuzz v1.2.0 h1:xRy4A+RhZaiKjJ1bPfwQ8sedCA+YS2YcCHW6ec7JMi0=
+github.com/google/gofuzz v1.2.0/go.mod h1:dBl0BpW6vV/+mYPU4Po3pmUjxk6FQPldtuIdl/M65Eg=
 github.com/google/pprof v0.0.0-20181127221834-b4f47329b966/go.mod h1:zfwlbNMJ+OItoe0UupaVj+oy1omPYYDuagoSzA8v9mc=
 github.com/google/uuid v1.2.0 h1:qJYtXnJRWmpe7m/3XlyhrsLrEURqHRM2kxzoxXqyUDs=
 github.com/google/uuid v1.2.0/go.mod h1:TIyPZe4MgqvfeYDBFedMoGGpEw/LqOeaOT+nhxU+yHo=
