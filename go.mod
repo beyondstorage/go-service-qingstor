@@ -4,8 +4,8 @@ go 1.14
 
 require (
 	bou.ke/monkey v1.0.2
-	github.com/beyondstorage/go-integration-test/v4 v4.0.0
-	github.com/beyondstorage/go-storage/v4 v4.0.1-0.20210530044854-1c928ddbe52d
+	github.com/beyondstorage/go-integration-test/v4 v4.1.0
+	github.com/beyondstorage/go-storage/v4 v4.1.0
 	github.com/golang/mock v1.5.0
 	github.com/google/uuid v1.2.0
 	github.com/pengsrc/go-shared v0.2.1-0.20190131101655-1999055a4a14
