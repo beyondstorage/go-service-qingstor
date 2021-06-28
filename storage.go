@@ -7,6 +7,7 @@ import (
 	"github.com/pengsrc/go-shared/convert"
 	"github.com/qingstor/qingstor-sdk-go/v4/service"
 
+	ps "github.com/beyondstorage/go-storage/v4/pairs"
 	"github.com/beyondstorage/go-storage/v4/pkg/headers"
 	"github.com/beyondstorage/go-storage/v4/pkg/iowrap"
 	"github.com/beyondstorage/go-storage/v4/services"
@@ -67,6 +68,8 @@ func (s *Storage) copy(ctx context.Context, src string, dst string, opt pairStor
 }
 
 func (s *Storage) create(path string, opt pairStorageCreate) (o *Object) {
+	rp := s.getAbsPath(path)
+
 	// handle create multipart object separately
 	// if opt has multipartID, set object done, because we can't stat multipart object in QingStor
 	if opt.HasMultipartID {
@@ -74,10 +77,20 @@ func (s *Storage) create(path string, opt pairStorageCreate) (o *Object) {
 		o.Mode = ModePart
 		o.SetMultipartID(opt.MultipartID)
 	} else {
-		o = s.newObject(false)
-		o.Mode = ModeRead
+		if opt.HasObjectMode && opt.ObjectMode.IsDir() {
+			if !s.features.VirtualDir {
+				return
+			}
+
+			rp += "/"
+			o = s.newObject(true)
+			o.Mode = ModeDir
+		} else {
+			o = s.newObject(false)
+			o.Mode = ModeRead
+		}
 	}
-	o.ID = s.getAbsPath(path)
+	o.ID = rp
 	o.Path = path
 	return o
 }
@@ -114,6 +127,37 @@ func (s *Storage) createAppend(ctx context.Context, path string, opt pairStorage
 	o.Path = path
 	o.SetAppendOffset(offset)
 	return o, nil
+}
+
+func (s *Storage) createDir(ctx context.Context, path string, opt pairStorageCreateDir) (o *Object, err error) {
+	if s.features.VirtualDir {
+		err = NewOperationNotImplementedError("create_dir")
+		return
+	}
+
+	rp := s.getAbsPath(path)
+
+	// Add `/` at the end of path to simulate a directory.
+	// ref: https://docs.qingcloud.com/qingstor/api/object/put.html
+	rp += "/"
+
+	input := &service.PutObjectInput{
+		ContentLength: service.Int64(0),
+	}
+	if opt.HasStorageClass {
+		input.XQSStorageClass = service.String(opt.StorageClass)
+	}
+
+	_, err = s.bucket.PutObjectWithContext(ctx, rp, input)
+	if err != nil {
+		return
+	}
+
+	o = s.newObject(true)
+	o.Path = path
+	o.ID = rp
+	o.Mode = ModeDir
+	return
 }
 
 func (s *Storage) createMultipart(ctx context.Context, path string, opt pairStorageCreateMultipart) (o *Object, err error) {
@@ -161,6 +205,15 @@ func (s *Storage) delete(ctx context.Context, path string, opt pairStorageDelete
 			return
 		}
 		return
+	}
+
+	if opt.HasObjectMode && opt.ObjectMode.IsDir() {
+		if !s.features.VirtualDir {
+			err = services.PairUnsupportedError{Pair: ps.WithObjectMode(opt.ObjectMode)}
+			return
+		}
+
+		rp += "/"
 	}
 
 	// QingStor DeleteObject is idempotent, so we don't need to check object_not_exists error.
@@ -462,6 +515,15 @@ func (s *Storage) stat(ctx context.Context, path string, opt pairStorageStat) (o
 		return o, nil
 	}
 
+	if opt.HasObjectMode && opt.ObjectMode.IsDir() {
+		if !s.features.VirtualDir {
+			err = services.PairUnsupportedError{Pair: ps.WithObjectMode(opt.ObjectMode)}
+			return
+		}
+
+		rp += "/"
+	}
+
 	input := &service.HeadObjectInput{}
 	output, err := s.bucket.HeadObjectWithContext(ctx, rp, input)
 	if err != nil {
@@ -471,7 +533,11 @@ func (s *Storage) stat(ctx context.Context, path string, opt pairStorageStat) (o
 	o = s.newObject(true)
 	o.ID = rp
 	o.Path = path
-	o.Mode |= ModeRead
+	if opt.HasObjectMode && opt.ObjectMode.IsDir() {
+		o.Mode |= ModeDir
+	} else {
+		o.Mode |= ModeRead
+	}
 
 	o.SetContentLength(service.Int64Value(output.ContentLength))
 	o.SetLastModified(service.TimeValue(output.LastModified))
