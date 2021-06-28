@@ -27,3 +27,10 @@ func TestAppend(t *testing.T) {
 	}
 	tests.TestAppender(t, setupTest(t))
 }
+
+func TestDirer(t *testing.T) {
+	if os.Getenv("STORAGE_QINGSTOR_INTEGRATION_TEST") != "on" {
+		t.Skipf("STORAGE_QINGSTOR_INTEGRATION_TEST is not 'on', skipped")
+	}
+	tests.TestDirer(t, setupTest(t))
+}

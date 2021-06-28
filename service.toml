@@ -17,20 +17,24 @@ optional = ["location"]
 optional = ["location"]
 
 [namespace.storage]
-implement = ["appender", "copier", "fetcher", "mover", "multiparter", "reacher"]
+features = ["virtual_dir"]
+implement = ["appender", "copier", "direr", "fetcher", "mover", "multiparter", "reacher"]
 
 [namespace.storage.new]
 required = ["name"]
 optional = ["storage_features", "default_storage_pairs", "disable_uri_cleaning", "http_client_options", "location", "work_dir"]
 
 [namespace.storage.op.create]
-optional = ["multipart_id"]
+optional = ["multipart_id", "object_mode"]
+
+[namespace.storage.op.create_dir]
+optional = ["storage_class"]
 
 [namespace.storage.op.delete]
-optional = ["multipart_id"]
+optional = ["multipart_id", "object_mode"]
 
 [namespace.storage.op.stat]
-optional = ["multipart_id"]
+optional = ["multipart_id", "object_mode"]
 
 [namespace.storage.op.list]
 optional = ["list_mode"]

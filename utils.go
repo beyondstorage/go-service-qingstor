@@ -17,9 +17,9 @@ import (
 	qserror "github.com/qingstor/qingstor-sdk-go/v4/request/errors"
 	"github.com/qingstor/qingstor-sdk-go/v4/service"
 
+	"github.com/beyondstorage/go-endpoint"
 	ps "github.com/beyondstorage/go-storage/v4/pairs"
 	"github.com/beyondstorage/go-storage/v4/pkg/credential"
-	"github.com/beyondstorage/go-storage/v4/pkg/endpoint"
 	"github.com/beyondstorage/go-storage/v4/pkg/headers"
 	"github.com/beyondstorage/go-storage/v4/pkg/httpclient"
 	"github.com/beyondstorage/go-storage/v4/services"
@@ -66,6 +66,7 @@ type Storage struct {
 	typ.UnimplementedMultiparter
 	typ.UnimplementedReacher
 	typ.UnimplementedAppender
+	typ.UnimplementedDirer
 }
 
 // String implements Storager.String
@@ -132,9 +133,17 @@ func newServicer(pairs ...typ.Pair) (srv *Service, err error) {
 		if err != nil {
 			return nil, err
 		}
-		cfg.Host = ep.Host
-		cfg.Port = ep.Port
-		cfg.Protocol = ep.Protocol
+
+		switch ep.Protocol() {
+		case endpoint.ProtocolHTTPS:
+			_, cfg.Host, cfg.Port = ep.HTTPS()
+		case endpoint.ProtocolHTTP:
+			_, cfg.Host, cfg.Port = ep.HTTP()
+		default:
+			return nil, services.PairUnsupportedError{Pair: ps.WithEndpoint(opt.Endpoint)}
+		}
+
+		cfg.Protocol = ep.Protocol()
 	}
 	// Set config's http client
 	cfg.Connection = srv.client
@@ -177,6 +186,21 @@ const (
 	multipartSizeMaximum = 5 * 1024 * 1024 * 1024
 	// multipartSizeMinimum is the minimum size for each part, except the last part, 4MB
 	multipartSizeMinimum = 4 * 1024 * 1024
+)
+
+const (
+	// writeSizeMaximum is the maximum size for write operation, 5GB.
+	// ref: https://docs.qingcloud.com/qingstor/#object
+	writeSizeMaximum = 5 * 1024 * 1024 * 1024
+	// copySizeMaximum is the maximum size for copy operation, 5GB.
+	// ref: https://docs.qingcloud.com/qingstor/api/object/copy
+	copySizeMaximum = 5 * 1024 * 1024 * 1024
+	// appendSizeMaximum is the maximum append size for per append operation, 5GB.
+	// ref: https://docs.qingcloud.com/qingstor/api/object/append
+	appendSizeMaximum = 5 * 1024 * 1024 * 1024
+	// appendSizeMaximum is the total maximum size for an append object, 5TB.
+	// ref: https://docs.qingcloud.com/qingstor/api/object/append
+	appendTotalSizeMaximum = 50 * 1024 * 1024 * 1024 * 1024
 )
 
 // bucketNameRegexp is the bucket name regexp, which indicates:
@@ -382,11 +406,11 @@ func (s *Storage) formatFileObject(v *service.KeyType) (o *typ.Object, err error
 		o.SetEtag(service.StringValue(v.Etag))
 	}
 
-	var sm ObjectMetadata
+	var sm ObjectSystemMetadata
 	if value := service.StringValue(v.StorageClass); value != "" {
 		sm.StorageClass = value
 	}
-	o.SetServiceMetadata(sm)
+	o.SetSystemMetadata(sm)
 
 	return o, nil
 }

@@ -19,6 +19,9 @@ func setupTest(t *testing.T) types.Storager {
 		ps.WithEndpoint(os.Getenv("STORAGE_QINGSTOR_ENDPOINT")),
 		ps.WithName(os.Getenv("STORAGE_QINGSTOR_NAME")),
 		ps.WithWorkDir("/"+uuid.New().String()+"/"),
+		qingstor.WithStorageFeatures(qingstor.StorageFeatures{
+			VirtualDir: true,
+		}),
 	)
 	if err != nil {
 		t.Errorf("new storager: %v", err)

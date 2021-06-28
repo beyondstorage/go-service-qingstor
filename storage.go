@@ -2,11 +2,13 @@ package qingstor
 
 import (
 	"context"
+	"fmt"
 	"io"
 
 	"github.com/pengsrc/go-shared/convert"
 	"github.com/qingstor/qingstor-sdk-go/v4/service"
 
+	ps "github.com/beyondstorage/go-storage/v4/pairs"
 	"github.com/beyondstorage/go-storage/v4/pkg/headers"
 	"github.com/beyondstorage/go-storage/v4/pkg/iowrap"
 	"github.com/beyondstorage/go-storage/v4/services"
@@ -67,6 +69,8 @@ func (s *Storage) copy(ctx context.Context, src string, dst string, opt pairStor
 }
 
 func (s *Storage) create(path string, opt pairStorageCreate) (o *Object) {
+	rp := s.getAbsPath(path)
+
 	// handle create multipart object separately
 	// if opt has multipartID, set object done, because we can't stat multipart object in QingStor
 	if opt.HasMultipartID {
@@ -74,10 +78,20 @@ func (s *Storage) create(path string, opt pairStorageCreate) (o *Object) {
 		o.Mode = ModePart
 		o.SetMultipartID(opt.MultipartID)
 	} else {
-		o = s.newObject(false)
-		o.Mode = ModeRead
+		if opt.HasObjectMode && opt.ObjectMode.IsDir() {
+			if !s.features.VirtualDir {
+				return
+			}
+
+			rp += "/"
+			o = s.newObject(true)
+			o.Mode = ModeDir
+		} else {
+			o = s.newObject(false)
+			o.Mode = ModeRead
+		}
 	}
-	o.ID = s.getAbsPath(path)
+	o.ID = rp
 	o.Path = path
 	return o
 }
@@ -116,6 +130,37 @@ func (s *Storage) createAppend(ctx context.Context, path string, opt pairStorage
 	return o, nil
 }
 
+func (s *Storage) createDir(ctx context.Context, path string, opt pairStorageCreateDir) (o *Object, err error) {
+	if !s.features.VirtualDir {
+		err = NewOperationNotImplementedError("create_dir")
+		return
+	}
+
+	rp := s.getAbsPath(path)
+
+	// Add `/` at the end of path to simulate a directory.
+	// ref: https://docs.qingcloud.com/qingstor/api/object/put.html
+	rp += "/"
+
+	input := &service.PutObjectInput{
+		ContentLength: service.Int64(0),
+	}
+	if opt.HasStorageClass {
+		input.XQSStorageClass = service.String(opt.StorageClass)
+	}
+
+	_, err = s.bucket.PutObjectWithContext(ctx, rp, input)
+	if err != nil {
+		return
+	}
+
+	o = s.newObject(true)
+	o.Path = path
+	o.ID = rp
+	o.Mode = ModeDir
+	return
+}
+
 func (s *Storage) createMultipart(ctx context.Context, path string, opt pairStorageCreateMultipart) (o *Object, err error) {
 	input := &service.InitiateMultipartUploadInput{}
 	if opt.HasEncryptionCustomerAlgorithm {
@@ -137,10 +182,6 @@ func (s *Storage) createMultipart(ctx context.Context, path string, opt pairStor
 	o.Path = path
 	o.Mode |= ModePart
 	o.SetMultipartID(*output.UploadID)
-	// set multipart restriction
-	o.SetMultipartNumberMaximum(multipartNumberMaximum)
-	o.SetMultipartSizeMaximum(multipartSizeMaximum)
-	o.SetMultipartSizeMinimum(multipartSizeMinimum)
 
 	return o, nil
 }
@@ -161,6 +202,15 @@ func (s *Storage) delete(ctx context.Context, path string, opt pairStorageDelete
 			return
 		}
 		return
+	}
+
+	if opt.HasObjectMode && opt.ObjectMode.IsDir() {
+		if !s.features.VirtualDir {
+			err = services.PairUnsupportedError{Pair: ps.WithObjectMode(opt.ObjectMode)}
+			return
+		}
+
+		rp += "/"
 	}
 
 	// QingStor DeleteObject is idempotent, so we don't need to check object_not_exists error.
@@ -219,6 +269,17 @@ func (s *Storage) metadata(opt pairStorageMetadata) (meta *StorageMeta) {
 	meta.Name = *s.properties.BucketName
 	meta.WorkDir = s.workDir
 	meta.SetLocation(*s.properties.Zone)
+	// set write restriction
+	meta.SetWriteSizeMaximum(writeSizeMaximum)
+	// set copy restriction
+	meta.SetCopySizeMaximum(copySizeMaximum)
+	// set append restrictions
+	meta.SetAppendSizeMaximum(appendSizeMaximum)
+	meta.SetAppendTotalSizeMaximum(appendTotalSizeMaximum)
+	// set multipart restrictions
+	meta.SetMultipartNumberMaximum(multipartNumberMaximum)
+	meta.SetMultipartSizeMaximum(multipartSizeMaximum)
+	meta.SetMultipartSizeMinimum(multipartSizeMinimum)
 	return meta
 }
 
@@ -462,6 +523,15 @@ func (s *Storage) stat(ctx context.Context, path string, opt pairStorageStat) (o
 		return o, nil
 	}
 
+	if opt.HasObjectMode && opt.ObjectMode.IsDir() {
+		if !s.features.VirtualDir {
+			err = services.PairUnsupportedError{Pair: ps.WithObjectMode(opt.ObjectMode)}
+			return
+		}
+
+		rp += "/"
+	}
+
 	input := &service.HeadObjectInput{}
 	output, err := s.bucket.HeadObjectWithContext(ctx, rp, input)
 	if err != nil {
@@ -471,7 +541,11 @@ func (s *Storage) stat(ctx context.Context, path string, opt pairStorageStat) (o
 	o = s.newObject(true)
 	o.ID = rp
 	o.Path = path
-	o.Mode |= ModeRead
+	if opt.HasObjectMode && opt.ObjectMode.IsDir() {
+		o.Mode |= ModeDir
+	} else {
+		o.Mode |= ModeRead
+	}
 
 	o.SetContentLength(service.Int64Value(output.ContentLength))
 	o.SetLastModified(service.TimeValue(output.LastModified))
@@ -483,19 +557,24 @@ func (s *Storage) stat(ctx context.Context, path string, opt pairStorageStat) (o
 		o.SetEtag(service.StringValue(output.ETag))
 	}
 
-	var sm ObjectMetadata
+	var sm ObjectSystemMetadata
 	if v := service.StringValue(output.XQSStorageClass); v != "" {
 		sm.StorageClass = v
 	}
 	if v := service.StringValue(output.XQSEncryptionCustomerAlgorithm); v != "" {
 		sm.EncryptionCustomerAlgorithm = v
 	}
-	o.SetServiceMetadata(sm)
+	o.SetSystemMetadata(sm)
 
 	return o, nil
 }
 
 func (s *Storage) write(ctx context.Context, path string, r io.Reader, size int64, opt pairStorageWrite) (n int64, err error) {
+	if size > writeSizeMaximum {
+		err = fmt.Errorf("size limit exceeded: %w", services.ErrRestrictionDissatisfied)
+		return
+	}
+
 	if opt.HasIoCallback {
 		r = iowrap.CallbackReader(r, opt.IoCallback)
 	}
@@ -527,6 +606,11 @@ func (s *Storage) write(ctx context.Context, path string, r io.Reader, size int6
 }
 
 func (s *Storage) writeAppend(ctx context.Context, o *Object, r io.Reader, size int64, opt pairStorageWriteAppend) (n int64, err error) {
+	if size > appendSizeMaximum {
+		err = fmt.Errorf("size limit exceeded: %w", services.ErrRestrictionDissatisfied)
+		return
+	}
+
 	rp := o.GetID()
 
 	offset, _ := o.GetAppendOffset()
@@ -560,6 +644,11 @@ func (s *Storage) writeMultipart(ctx context.Context, o *Object, r io.Reader, si
 		err = ErrPartNumberInvalid
 		return
 	}
+	if size > multipartSizeMaximum {
+		err = fmt.Errorf("size limit exceeded: %w", services.ErrRestrictionDissatisfied)
+		return
+	}
+
 	input := &service.UploadMultipartInput{
 		PartNumber:    service.Int(index),
 		UploadID:      service.String(o.MustGetMultipartID()),
