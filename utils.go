@@ -17,9 +17,9 @@ import (
 	qserror "github.com/qingstor/qingstor-sdk-go/v4/request/errors"
 	"github.com/qingstor/qingstor-sdk-go/v4/service"
 
+	"github.com/beyondstorage/go-endpoint"
 	ps "github.com/beyondstorage/go-storage/v4/pairs"
 	"github.com/beyondstorage/go-storage/v4/pkg/credential"
-	"github.com/beyondstorage/go-storage/v4/pkg/endpoint"
 	"github.com/beyondstorage/go-storage/v4/pkg/headers"
 	"github.com/beyondstorage/go-storage/v4/pkg/httpclient"
 	"github.com/beyondstorage/go-storage/v4/services"
@@ -133,9 +133,17 @@ func newServicer(pairs ...typ.Pair) (srv *Service, err error) {
 		if err != nil {
 			return nil, err
 		}
-		cfg.Host = ep.Host
-		cfg.Port = ep.Port
-		cfg.Protocol = ep.Protocol
+
+		switch ep.Protocol() {
+		case endpoint.ProtocolHTTPS:
+			_, cfg.Host, cfg.Port = ep.HTTPS()
+		case endpoint.ProtocolHTTP:
+			_, cfg.Host, cfg.Port = ep.HTTP()
+		default:
+			return nil, services.PairUnsupportedError{Pair: ps.WithEndpoint(opt.Endpoint)}
+		}
+
+		cfg.Protocol = ep.Protocol()
 	}
 	// Set config's http client
 	cfg.Connection = srv.client
