@@ -2,6 +2,7 @@ package qingstor
 
 import (
 	"context"
+	"fmt"
 	"io"
 
 	"github.com/pengsrc/go-shared/convert"
@@ -181,10 +182,6 @@ func (s *Storage) createMultipart(ctx context.Context, path string, opt pairStor
 	o.Path = path
 	o.Mode |= ModePart
 	o.SetMultipartID(*output.UploadID)
-	// set multipart restriction
-	o.SetMultipartNumberMaximum(multipartNumberMaximum)
-	o.SetMultipartSizeMaximum(multipartSizeMaximum)
-	o.SetMultipartSizeMinimum(multipartSizeMinimum)
 
 	return o, nil
 }
@@ -272,6 +269,17 @@ func (s *Storage) metadata(opt pairStorageMetadata) (meta *StorageMeta) {
 	meta.Name = *s.properties.BucketName
 	meta.WorkDir = s.workDir
 	meta.SetLocation(*s.properties.Zone)
+	// set write restriction
+	meta.SetWriteSizeMaximum(writeSizeMaximum)
+	// set copy restriction
+	meta.SetCopySizeMaximum(copySizeMaximum)
+	// set append restrictions
+	meta.SetAppendSizeMaximum(appendSizeMaximum)
+	meta.SetAppendTotalSizeMaximum(appendTotalSizeMaximum)
+	// set multipart restrictions
+	meta.SetMultipartNumberMaximum(multipartNumberMaximum)
+	meta.SetMultipartSizeMaximum(multipartSizeMaximum)
+	meta.SetMultipartSizeMinimum(multipartSizeMinimum)
 	return meta
 }
 
@@ -562,6 +570,11 @@ func (s *Storage) stat(ctx context.Context, path string, opt pairStorageStat) (o
 }
 
 func (s *Storage) write(ctx context.Context, path string, r io.Reader, size int64, opt pairStorageWrite) (n int64, err error) {
+	if size > writeSizeMaximum {
+		err = fmt.Errorf("size limit exceeded: %w", services.ErrRestrictionDissatisfied)
+		return
+	}
+
 	if opt.HasIoCallback {
 		r = iowrap.CallbackReader(r, opt.IoCallback)
 	}
@@ -593,6 +606,11 @@ func (s *Storage) write(ctx context.Context, path string, r io.Reader, size int6
 }
 
 func (s *Storage) writeAppend(ctx context.Context, o *Object, r io.Reader, size int64, opt pairStorageWriteAppend) (n int64, err error) {
+	if size > appendSizeMaximum {
+		err = fmt.Errorf("size limit exceeded: %w", services.ErrRestrictionDissatisfied)
+		return
+	}
+
 	rp := o.GetID()
 
 	offset, _ := o.GetAppendOffset()
@@ -626,6 +644,11 @@ func (s *Storage) writeMultipart(ctx context.Context, o *Object, r io.Reader, si
 		err = ErrPartNumberInvalid
 		return
 	}
+	if size > multipartSizeMaximum {
+		err = fmt.Errorf("size limit exceeded: %w", services.ErrRestrictionDissatisfied)
+		return
+	}
+
 	input := &service.UploadMultipartInput{
 		PartNumber:    service.Int(index),
 		UploadID:      service.String(o.MustGetMultipartID()),

@@ -188,6 +188,21 @@ const (
 	multipartSizeMinimum = 4 * 1024 * 1024
 )
 
+const (
+	// writeSizeMaximum is the maximum size for write operation, 5GB.
+	// ref: https://docs.qingcloud.com/qingstor/#object
+	writeSizeMaximum = 5 * 1024 * 1024 * 1024
+	// copySizeMaximum is the maximum size for copy operation, 5GB.
+	// ref: https://docs.qingcloud.com/qingstor/api/object/copy
+	copySizeMaximum = 5 * 1024 * 1024 * 1024
+	// appendSizeMaximum is the maximum append size for per append operation, 5GB.
+	// ref: https://docs.qingcloud.com/qingstor/api/object/append
+	appendSizeMaximum = 5 * 1024 * 1024 * 1024
+	// appendSizeMaximum is the total maximum size for an append object, 5TB.
+	// ref: https://docs.qingcloud.com/qingstor/api/object/append
+	appendTotalSizeMaximum = 50 * 1024 * 1024 * 1024 * 1024
+)
+
 // bucketNameRegexp is the bucket name regexp, which indicates:
 // 1. length: 6-63;
 // 2. contains lowercase letters, digits and strikethrough;
