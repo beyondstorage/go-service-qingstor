@@ -383,11 +383,11 @@ func (s *Storage) formatFileObject(v *service.KeyType) (o *typ.Object, err error
 		o.SetEtag(service.StringValue(v.Etag))
 	}
 
-	var sm ObjectMetadata
+	var sm ObjectSystemMetadata
 	if value := service.StringValue(v.StorageClass); value != "" {
 		sm.StorageClass = value
 	}
-	o.SetServiceMetadata(sm)
+	o.SetSystemMetadata(sm)
 
 	return o, nil
 }
