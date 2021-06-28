@@ -131,7 +131,7 @@ func (s *Storage) createAppend(ctx context.Context, path string, opt pairStorage
 }
 
 func (s *Storage) createDir(ctx context.Context, path string, opt pairStorageCreateDir) (o *Object, err error) {
-	if s.features.VirtualDir {
+	if !s.features.VirtualDir {
 		err = NewOperationNotImplementedError("create_dir")
 		return
 	}
