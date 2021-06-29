@@ -18,6 +18,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 - *: Implement GSP-109: Redesign Features (#58)
 - *: Implement GSP-117 Rename Service to System as the Opposite to Global (#58)
 
+### Upgraded
+
+- build(deps): bump github.com/golang/mock from 1.5.0 to 1.6.0 (#56)
+
 ## [v3.0.0] - 2021-05-24
 
 ### Added
