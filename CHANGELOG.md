@@ -5,6 +5,23 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [v3.1.0] - 2021-06-29
+
+### Added
+
+- *: Implement GSP-87 Feature Gates (#53)
+- storage: Implement GSP-93 Add ObjectMode Pair (#58)
+- storage: Implement GSP-97 Add Restrictions In Storage Metadata (#58)
+
+### Changed
+
+- *: Implement GSP-109: Redesign Features (#58)
+- *: Implement GSP-117 Rename Service to System as the Opposite to Global (#58)
+
+### Upgraded
+
+- build(deps): bump github.com/golang/mock from 1.5.0 to 1.6.0 (#56)
+
 ## [v3.0.0] - 2021-05-24
 
 ### Added
@@ -78,6 +95,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 - Implement qingstor services.
 
+[v3.1.0]: https://github.com/beyondstorage/go-service-qingstor/compare/v3.0.0...v3.1.0
 [v3.0.0]: https://github.com/beyondstorage/go-service-qingstor/compare/v2.1.0...v3.0.0
 [v2.1.0]: https://github.com/beyondstorage/go-service-qingstor/compare/v2.0.0...v2.1.0
 [v2.0.0]: https://github.com/beyondstorage/go-service-qingstor/compare/v1.0.0...v2.0.0
