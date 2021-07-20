@@ -76,7 +76,7 @@ type = "string"
 description = "specifies the encryption algorithm. Only AES256 is supported now."
 
 [pairs.encryption_customer_key]
-type = "byte_array"
+type = "[]byte"
 description = "is the customer-provided encryption key. For AES256 keys, the plaintext must be 32 bytes long."
 
 [pairs.copy_source_encryption_customer_algorithm]
@@ -84,7 +84,7 @@ type = "string"
 description = "is the encryption algorithm for the source object. Only AES256 is supported now."
 
 [pairs.copy_source_encryption_customer_key]
-type = "byte_array"
+type = "[]byte"
 description = "is the customer-provided encryption key for the source object. For AES256 keys, the plaintext must be 32 bytes long."
 
 [pairs.disable_uri_cleaning]
