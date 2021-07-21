@@ -63,6 +63,9 @@ func TestStorage_Copy(t *testing.T) {
 
 	mockBucket := NewMockBucket(ctrl)
 
+	name := uuid.New().String()
+	location := uuid.New().String()
+
 	tests := []struct {
 		name     string
 		src      string
@@ -76,7 +79,7 @@ func TestStorage_Copy(t *testing.T) {
 			"test_src", "test_dst",
 			func(ctx context.Context, inputObjectKey string, input *service.PutObjectInput) {
 				assert.Equal(t, "test_dst", inputObjectKey)
-				assert.Equal(t, "test_src", *input.XQSCopySource)
+				assert.Equal(t, "/"+name+"/"+"test_src", *input.XQSCopySource)
 			},
 			false, nil,
 		},
@@ -87,6 +90,10 @@ func TestStorage_Copy(t *testing.T) {
 
 		client := Storage{
 			bucket: mockBucket,
+			properties: &service.Properties{
+				BucketName: &name,
+				Zone:       &location,
+			},
 		}
 
 		err := client.Copy(v.src, v.dst)
@@ -181,6 +188,9 @@ func TestStorage_Move(t *testing.T) {
 
 	mockBucket := NewMockBucket(ctrl)
 
+	name := uuid.New().String()
+	location := uuid.New().String()
+
 	tests := []struct {
 		name     string
 		src      string
@@ -194,7 +204,7 @@ func TestStorage_Move(t *testing.T) {
 			"test_src", "test_dst",
 			func(ctx context.Context, inputObjectKey string, input *service.PutObjectInput) {
 				assert.Equal(t, "test_dst", inputObjectKey)
-				assert.Equal(t, "test_src", *input.XQSMoveSource)
+				assert.Equal(t, "/"+name+"/"+"test_src", *input.XQSMoveSource)
 			},
 			false, nil,
 		},
@@ -205,6 +215,10 @@ func TestStorage_Move(t *testing.T) {
 
 		client := Storage{
 			bucket: mockBucket,
+			properties: &service.Properties{
+				BucketName: &name,
+				Zone:       &location,
+			},
 		}
 
 		err := client.Move(v.src, v.dst)
