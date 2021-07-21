@@ -99,12 +99,37 @@ func (s *Storage) create(path string, opt pairStorageCreate) (o *Object) {
 }
 
 func (s *Storage) createAppend(ctx context.Context, path string, opt pairStorageCreateAppend) (o *Object, err error) {
+	rp := s.getAbsPath(path)
+
 	// `AppendObject` with position 0 will overwrite the existing object, so there's no need to check the object exists or not.
+	var offset int64 = 0
+	input := &service.AppendObjectInput{
+		Position: &offset,
+	}
+	if opt.HasContentType {
+		input.ContentType = &opt.ContentType
+	}
+	if opt.HasStorageClass {
+		input.XQSStorageClass = &opt.StorageClass
+	}
+
+	output, err := s.bucket.AppendObjectWithContext(ctx, rp, input)
+	if err != nil {
+		return
+	}
+
+	if output == nil || output.XQSNextAppendPosition == nil {
+		err = ErrAppendNextPositionEmpty
+		return
+	} else {
+		offset = *output.XQSNextAppendPosition
+	}
+
 	o = s.newObject(true)
 	o.Mode = ModeRead | ModeAppend
-	o.ID = s.getAbsPath(path)
+	o.ID = rp
 	o.Path = path
-	o.SetAppendOffset(0)
+	o.SetAppendOffset(offset)
 	// set metadata
 	if opt.HasContentType {
 		o.SetContentType(opt.ContentType)
@@ -615,17 +640,6 @@ func (s *Storage) writeAppend(ctx context.Context, o *Object, r io.Reader, size 
 	}
 	if opt.HasContentMd5 {
 		input.ContentMD5 = &opt.ContentMd5
-	}
-	// Set the following metadata at the first write.
-	if 0 == offset {
-		if contentType, ok := o.GetContentType(); ok {
-			input.ContentType = service.String(contentType)
-		}
-
-		sm := GetObjectSystemMetadata(o)
-		if sm.StorageClass != "" {
-			input.XQSStorageClass = service.String(sm.StorageClass)
-		}
 	}
 
 	output, err := s.bucket.AppendObjectWithContext(ctx, rp, input)
