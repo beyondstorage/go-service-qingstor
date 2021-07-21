@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"net/url"
 
 	"github.com/pengsrc/go-shared/convert"
 	"github.com/qingstor/qingstor-sdk-go/v4/service"
@@ -45,8 +46,9 @@ func (s *Storage) copy(ctx context.Context, src string, dst string, opt pairStor
 	rs := s.getAbsPath(src)
 	rd := s.getAbsPath(dst)
 
+	srcPath := "/" + service.StringValue(s.properties.BucketName) + "/" + url.QueryEscape(rs)
 	input := &service.PutObjectInput{
-		XQSCopySource: &rs,
+		XQSCopySource: &srcPath,
 	}
 	if opt.HasEncryptionCustomerAlgorithm {
 		input.XQSEncryptionCustomerAlgorithm, input.XQSEncryptionCustomerKey, input.XQSEncryptionCustomerKeyMD5, err = calculateEncryptionHeaders(opt.EncryptionCustomerAlgorithm, opt.EncryptionCustomerKey)
@@ -277,8 +279,9 @@ func (s *Storage) move(ctx context.Context, src string, dst string, opt pairStor
 	rs := s.getAbsPath(src)
 	rd := s.getAbsPath(dst)
 
+	srcPath := "/" + service.StringValue(s.properties.BucketName) + "/" + url.QueryEscape(rs)
 	_, err = s.bucket.PutObjectWithContext(ctx, rd, &service.PutObjectInput{
-		XQSMoveSource: &rs,
+		XQSMoveSource: &srcPath,
 	})
 	if err != nil {
 		return
