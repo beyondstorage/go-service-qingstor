@@ -46,7 +46,7 @@ func (s *Storage) copy(ctx context.Context, src string, dst string, opt pairStor
 	rs := s.getAbsPath(src)
 	rd := s.getAbsPath(dst)
 
-	srcPath := "/" + *s.properties.BucketName + "/" + url.QueryEscape(rs)
+	srcPath := "/" + service.StringValue(s.properties.BucketName) + "/" + url.QueryEscape(rs)
 	input := &service.PutObjectInput{
 		XQSCopySource: &srcPath,
 	}
@@ -279,7 +279,7 @@ func (s *Storage) move(ctx context.Context, src string, dst string, opt pairStor
 	rs := s.getAbsPath(src)
 	rd := s.getAbsPath(dst)
 
-	srcPath := "/" + *s.properties.BucketName + "/" + url.QueryEscape(rs)
+	srcPath := "/" + service.StringValue(s.properties.BucketName) + "/" + url.QueryEscape(rs)
 	_, err = s.bucket.PutObjectWithContext(ctx, rd, &service.PutObjectInput{
 		XQSMoveSource: &srcPath,
 	})
