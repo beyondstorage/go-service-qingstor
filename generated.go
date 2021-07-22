@@ -4,17 +4,17 @@ package qingstor
 import (
 	"context"
 	"io"
+	"time"
 
-	"github.com/beyondstorage/go-storage/v4/pkg/credential"
 	"github.com/beyondstorage/go-storage/v4/pkg/httpclient"
 	"github.com/beyondstorage/go-storage/v4/services"
 	. "github.com/beyondstorage/go-storage/v4/types"
 )
 
-var _ credential.Provider
 var _ Storager
 var _ services.ServiceError
 var _ httpclient.Options
+var _ time.Duration
 
 // Type is the type for qingstor
 const Type = "qingstor"
@@ -182,7 +182,7 @@ var pairMap = map[string]string{
 	"encryption_customer_algorithm":             "string",
 	"encryption_customer_key":                   "[]byte",
 	"endpoint":                                  "string",
-	"expire":                                    "int",
+	"expire":                                    "time.Duration",
 	"http_client_options":                       "*httpclient.Options",
 	"interceptor":                               "Interceptor",
 	"io_callback":                               "func([]byte)",
@@ -1068,7 +1068,7 @@ func (s *Storage) parsePairStorageMove(opts []Pair) (pairStorageMove, error) {
 type pairStorageReach struct {
 	pairs     []Pair
 	HasExpire bool
-	Expire    int
+	Expire    time.Duration
 }
 
 // parsePairStorageReach will parse Pair slice into *pairStorageReach
@@ -1084,7 +1084,7 @@ func (s *Storage) parsePairStorageReach(opts []Pair) (pairStorageReach, error) {
 				continue
 			}
 			result.HasExpire = true
-			result.Expire = v.Value.(int)
+			result.Expire = v.Value.(time.Duration)
 			continue
 		default:
 			return pairStorageReach{}, services.PairUnsupportedError{Pair: v}
