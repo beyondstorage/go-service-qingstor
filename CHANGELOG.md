@@ -5,6 +5,31 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [v3.2.0] - 2021-07-22
+
+### Added
+
+- ci: Add gofmt action (#62)
+- ci: Add diff check action (#65)
+- ci: Add dependabot auto build support (#66)
+
+### Changed
+
+- storage: Update types in service.toml to golang types (#71)
+- storage: Update append as described in GSP-134 (#71)
+- storage: Update list as described in GSP-654 (#71)
+- build(deps): Migrate to go-endpoint (#74)
+
+### Fixed
+
+- ci: Fix auto-build not work correctly
+- storage: Fix invalid argument for copy and move (#72)
+- storage: Fix append behavior (#73)
+
+### Upgraded
+
+- build(deps): Bump github.com/google/uuid from 1.2.0 to 1.3.0 (#61)
+
 ## [v3.1.0] - 2021-06-29
 
 ### Added
@@ -95,6 +120,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 - Implement qingstor services.
 
+[v3.2.0]: https://github.com/beyondstorage/go-service-qingstor/compare/v3.1.0...v3.2.0
 [v3.1.0]: https://github.com/beyondstorage/go-service-qingstor/compare/v3.0.0...v3.1.0
 [v3.0.0]: https://github.com/beyondstorage/go-service-qingstor/compare/v2.1.0...v3.0.0
 [v2.1.0]: https://github.com/beyondstorage/go-service-qingstor/compare/v2.0.0...v2.1.0
