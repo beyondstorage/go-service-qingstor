@@ -483,7 +483,7 @@ func (s *Storage) reach(ctx context.Context, path string, opt pairStorageReach) 
 	}
 
 	expire := opt.Expire
-	if err = r.SignQuery(expire); err != nil {
+	if err = r.SignQuery(int(expire.Seconds())); err != nil {
 		return
 	}
 	return r.HTTPRequest.URL.String(), nil
