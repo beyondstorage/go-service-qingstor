@@ -23,7 +23,7 @@ input := &service.PutObjectInput{
 
 - `PutObjectInput` is used to store the fields we need when calling `PutObjectWithContext` API to upload an object.
 - `XQSMetadata` is a map that stores user-defined metadata.
-  - `"x-qs-meta-bs-symlink"` is the name of user-defined metadata, the middle `bs` is used to avoid conflicts.
+  - `"x-qs-meta-bs-link-target"` is the name of user-defined metadata, the middle `bs` is used to avoid conflicts.
   - `rt` is the symlink target, it is an absolute path.
 
 ## Rationale
