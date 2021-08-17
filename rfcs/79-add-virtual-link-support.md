@@ -1,9 +1,9 @@
 - Author: abyss-w <mad.hatter@foxmail.com>
 - Start Date: 2021-08-16
-- RFC PR: []()
+- RFC PR: [beyondstorage/go-service-qingstor#79](https://github.com/beyondstorage/go-service-qingstor/pull/79)
 - Tracking Issue: [beyondstorage/go-service-qingstor#64](https://github.com/beyondstorage/go-service-qingstor/issues/64)
 
-# RFC-xxx: Add Virtual Link Support
+# RFC-79: Add Virtual Link Support
 
 ## Background
 
@@ -21,10 +21,10 @@ input := &service.PutObjectInput{
 }
 ```
 
-* `PutObjectInput` is used to store the fields we need when calling `PutObjectWithContext` API to upload an object.
-* `XQSMetadata` is a map that stores user-defined metadata.
-  * `"x-qs-meta-bs-symlink"` is the name of user-defined metadata, the middle `bs` is used to avoid conflicts.
-  * `rt` is the symlink target, it is an absolute path.
+- `PutObjectInput` is used to store the fields we need when calling `PutObjectWithContext` API to upload an object.
+- `XQSMetadata` is a map that stores user-defined metadata.
+  - `"x-qs-meta-bs-symlink"` is the name of user-defined metadata, the middle `bs` is used to avoid conflicts.
+  - `rt` is the symlink target, it is an absolute path.
 
 ## Rationale
 
