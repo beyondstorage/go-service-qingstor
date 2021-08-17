@@ -16,7 +16,7 @@ I propose to use user-defined object metadata to support virtual link.
 ```go
 input := &service.PutObjectInput{
     XQSMetadata: &map[string]string{
-        "x-qs-meta-bs-symlink": rt,
+        "x-qs-meta-bs-link-target": rt,
     },
 }
 ```
@@ -37,10 +37,8 @@ As the [Object Metadata](https://docs.qingcloud.com/qingstor/api/common/metadata
 As qingstor itself does not support symlink, we can only simulate it. And the object created is not really a symlink object. When we call `stat`, we can only tell if it is a symlink by using user-defined metadata,
 
 ```go
-for k, v := range metadata{
-    if k == "x-qs-meta-bs-symlink"{
-        // The path is a symlink object
-    }
+if v, ok := metadata["x-qs-meta-bs-link-target"]; ok {
+	// The path is a symlink object 
 }
 ```
 
