@@ -593,19 +593,21 @@ func (s *Storage) stat(ctx context.Context, path string, opt pairStorageStat) (o
 	o.ID = rp
 	o.Path = path
 
-	metadata := *output.XQSMetaData
-	// By calling `HeadObject`, the first letter of the `key` of the object metadata will be capitalized.
-	if v, ok := metadata["X-Qs-Meta-Bs-Link-Target"]; ok {
-		// The path is a symlink object.
-		if !s.features.VirtualLink {
-			err = NewOperationNotImplementedError("virtual_link")
-			return nil, err
-		}
+	if output.XQSMetaData != nil {
+		metadata := *output.XQSMetaData
+		// By calling `HeadObject`, the first letter of the `key` of the object metadata will be capitalized.
+		if v, ok := metadata["X-Qs-Meta-Bs-Link-Target"]; ok {
+			// The path is a symlink object.
+			if !s.features.VirtualLink {
+				err = NewOperationNotImplementedError("virtual_link")
+				return nil, err
+			}
 
-		// qingstor does not have an absolute path, so when we call `getAbsPath`, it will remove the prefix `/`.
-		// To ensure that the path matches the one the user gets, we should re-add `/` here.
-		o.SetLinkTarget("/" + v)
-		o.Mode |= ModeLink
+			// qingstor does not have an absolute path, so when we call `getAbsPath`, it will remove the prefix `/`.
+			// To ensure that the path matches the one the user gets, we should re-add `/` here.
+			o.SetLinkTarget("/" + v)
+			o.Mode |= ModeLink
+		}
 	}
 
 	if o.Mode&ModeLink == 0 {
