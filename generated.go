@@ -4,6 +4,7 @@ package qingstor
 import (
 	"context"
 	"io"
+	"net/http"
 	"time"
 
 	"github.com/beyondstorage/go-storage/v4/pkg/httpclient"
@@ -15,6 +16,7 @@ var _ Storager
 var _ services.ServiceError
 var _ httpclient.Options
 var _ time.Duration
+var _ http.Request
 
 // Type is the type for qingstor
 const Type = "qingstor"
@@ -111,10 +113,25 @@ func WithDefaultStoragePairs(v DefaultStoragePairs) Pair {
 // WithDisableURICleaning will apply disable_uri_cleaning value to Options.
 //
 // DisableURICleaning
-func WithDisableURICleaning(v bool) Pair {
+func WithDisableURICleaning() Pair {
 	return Pair{
 		Key:   "disable_uri_cleaning",
-		Value: v,
+		Value: true,
+	}
+}
+
+// WithEnableVirtualDir will apply enable_virtual_dir value to Options.
+//
+// VirtualDir virtual_dir feature is designed for a service that doesn't have native dir support but wants to provide simulated operations.
+//
+// - If this feature is disabled (the default behavior), the service will behave like it doesn't have any dir support.
+// - If this feature is enabled, the service will support simulated dir behavior in create_dir, create, list, delete, and so on.
+//
+// This feature was introduced in GSP-109.
+func WithEnableVirtualDir() Pair {
+	return Pair{
+		Key:   "enable_virtual_dir",
+		Value: true,
 	}
 }
 
@@ -179,6 +196,7 @@ var pairMap = map[string]string{
 	"default_service_pairs":                     "DefaultServicePairs",
 	"default_storage_pairs":                     "DefaultStoragePairs",
 	"disable_uri_cleaning":                      "bool",
+	"enable_virtual_dir":                        "bool",
 	"encryption_customer_algorithm":             "string",
 	"encryption_customer_key":                   "[]byte",
 	"endpoint":                                  "string",
