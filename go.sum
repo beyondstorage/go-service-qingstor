@@ -6,8 +6,6 @@ github.com/Xuanwo/templateutils v0.1.0 h1:WpkWOqQtIQ2vAIpJLa727DdN8WtxhUkkbDGa6U
 github.com/Xuanwo/templateutils v0.1.0/go.mod h1:OdE0DJ+CJxDBq6psX5DPV+gOZi8bhuHuVUpPCG++Wb8=
 github.com/beyondstorage/go-endpoint v1.1.0 h1:cpjmQdrAMyaLoT161NIFU/eXcsuMI3xViycid5/mBZg=
 github.com/beyondstorage/go-endpoint v1.1.0/go.mod h1:P2hknaGrziOJJKySv/XnAiVw/d3v12/LZu2gSxEx4nM=
-github.com/beyondstorage/go-integration-test/v4 v4.3.0 h1:WZ95f78RKlHpvft8zHcMaoa2aaTF/jzlzINhMD0EMHY=
-github.com/beyondstorage/go-integration-test/v4 v4.3.0/go.mod h1:HKgzemQZpxoHBL49JYEUnLTb5eteUhzcvmmPL7EDT/Y=
 github.com/beyondstorage/go-storage/v4 v4.4.0/go.mod h1:mc9VzBImjXDg1/1sLfta2MJH79elfM6m47ZZvZ+q/Uw=
 github.com/beyondstorage/go-storage/v4 v4.4.1-0.20210817085851-348ecf741fc1 h1:JCnxrnTXfhejRexyAQ0cd3TYrjsx1ogA/T/RC8iPYz4=
 github.com/beyondstorage/go-storage/v4 v4.4.1-0.20210817085851-348ecf741fc1/go.mod h1:mc9VzBImjXDg1/1sLfta2MJH79elfM6m47ZZvZ+q/Uw=
@@ -45,8 +43,8 @@ github.com/pmezard/go-difflib v1.0.0 h1:4DBwDE0NGyQoBHbLQYPwSUPoCMWR5BEzIk/f1lZb
 github.com/pmezard/go-difflib v1.0.0/go.mod h1:iKH77koFhYxTK1pcRnkKkqfTogsbg7gZNVY4sRDYZ/4=
 github.com/qingstor/log v0.0.0-20200804082313-615256cccabc h1:633tgwvkk8O26HZD/upVtDzWcrMoCiffZAVDtEtFW9E=
 github.com/qingstor/log v0.0.0-20200804082313-615256cccabc/go.mod h1:XfNhERXtkg/S9MWaMOk/m7mrmj4vcWDvhw17hmH4JGQ=
-github.com/qingstor/qingstor-sdk-go/v4 v4.3.0 h1:+qcVqBiuGUsTPJZCHc5QK81NgfIMLjoIHXovdIRHKvk=
-github.com/qingstor/qingstor-sdk-go/v4 v4.3.0/go.mod h1:GT0QY+LwqnOQhsRkbxUds8cTYR4inZpgOQEkCKYRiAs=
+github.com/qingstor/qingstor-sdk-go/v4 v4.3.1-0.20210819104240-5afc7bc0d697 h1:6AsznCSi0t+H5+JfCQl7IubJuWuPZvpVGjoPaBbc/Hk=
+github.com/qingstor/qingstor-sdk-go/v4 v4.3.1-0.20210819104240-5afc7bc0d697/go.mod h1:GT0QY+LwqnOQhsRkbxUds8cTYR4inZpgOQEkCKYRiAs=
 github.com/sergi/go-diff v1.0.0 h1:Kpca3qRNrduNnOQeazBd0ysaKrUJiIuISHxogkT9RPQ=
 github.com/sergi/go-diff v1.0.0/go.mod h1:0CfEIISq7TuYL3j771MWULgwwjU+GofnZX9QAmXWZgo=
 github.com/sirupsen/logrus v1.8.1 h1:dJKuHgqk1NNQlqoA6BTlM1Wf9DOH3NBjQyu0h9+AZZE=

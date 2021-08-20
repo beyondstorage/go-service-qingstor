@@ -172,12 +172,10 @@ func (s *Storage) createDir(ctx context.Context, path string, opt pairStorageCre
 	return
 }
 
-func (s *Storage) createLink(ctx context.Context, path string, target string, opt pairStorageCreateLink) (o *Object, err error) {
-	if !s.features.VirtualLink {
-		err = NewOperationNotImplementedError("virtual_link")
-		return nil, err
-	}
+// LinkMeta is is the name of the user-defined metadata name used to store the target.
+const linkMeta = "x-qs-meta-bs-link-target"
 
+func (s *Storage) createLink(ctx context.Context, path string, target string, opt pairStorageCreateLink) (o *Object, err error) {
 	rt := s.getAbsPath(target)
 	rp := s.getAbsPath(path)
 
@@ -185,8 +183,24 @@ func (s *Storage) createLink(ctx context.Context, path string, target string, op
 		// As qingstor does not support symlink, we can only use user-defined metadata to simulate it.
 		// ref: https://github.com/beyondstorage/go-service-qingstor/blob/master/rfcs/79-add-virtual-link-support.md
 		XQSMetaData: &map[string]string{
-			"x-qs-meta-bs-link-target": rt,
+			linkMeta: rt,
 		},
+	}
+
+	if !s.features.VirtualLink {
+		// Virtual link is not enabled.
+		_, err = s.bucket.PutObjectWithContext(ctx, rp, input)
+		if err != nil {
+			return nil, err
+		}
+
+		o = s.newObject(true)
+		o.ID = rp
+		o.Path = path
+		// The virtual link is not enabled, so we set the object mode to `ModeRead`.
+		o.Mode |= ModeRead
+
+		return
 	}
 
 	_, err = s.bucket.PutObjectWithContext(ctx, rp, input)
@@ -596,11 +610,11 @@ func (s *Storage) stat(ctx context.Context, path string, opt pairStorageStat) (o
 	if output.XQSMetaData != nil {
 		metadata := *output.XQSMetaData
 		// By calling `HeadObject`, the first letter of the `key` of the object metadata will be capitalized.
-		if v, ok := metadata["X-Qs-Meta-Bs-Link-Target"]; ok {
+		if v, ok := metadata[linkMeta]; ok {
 			// The path is a symlink object.
 			if !s.features.VirtualLink {
-				err = NewOperationNotImplementedError("virtual_link")
-				return nil, err
+				// The virtual link is not enabled, so we set the object mode to `ModeRead`.
+				o.Mode |= ModeRead
 			}
 
 			// qingstor does not have an absolute path, so when we call `getAbsPath`, it will remove the prefix `/`.
@@ -610,7 +624,7 @@ func (s *Storage) stat(ctx context.Context, path string, opt pairStorageStat) (o
 		}
 	}
 
-	if o.Mode&ModeLink == 0 {
+	if o.Mode&ModeLink == 0 && o.Mode&ModeRead == 0 {
 		if opt.HasObjectMode && opt.ObjectMode.IsDir() {
 			o.Mode |= ModeDir
 		} else {
