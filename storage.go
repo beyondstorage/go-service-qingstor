@@ -172,8 +172,8 @@ func (s *Storage) createDir(ctx context.Context, path string, opt pairStorageCre
 	return
 }
 
-// LinkMeta is is the name of the user-defined metadata name used to store the target.
-const linkMeta = "x-qs-meta-bs-link-target"
+// metadataLinkTargetHeader is the name of the user-defined metadata name used to store the target.
+const metadataLinkTargetHeader = "x-qs-meta-bs-link-target"
 
 func (s *Storage) createLink(ctx context.Context, path string, target string, opt pairStorageCreateLink) (o *Object, err error) {
 	rt := s.getAbsPath(target)
@@ -183,7 +183,7 @@ func (s *Storage) createLink(ctx context.Context, path string, target string, op
 		// As qingstor does not support symlink, we can only use user-defined metadata to simulate it.
 		// ref: https://github.com/beyondstorage/go-service-qingstor/blob/master/rfcs/79-add-virtual-link-support.md
 		XQSMetaData: &map[string]string{
-			linkMeta: rt,
+			metadataLinkTargetHeader: rt,
 		},
 	}
 
@@ -599,17 +599,17 @@ func (s *Storage) stat(ctx context.Context, path string, opt pairStorageStat) (o
 	if output.XQSMetaData != nil {
 		metadata := *output.XQSMetaData
 		// By calling `HeadObject`, the first letter of the `key` of the object metadata will be capitalized.
-		if v, ok := metadata[linkMeta]; ok {
+		if v, ok := metadata[metadataLinkTargetHeader]; ok {
 			// The path is a symlink object.
 			if !s.features.VirtualLink {
 				// The virtual link is not enabled, so we set the object mode to `ModeRead`.
 				o.Mode |= ModeRead
+			} else {
+				// qingstor does not have an absolute path, so when we call `getAbsPath`, it will remove the prefix `/`.
+				// To ensure that the path matches the one the user gets, we should re-add `/` here.
+				o.SetLinkTarget("/" + v)
+				o.Mode |= ModeLink
 			}
-
-			// qingstor does not have an absolute path, so when we call `getAbsPath`, it will remove the prefix `/`.
-			// To ensure that the path matches the one the user gets, we should re-add `/` here.
-			o.SetLinkTarget("/" + v)
-			o.Mode |= ModeLink
 		}
 	}
 

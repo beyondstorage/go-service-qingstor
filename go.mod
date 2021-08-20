@@ -13,4 +13,3 @@ require (
 	github.com/qingstor/qingstor-sdk-go/v4 v4.3.1-0.20210819104240-5afc7bc0d697
 	github.com/stretchr/testify v1.7.0
 )
-
