@@ -187,22 +187,6 @@ func (s *Storage) createLink(ctx context.Context, path string, target string, op
 		},
 	}
 
-	if !s.features.VirtualLink {
-		// Virtual link is not enabled.
-		_, err = s.bucket.PutObjectWithContext(ctx, rp, input)
-		if err != nil {
-			return nil, err
-		}
-
-		o = s.newObject(true)
-		o.ID = rp
-		o.Path = path
-		// The virtual link is not enabled, so we set the object mode to `ModeRead`.
-		o.Mode |= ModeRead
-
-		return
-	}
-
 	_, err = s.bucket.PutObjectWithContext(ctx, rp, input)
 	if err != nil {
 		return nil, err
@@ -211,11 +195,16 @@ func (s *Storage) createLink(ctx context.Context, path string, target string, op
 	o = s.newObject(true)
 	o.ID = rp
 	o.Path = path
-	// qingstor does not have an absolute path, so when we call `getAbsPath`, it will remove the prefix `/`.
-	// To ensure that the path matches the one the user gets, we should re-add `/` here.
-	o.SetLinkTarget("/" + rt)
-	o.Mode |= ModeLink
 
+	if !s.features.VirtualLink {
+		// The virtual link is not enabled, so we set the object mode to `ModeRead`.
+		o.Mode |= ModeRead
+	} else {
+		// qingstor does not have an absolute path, so when we call `getAbsPath`, it will remove the prefix `/`.
+		// To ensure that the path matches the one the user gets, we should re-add `/` here.
+		o.SetLinkTarget("/" + rt)
+		o.Mode |= ModeLink
+	}
 	return
 }
 
