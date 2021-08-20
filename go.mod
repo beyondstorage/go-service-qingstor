@@ -14,4 +14,3 @@ require (
 	github.com/stretchr/testify v1.7.0
 )
 
-replace github.com/beyondstorage/go-integration-test/v4 => ./../go-integration-test
