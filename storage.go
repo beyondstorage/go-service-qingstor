@@ -101,8 +101,19 @@ func (s *Storage) create(path string, opt pairStorageCreate) (o *Object) {
 func (s *Storage) createAppend(ctx context.Context, path string, opt pairStorageCreateAppend) (o *Object, err error) {
 	rp := s.getAbsPath(path)
 
-	// `AppendObject` with position 0 will overwrite the existing object, so there's no need to check the object exists or not.
+	// We should set offset to 0 whether the object exists or not.
 	var offset int64 = 0
+
+	// If the object exists, we should delete it.
+	headInput := &service.HeadObjectInput{}
+	_, err = s.bucket.HeadObjectWithContext(ctx, rp, headInput)
+	if err == nil {
+		_, err = s.bucket.DeleteObject(rp)
+		if err != nil {
+			return nil, err
+		}
+	}
+
 	input := &service.AppendObjectInput{
 		Position: &offset,
 	}
@@ -653,6 +664,9 @@ func (s *Storage) writeAppend(ctx context.Context, o *Object, r io.Reader, size 
 	} else {
 		offset = *output.XQSNextAppendPosition
 	}
+
+	// We should reset the offset after calling `AppendObject` to prevent the offset being changed.
+	o.SetAppendOffset(offset)
 
 	return size, nil
 }
