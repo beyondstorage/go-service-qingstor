@@ -61,7 +61,7 @@ optional = ["encryption_customer_algorithm", "encryption_customer_key", "copy_so
 optional = ["encryption_customer_algorithm", "encryption_customer_key"]
 
 [namespace.storage.op.write_multipart]
-optional = ["encryption_customer_algorithm", "encryption_customer_key"]
+optional = ["encryption_customer_algorithm", "encryption_customer_key", "io_callback"]
 
 [pairs.service_features]
 type = "ServiceFeatures"

@@ -737,6 +737,10 @@ func (s *Storage) writeMultipart(ctx context.Context, o *Object, r io.Reader, si
 		return
 	}
 
+	if opt.HasIoCallback {
+		r = iowrap.CallbackReader(r, opt.IoCallback)
+	}
+
 	input := &service.UploadMultipartInput{
 		PartNumber:    service.Int(index),
 		UploadID:      service.String(o.MustGetMultipartID()),
