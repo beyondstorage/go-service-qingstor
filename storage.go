@@ -4,13 +4,14 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"net/http"
 	"net/url"
+	"time"
 
 	"github.com/pengsrc/go-shared/convert"
 	"github.com/qingstor/qingstor-sdk-go/v4/service"
 
 	ps "github.com/beyondstorage/go-storage/v4/pairs"
-	"github.com/beyondstorage/go-storage/v4/pkg/headers"
 	"github.com/beyondstorage/go-storage/v4/pkg/iowrap"
 	"github.com/beyondstorage/go-storage/v4/services"
 	. "github.com/beyondstorage/go-storage/v4/types"
@@ -515,6 +516,66 @@ func (s *Storage) nextPartPage(ctx context.Context, page *PartPage) error {
 	return nil
 }
 
+func (s *Storage) querySignHTTPRead(ctx context.Context, path string, expire time.Duration, opt pairStorageQuerySignHTTPRead) (req *http.Request, err error) {
+	pairs, err := s.parsePairStorageRead(opt.pairs)
+	if err != nil {
+		return
+	}
+
+	input, err := s.formatGetObjectInput(pairs)
+	if err != nil {
+		return
+	}
+
+	bucket := s.bucket.(*service.Bucket)
+
+	rp := s.getAbsPath(path)
+
+	r, _, err := bucket.GetObjectRequest(rp, input)
+	if err != nil {
+		return
+	}
+	if err = r.BuildWithContext(ctx); err != nil {
+		return
+	}
+
+	if err = r.SignQuery(int(expire.Seconds())); err != nil {
+		return
+	}
+
+	return r.HTTPRequest, nil
+}
+
+func (s *Storage) querySignHTTPWrite(ctx context.Context, path string, size int64, expire time.Duration, opt pairStorageQuerySignHTTPWrite) (req *http.Request, err error) {
+	pairs, err := s.parsePairStorageWrite(opt.pairs)
+	if err != nil {
+		return
+	}
+
+	input, err := s.formatPutObjectInput(size, pairs)
+	if err != nil {
+		return
+	}
+
+	bucket := s.bucket.(*service.Bucket)
+
+	rp := s.getAbsPath(path)
+
+	r, _, err := bucket.PutObjectRequest(rp, input)
+	if err != nil {
+		return
+	}
+	if err = r.BuildWithContext(ctx); err != nil {
+		return
+	}
+
+	if err = r.SignQuery(int(expire.Seconds())); err != nil {
+		return
+	}
+
+	return r.HTTPRequest, nil
+}
+
 func (s *Storage) reach(ctx context.Context, path string, opt pairStorageReach) (url string, err error) {
 	// FIXME: sdk should export GetObjectRequest as interface too?
 	bucket := s.bucket.(*service.Bucket)
@@ -537,17 +598,9 @@ func (s *Storage) reach(ctx context.Context, path string, opt pairStorageReach) 
 }
 
 func (s *Storage) read(ctx context.Context, path string, w io.Writer, opt pairStorageRead) (n int64, err error) {
-	input := &service.GetObjectInput{}
-	if opt.HasEncryptionCustomerAlgorithm {
-		input.XQSEncryptionCustomerAlgorithm, input.XQSEncryptionCustomerKey, input.XQSEncryptionCustomerKeyMD5, err = calculateEncryptionHeaders(opt.EncryptionCustomerAlgorithm, opt.EncryptionCustomerKey)
-		if err != nil {
-			return
-		}
-	}
-
-	if opt.HasOffset || opt.HasSize {
-		rs := headers.FormatRange(opt.Offset, opt.Size)
-		input.Range = &rs
+	input, err := s.formatGetObjectInput(opt)
+	if err != nil {
+		return
 	}
 
 	rp := s.getAbsPath(path)
@@ -664,22 +717,11 @@ func (s *Storage) write(ctx context.Context, path string, r io.Reader, size int6
 		r = iowrap.CallbackReader(r, opt.IoCallback)
 	}
 
-	input := &service.PutObjectInput{
-		ContentLength: &size,
-		Body:          io.LimitReader(r, size),
+	input, err := s.formatPutObjectInput(size, opt)
+	if err != nil {
+		return
 	}
-	if opt.HasContentMd5 {
-		input.ContentMD5 = &opt.ContentMd5
-	}
-	if opt.HasStorageClass {
-		input.XQSStorageClass = service.String(opt.StorageClass)
-	}
-	if opt.HasEncryptionCustomerAlgorithm {
-		input.XQSEncryptionCustomerAlgorithm, input.XQSEncryptionCustomerKey, input.XQSEncryptionCustomerKeyMD5, err = calculateEncryptionHeaders(opt.EncryptionCustomerAlgorithm, opt.EncryptionCustomerKey)
-		if err != nil {
-			return
-		}
-	}
+	input.Body = io.LimitReader(r, size)
 
 	rp := s.getAbsPath(path)
 
