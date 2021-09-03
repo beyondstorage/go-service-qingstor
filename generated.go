@@ -210,6 +210,8 @@ var pairMap = map[string]string{
 	"copy_source_encryption_customer_algorithm": "string",
 	"copy_source_encryption_customer_key":       "[]byte",
 	"credential":                                "string",
+	"default_content_type":                      "string",
+	"default_io_callback":                       "func([]byte)",
 	"default_service_pairs":                     "DefaultServicePairs",
 	"default_storage_pairs":                     "DefaultStoragePairs",
 	"disable_uri_cleaning":                      "bool",
@@ -612,6 +614,10 @@ type pairStorageNew struct {
 	hasEnableVirtualLink bool
 	EnableVirtualLink    bool
 	// Default pairs
+	hasDefaultContentType bool
+	DefaultContentType    string
+	hasDefaultIoCallback  bool
+	DefaultIoCallback     func([]byte)
 }
 
 // parsePairStorageNew will parse Pair slice into *pairStorageNew
@@ -679,7 +685,19 @@ func parsePairStorageNew(opts []Pair) (pairStorageNew, error) {
 			}
 			result.hasEnableVirtualLink = true
 			result.EnableVirtualLink = true
-			// Default pairs
+		// Default pairs
+		case "default_content_type":
+			if result.hasDefaultContentType {
+				continue
+			}
+			result.hasDefaultContentType = true
+			result.DefaultContentType = v.Value.(string)
+		case "default_io_callback":
+			if result.hasDefaultIoCallback {
+				continue
+			}
+			result.hasDefaultIoCallback = true
+			result.DefaultIoCallback = v.Value.(func([]byte))
 		}
 	}
 
@@ -694,6 +712,17 @@ func parsePairStorageNew(opts []Pair) (pairStorageNew, error) {
 	}
 
 	// Default pairs
+	if result.hasDefaultContentType {
+		result.HasDefaultStoragePairs = true
+		result.DefaultStoragePairs.CreateAppend = append(result.DefaultStoragePairs.CreateAppend, WithContentType(result.DefaultContentType))
+		result.DefaultStoragePairs.Write = append(result.DefaultStoragePairs.Write, WithContentType(result.DefaultContentType))
+	}
+	if result.hasDefaultIoCallback {
+		result.HasDefaultStoragePairs = true
+		result.DefaultStoragePairs.Read = append(result.DefaultStoragePairs.Read, WithIoCallback(result.DefaultIoCallback))
+		result.DefaultStoragePairs.Write = append(result.DefaultStoragePairs.Write, WithIoCallback(result.DefaultIoCallback))
+		result.DefaultStoragePairs.WriteMultipart = append(result.DefaultStoragePairs.WriteMultipart, WithIoCallback(result.DefaultIoCallback))
+	}
 
 	if !result.HasName {
 		return pairStorageNew{}, services.PairRequiredError{Keys: []string{"name"}}
@@ -1950,6 +1979,8 @@ func (s *Storage) MoveWithContext(ctx context.Context, src string, dst string, p
 
 // Reach will provide a way, which can reach the object.
 //
+// Deprecated: Use QuerySignHTTPRead instead.
+//
 // This function will create a context by default.
 func (s *Storage) Reach(path string, pairs ...Pair) (url string, err error) {
 	ctx := context.Background()
@@ -1957,6 +1988,8 @@ func (s *Storage) Reach(path string, pairs ...Pair) (url string, err error) {
 }
 
 // ReachWithContext will provide a way, which can reach the object.
+//
+// Deprecated: Use QuerySignHTTPRead instead.
 func (s *Storage) ReachWithContext(ctx context.Context, path string, pairs ...Pair) (url string, err error) {
 	defer func() {
 		err = s.formatError("reach", err, path)
