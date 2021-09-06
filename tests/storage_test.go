@@ -41,3 +41,11 @@ func TestLinker(t *testing.T) {
 	}
 	tests.TestLinker(t, setupTest(t))
 }
+
+func TestSigner(t *testing.T) {
+	if os.Getenv("STORAGE_QINGSTOR_INTEGRATION_TEST") != "on" {
+		t.Skipf("STORAGE_QINGSTOR_INTEGRATION_TEST is not 'on', skipped")
+	}
+	tests.TestStorageHTTPSignerRead(t, setupTest(t))
+	tests.TestStorageHTTPSignerWrite(t, setupTest(t))
+}

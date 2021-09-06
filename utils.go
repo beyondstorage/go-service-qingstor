@@ -68,6 +68,7 @@ type Storage struct {
 	typ.UnimplementedAppender
 	typ.UnimplementedDirer
 	typ.UnimplementedLinker
+	typ.UnimplementedStorageHTTPSigner
 }
 
 // String implements Storager.String
@@ -436,4 +437,41 @@ func calculateEncryptionHeaders(algo string, key []byte) (algorithm, keyBase64, 
 	kMD5 := md5.Sum(key)
 	kMD5B64 := base64.StdEncoding.EncodeToString(kMD5[:])
 	return &algo, &kB64, &kMD5B64, nil
+}
+
+func (s *Storage) formatGetObjectInput(opt pairStorageRead) (input *service.GetObjectInput, err error) {
+	input = &service.GetObjectInput{}
+	if opt.HasEncryptionCustomerAlgorithm {
+		input.XQSEncryptionCustomerAlgorithm, input.XQSEncryptionCustomerKey, input.XQSEncryptionCustomerKeyMD5, err = calculateEncryptionHeaders(opt.EncryptionCustomerAlgorithm, opt.EncryptionCustomerKey)
+		if err != nil {
+			return
+		}
+	}
+
+	if opt.HasOffset || opt.HasSize {
+		rs := headers.FormatRange(opt.Offset, opt.Size)
+		input.Range = &rs
+	}
+
+	return
+}
+
+func (s *Storage) formatPutObjectInput(size int64, opt pairStorageWrite) (input *service.PutObjectInput, err error) {
+	input = &service.PutObjectInput{
+		ContentLength: &size,
+	}
+	if opt.HasContentMd5 {
+		input.ContentMD5 = service.String(opt.ContentMd5)
+	}
+	if opt.HasStorageClass {
+		input.XQSStorageClass = service.String(opt.StorageClass)
+	}
+	if opt.HasEncryptionCustomerAlgorithm {
+		input.XQSEncryptionCustomerAlgorithm, input.XQSEncryptionCustomerKey, input.XQSEncryptionCustomerKeyMD5, err = calculateEncryptionHeaders(opt.EncryptionCustomerAlgorithm, opt.EncryptionCustomerKey)
+		if err != nil {
+			return
+		}
+	}
+
+	return
 }

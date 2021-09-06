@@ -210,6 +210,8 @@ var pairMap = map[string]string{
 	"copy_source_encryption_customer_algorithm": "string",
 	"copy_source_encryption_customer_key":       "[]byte",
 	"credential":                                "string",
+	"default_content_type":                      "string",
+	"default_io_callback":                       "func([]byte)",
 	"default_service_pairs":                     "DefaultServicePairs",
 	"default_storage_pairs":                     "DefaultStoragePairs",
 	"disable_uri_cleaning":                      "bool",
@@ -558,15 +560,16 @@ func (s *Service) ListWithContext(ctx context.Context, pairs ...Pair) (sti *Stor
 }
 
 var (
-	_ Appender    = &Storage{}
-	_ Copier      = &Storage{}
-	_ Direr       = &Storage{}
-	_ Fetcher     = &Storage{}
-	_ Linker      = &Storage{}
-	_ Mover       = &Storage{}
-	_ Multiparter = &Storage{}
-	_ Reacher     = &Storage{}
-	_ Storager    = &Storage{}
+	_ Appender          = &Storage{}
+	_ Copier            = &Storage{}
+	_ Direr             = &Storage{}
+	_ Fetcher           = &Storage{}
+	_ Linker            = &Storage{}
+	_ Mover             = &Storage{}
+	_ Multiparter       = &Storage{}
+	_ Reacher           = &Storage{}
+	_ StorageHTTPSigner = &Storage{}
+	_ Storager          = &Storage{}
 )
 
 type StorageFeatures struct {
@@ -612,6 +615,10 @@ type pairStorageNew struct {
 	hasEnableVirtualLink bool
 	EnableVirtualLink    bool
 	// Default pairs
+	hasDefaultContentType bool
+	DefaultContentType    string
+	hasDefaultIoCallback  bool
+	DefaultIoCallback     func([]byte)
 }
 
 // parsePairStorageNew will parse Pair slice into *pairStorageNew
@@ -679,7 +686,19 @@ func parsePairStorageNew(opts []Pair) (pairStorageNew, error) {
 			}
 			result.hasEnableVirtualLink = true
 			result.EnableVirtualLink = true
-			// Default pairs
+		// Default pairs
+		case "default_content_type":
+			if result.hasDefaultContentType {
+				continue
+			}
+			result.hasDefaultContentType = true
+			result.DefaultContentType = v.Value.(string)
+		case "default_io_callback":
+			if result.hasDefaultIoCallback {
+				continue
+			}
+			result.hasDefaultIoCallback = true
+			result.DefaultIoCallback = v.Value.(func([]byte))
 		}
 	}
 
@@ -694,6 +713,18 @@ func parsePairStorageNew(opts []Pair) (pairStorageNew, error) {
 	}
 
 	// Default pairs
+	if result.hasDefaultContentType {
+		result.HasDefaultStoragePairs = true
+		result.DefaultStoragePairs.CreateAppend = append(result.DefaultStoragePairs.CreateAppend, WithContentType(result.DefaultContentType))
+		result.DefaultStoragePairs.QuerySignHTTPWrite = append(result.DefaultStoragePairs.QuerySignHTTPWrite, WithContentType(result.DefaultContentType))
+		result.DefaultStoragePairs.Write = append(result.DefaultStoragePairs.Write, WithContentType(result.DefaultContentType))
+	}
+	if result.hasDefaultIoCallback {
+		result.HasDefaultStoragePairs = true
+		result.DefaultStoragePairs.Read = append(result.DefaultStoragePairs.Read, WithIoCallback(result.DefaultIoCallback))
+		result.DefaultStoragePairs.Write = append(result.DefaultStoragePairs.Write, WithIoCallback(result.DefaultIoCallback))
+		result.DefaultStoragePairs.WriteMultipart = append(result.DefaultStoragePairs.WriteMultipart, WithIoCallback(result.DefaultIoCallback))
+	}
 
 	if !result.HasName {
 		return pairStorageNew{}, services.PairRequiredError{Keys: []string{"name"}}
@@ -704,26 +735,28 @@ func parsePairStorageNew(opts []Pair) (pairStorageNew, error) {
 
 // DefaultStoragePairs is default pairs for specific action
 type DefaultStoragePairs struct {
-	CommitAppend      []Pair
-	CompleteMultipart []Pair
-	Copy              []Pair
-	Create            []Pair
-	CreateAppend      []Pair
-	CreateDir         []Pair
-	CreateLink        []Pair
-	CreateMultipart   []Pair
-	Delete            []Pair
-	Fetch             []Pair
-	List              []Pair
-	ListMultipart     []Pair
-	Metadata          []Pair
-	Move              []Pair
-	Reach             []Pair
-	Read              []Pair
-	Stat              []Pair
-	Write             []Pair
-	WriteAppend       []Pair
-	WriteMultipart    []Pair
+	CommitAppend       []Pair
+	CompleteMultipart  []Pair
+	Copy               []Pair
+	Create             []Pair
+	CreateAppend       []Pair
+	CreateDir          []Pair
+	CreateLink         []Pair
+	CreateMultipart    []Pair
+	Delete             []Pair
+	Fetch              []Pair
+	List               []Pair
+	ListMultipart      []Pair
+	Metadata           []Pair
+	Move               []Pair
+	QuerySignHTTPRead  []Pair
+	QuerySignHTTPWrite []Pair
+	Reach              []Pair
+	Read               []Pair
+	Stat               []Pair
+	Write              []Pair
+	WriteAppend        []Pair
+	WriteMultipart     []Pair
 }
 
 // pairStorageCommitAppend is the parsed struct
@@ -1166,6 +1199,133 @@ func (s *Storage) parsePairStorageMove(opts []Pair) (pairStorageMove, error) {
 		switch v.Key {
 		default:
 			return pairStorageMove{}, services.PairUnsupportedError{Pair: v}
+		}
+	}
+
+	// Check required pairs.
+
+	return result, nil
+}
+
+// pairStorageQuerySignHTTPRead is the parsed struct
+type pairStorageQuerySignHTTPRead struct {
+	pairs                          []Pair
+	HasEncryptionCustomerAlgorithm bool
+	EncryptionCustomerAlgorithm    string
+	HasEncryptionCustomerKey       bool
+	EncryptionCustomerKey          []byte
+	HasOffset                      bool
+	Offset                         int64
+	HasSize                        bool
+	Size                           int64
+}
+
+// parsePairStorageQuerySignHTTPRead will parse Pair slice into *pairStorageQuerySignHTTPRead
+func (s *Storage) parsePairStorageQuerySignHTTPRead(opts []Pair) (pairStorageQuerySignHTTPRead, error) {
+	result := pairStorageQuerySignHTTPRead{
+		pairs: opts,
+	}
+
+	for _, v := range opts {
+		switch v.Key {
+		case "encryption_customer_algorithm":
+			if result.HasEncryptionCustomerAlgorithm {
+				continue
+			}
+			result.HasEncryptionCustomerAlgorithm = true
+			result.EncryptionCustomerAlgorithm = v.Value.(string)
+			continue
+		case "encryption_customer_key":
+			if result.HasEncryptionCustomerKey {
+				continue
+			}
+			result.HasEncryptionCustomerKey = true
+			result.EncryptionCustomerKey = v.Value.([]byte)
+			continue
+		case "offset":
+			if result.HasOffset {
+				continue
+			}
+			result.HasOffset = true
+			result.Offset = v.Value.(int64)
+			continue
+		case "size":
+			if result.HasSize {
+				continue
+			}
+			result.HasSize = true
+			result.Size = v.Value.(int64)
+			continue
+		default:
+			return pairStorageQuerySignHTTPRead{}, services.PairUnsupportedError{Pair: v}
+		}
+	}
+
+	// Check required pairs.
+
+	return result, nil
+}
+
+// pairStorageQuerySignHTTPWrite is the parsed struct
+type pairStorageQuerySignHTTPWrite struct {
+	pairs                          []Pair
+	HasContentMd5                  bool
+	ContentMd5                     string
+	HasContentType                 bool
+	ContentType                    string
+	HasEncryptionCustomerAlgorithm bool
+	EncryptionCustomerAlgorithm    string
+	HasEncryptionCustomerKey       bool
+	EncryptionCustomerKey          []byte
+	HasStorageClass                bool
+	StorageClass                   string
+}
+
+// parsePairStorageQuerySignHTTPWrite will parse Pair slice into *pairStorageQuerySignHTTPWrite
+func (s *Storage) parsePairStorageQuerySignHTTPWrite(opts []Pair) (pairStorageQuerySignHTTPWrite, error) {
+	result := pairStorageQuerySignHTTPWrite{
+		pairs: opts,
+	}
+
+	for _, v := range opts {
+		switch v.Key {
+		case "content_md5":
+			if result.HasContentMd5 {
+				continue
+			}
+			result.HasContentMd5 = true
+			result.ContentMd5 = v.Value.(string)
+			continue
+		case "content_type":
+			if result.HasContentType {
+				continue
+			}
+			result.HasContentType = true
+			result.ContentType = v.Value.(string)
+			continue
+		case "encryption_customer_algorithm":
+			if result.HasEncryptionCustomerAlgorithm {
+				continue
+			}
+			result.HasEncryptionCustomerAlgorithm = true
+			result.EncryptionCustomerAlgorithm = v.Value.(string)
+			continue
+		case "encryption_customer_key":
+			if result.HasEncryptionCustomerKey {
+				continue
+			}
+			result.HasEncryptionCustomerKey = true
+			result.EncryptionCustomerKey = v.Value.([]byte)
+			continue
+		case "storage_class":
+			if result.HasStorageClass {
+				continue
+			}
+			result.HasStorageClass = true
+			result.StorageClass = v.Value.(string)
+			continue
+		default:
+			return pairStorageQuerySignHTTPWrite{}, services.PairUnsupportedError{Pair: v}
 		}
 	}
 
@@ -1948,7 +2108,59 @@ func (s *Storage) MoveWithContext(ctx context.Context, src string, dst string, p
 	return s.move(ctx, src, dst, opt)
 }
 
+// QuerySignHTTPRead will read data from the file by using query parameters to authenticate requests.
+//
+// This function will create a context by default.
+func (s *Storage) QuerySignHTTPRead(path string, expire time.Duration, pairs ...Pair) (req *http.Request, err error) {
+	ctx := context.Background()
+	return s.QuerySignHTTPReadWithContext(ctx, path, expire, pairs...)
+}
+
+// QuerySignHTTPReadWithContext will read data from the file by using query parameters to authenticate requests.
+func (s *Storage) QuerySignHTTPReadWithContext(ctx context.Context, path string, expire time.Duration, pairs ...Pair) (req *http.Request, err error) {
+	defer func() {
+		err = s.formatError("query_sign_http_read", err, path)
+	}()
+
+	pairs = append(pairs, s.defaultPairs.QuerySignHTTPRead...)
+	var opt pairStorageQuerySignHTTPRead
+
+	opt, err = s.parsePairStorageQuerySignHTTPRead(pairs)
+	if err != nil {
+		return
+	}
+
+	return s.querySignHTTPRead(ctx, path, expire, opt)
+}
+
+// QuerySignHTTPWrite will write data into a file by using query parameters to authenticate requests.
+//
+// This function will create a context by default.
+func (s *Storage) QuerySignHTTPWrite(path string, size int64, expire time.Duration, pairs ...Pair) (req *http.Request, err error) {
+	ctx := context.Background()
+	return s.QuerySignHTTPWriteWithContext(ctx, path, size, expire, pairs...)
+}
+
+// QuerySignHTTPWriteWithContext will write data into a file by using query parameters to authenticate requests.
+func (s *Storage) QuerySignHTTPWriteWithContext(ctx context.Context, path string, size int64, expire time.Duration, pairs ...Pair) (req *http.Request, err error) {
+	defer func() {
+		err = s.formatError("query_sign_http_write", err, path)
+	}()
+
+	pairs = append(pairs, s.defaultPairs.QuerySignHTTPWrite...)
+	var opt pairStorageQuerySignHTTPWrite
+
+	opt, err = s.parsePairStorageQuerySignHTTPWrite(pairs)
+	if err != nil {
+		return
+	}
+
+	return s.querySignHTTPWrite(ctx, path, size, expire, opt)
+}
+
 // Reach will provide a way, which can reach the object.
+//
+// Deprecated: Use QuerySignHTTPRead instead.
 //
 // This function will create a context by default.
 func (s *Storage) Reach(path string, pairs ...Pair) (url string, err error) {
@@ -1957,6 +2169,8 @@ func (s *Storage) Reach(path string, pairs ...Pair) (url string, err error) {
 }
 
 // ReachWithContext will provide a way, which can reach the object.
+//
+// Deprecated: Use QuerySignHTTPRead instead.
 func (s *Storage) ReachWithContext(ctx context.Context, path string, pairs ...Pair) (url string, err error) {
 	defer func() {
 		err = s.formatError("reach", err, path)
