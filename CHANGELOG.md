@@ -5,6 +5,30 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [v3.3.0] - 2021-09-13
+
+### Added
+
+- rfcs: RFC-79 Add virtual link support (#79)
+- feat: Implement CreateLink and setup linker test (#81)
+- feat: WriteMultipart adds io_callback support (#86)
+- feat: Implement StorageHTTPSigner (#88)
+
+### Changed
+
+- feat: Turn Expire into Duration for Reach (#76)
+- ci: Enable auto merge for dependabot
+- ci: Cleanup Service Integration Tests (#90)
+- docs: Update README (#91)
+
+### Fixed
+
+- fix: Fixed append test failures (#84)
+
+### Upgraded
+
+- build(deps): Bump qingstor-sdk-go to version 4.4.0 (#87)
+
 ## [v3.2.0] - 2021-07-22
 
 ### Added
@@ -120,6 +144,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 - Implement qingstor services.
 
+[v3.3.0]: https://github.com/beyondstorage/go-service-qingstor/compare/v3.2.0...v3.3.0
 [v3.2.0]: https://github.com/beyondstorage/go-service-qingstor/compare/v3.1.0...v3.2.0
 [v3.1.0]: https://github.com/beyondstorage/go-service-qingstor/compare/v3.0.0...v3.1.0
 [v3.0.0]: https://github.com/beyondstorage/go-service-qingstor/compare/v2.1.0...v3.0.0
