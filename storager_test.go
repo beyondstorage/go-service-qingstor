@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"errors"
+	"io"
 	"io/ioutil"
 	"testing"
 
@@ -15,6 +16,7 @@ import (
 	"github.com/stretchr/testify/assert"
 
 	"github.com/beyondstorage/go-storage/v4/pairs"
+	"github.com/beyondstorage/go-storage/v4/pkg/randbytes"
 	"github.com/beyondstorage/go-storage/v4/services"
 	. "github.com/beyondstorage/go-storage/v4/types"
 )
@@ -345,6 +347,7 @@ func TestStorage_Write(t *testing.T) {
 		name     string
 		path     string
 		size     int64
+		r        io.Reader
 		mockFn   func(context.Context, string, *service.PutObjectInput) (*service.PutObjectOutput, error)
 		hasError bool
 		wantErr  error
@@ -353,6 +356,7 @@ func TestStorage_Write(t *testing.T) {
 			"valid copy",
 			"test_src",
 			100,
+			io.LimitReader(randbytes.NewRand(), 100),
 			func(ctx context.Context, inputPath string, input *service.PutObjectInput) (*service.PutObjectOutput, error) {
 				assert.Equal(t, "test_src", inputPath)
 				return nil, nil
@@ -368,7 +372,7 @@ func TestStorage_Write(t *testing.T) {
 			bucket: mockBucket,
 		}
 
-		n, err := client.Write(v.path, nil, v.size)
+		n, err := client.Write(v.path, v.r, v.size)
 		if v.hasError {
 			assert.Error(t, err)
 			assert.True(t, errors.Is(err, v.wantErr))
