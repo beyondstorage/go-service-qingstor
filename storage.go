@@ -516,6 +516,10 @@ func (s *Storage) nextPartPage(ctx context.Context, page *PartPage) error {
 	return nil
 }
 
+func (s *Storage) querySignHTTPDelete(ctx context.Context, path string, expire time.Duration, opt pairStorageQuerySignHTTPDelete) (req *http.Request, err error) {
+	panic("not implemented")
+}
+
 func (s *Storage) querySignHTTPRead(ctx context.Context, path string, expire time.Duration, opt pairStorageQuerySignHTTPRead) (req *http.Request, err error) {
 	pairs, err := s.parsePairStorageRead(opt.pairs)
 	if err != nil {
