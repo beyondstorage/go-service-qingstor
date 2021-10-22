@@ -1,11 +1,14 @@
-[![Build Status](https://github.com/beyondstorage/go-service-qingstor/workflows/Unit%20Test/badge.svg?branch=master)](https://github.com/beyondstorage/go-service-qingstor/actions?query=workflow%3A%22Unit+Test%22)
-[![Integration Tests](https://teamcity.beyondstorage.io/app/rest/builds/buildType:(id:GoServiceQingstor_IntegrationTests)/statusIcon)](https://teamcity.beyondstorage.io/buildConfiguration/GoServiceQingstor_IntegrationTests)
-[![License](https://img.shields.io/badge/license-apache%20v2-blue.svg)](https://github.com/Xuanwo/storage/blob/master/LICENSE)
-[![](https://img.shields.io/matrix/beyondstorage@go-storage:matrix.org.svg?logo=matrix)](https://matrix.to/#/#beyondstorage@go-storage:matrix.org)
-
 # go-services-qingstor
 
 [QingStor Object Storage](https://www.qingcloud.com/products/objectstorage/) service support for [go-storage](https://github.com/beyondstorage/go-storage).
+
+## Notes
+
+**This package has been moved to [go-storage](https://github.com/beyondstorage/go-storage/tree/master/services/qingstor).**
+
+```shell
+go get go.beyondstorage.io/services/qingstor/v4
+```
 
 ## Install
 
