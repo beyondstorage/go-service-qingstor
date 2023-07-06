@@ -4,7 +4,7 @@ namespace "service" {
 
   new {
     required = ["credential"]
-    optional = ["endpoint"]
+    optional = ["enable_virtual_style", "endpoint"]
   }
 
   op "create" {
@@ -53,6 +53,9 @@ namespace "storage" {
 pairs {
 
   pair "disable_uri_cleaning" {
+    type = "bool"
+  }
+  pair "enable_virtual_style" {
     type = "bool"
   }
   pair "storage_class" {

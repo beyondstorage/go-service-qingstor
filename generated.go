@@ -30,6 +30,8 @@ const Type = "qingstor"
 const (
 	// DisableURICleaning will // DisableURICleaning
 	PairDisableURICleaning = "qingstor_disable_uri_cleaning"
+	// EnableVirtualStyle will // EnableVirtualStyle
+	PairEnableVirtualStyle = "qingstor_enable_virtual_style"
 	// StorageClass will // StorageClass
 	PairStorageClass = "qingstor_storage_class"
 )
@@ -44,6 +46,15 @@ const (
 func WithDisableURICleaning(v bool) *types.Pair {
 	return &types.Pair{
 		Key:   PairDisableURICleaning,
+		Value: v,
+	}
+}
+
+// WithEnableVirtualStyle will apply enable_virtual_style value to Options
+// This pair is used to // EnableVirtualStyle
+func WithEnableVirtualStyle(v bool) *types.Pair {
+	return &types.Pair{
+		Key:   PairEnableVirtualStyle,
 		Value: v,
 	}
 }
@@ -76,7 +87,8 @@ var pairServiceNewMap = map[string]struct{}{
 	// Required pairs
 	ps.Credential: struct{}{},
 	// Optional pairs
-	ps.Endpoint: struct{}{},
+	PairEnableVirtualStyle: struct{}{},
+	ps.Endpoint:            struct{}{},
 	// Generated pairs
 	ps.HTTPClientOptions: struct{}{},
 }
@@ -88,8 +100,10 @@ type pairServiceNew struct {
 	// Required pairs
 	Credential *credential.Provider
 	// Optional pairs
-	HasEndpoint bool
-	Endpoint    endpoint.Provider
+	HasEnableVirtualStyle bool
+	EnableVirtualStyle    bool
+	HasEndpoint           bool
+	Endpoint              endpoint.Provider
 	// Generated pairs
 	HasHTTPClientOptions bool
 	HTTPClientOptions    *httpclient.Options
@@ -117,6 +131,11 @@ func parsePairServiceNew(opts []*types.Pair) (*pairServiceNew, error) {
 		result.Credential = v.(*credential.Provider)
 	}
 	// Handle optional pairs
+	v, ok = values[PairEnableVirtualStyle]
+	if ok {
+		result.HasEnableVirtualStyle = true
+		result.EnableVirtualStyle = v.(bool)
+	}
 	v, ok = values[ps.Endpoint]
 	if ok {
 		result.HasEndpoint = true

@@ -101,6 +101,10 @@ func newServicer(pairs ...*types.Pair) (srv *Service, err error) {
 		return nil, err
 	}
 
+	if opt.HasEnableVirtualStyle {
+		cfg.EnableVirtualHostStyle = opt.EnableVirtualStyle
+	}
+
 	// Set config's endpoint
 	if opt.HasEndpoint {
 		ep := opt.Endpoint.Value()
