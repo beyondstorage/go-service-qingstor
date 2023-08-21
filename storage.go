@@ -92,7 +92,7 @@ func (s *Storage) listDir(ctx context.Context, dir string, opt *pairStorageListD
 		if output.HasMore != nil && !*output.HasMore {
 			break
 		}
-		if len(output.Keys) == 0 {
+		if len(output.Keys) == 0 && len(output.CommonPrefixes) == 0 {
 			break
 		}
 	}
