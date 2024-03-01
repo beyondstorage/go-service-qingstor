@@ -11,5 +11,5 @@ require (
 	github.com/google/uuid v1.6.0
 	github.com/pengsrc/go-shared v0.2.1-0.20190131101655-1999055a4a14
 	github.com/qingstor/qingstor-sdk-go/v4 v4.4.0
-	github.com/stretchr/testify v1.7.0
+	github.com/stretchr/testify v1.9.0
 )
